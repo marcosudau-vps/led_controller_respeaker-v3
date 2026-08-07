@@ -195,6 +195,122 @@ def test_lifecycle_callbacks_run_off_the_caller_thread():
         transport.close()
 
 
+def test_the_transport_never_stops_another_process_unless_asked(monkeypatch):
+    """Force-claiming is opt-in, and the default path must not reach it at all."""
+    from respeaker_led.device import contention
+
+    calls: list[object] = []
+    monkeypatch.setattr(contention, "release_device", lambda *a, **k: calls.append(1))
+
+    device = FakeDevice()
+    device.fail_with = OSError("Access denied (insufficient permissions)")
+    transport = UsbTransport(
+        retry_interval_s=0.01, heartbeat_interval_s=0.01, finder=lambda: device
+    )
+    transport.start()
+    try:
+        time.sleep(0.15)
+        assert calls == []
+        assert transport.is_connected is False
+    finally:
+        transport.close()
+
+
+def test_an_absent_device_is_not_treated_as_contention(monkeypatch):
+    """Nothing plugged in is not somebody else holding it.
+
+    Hunting for a process to stop because a cable is out would be both useless
+    and, given what it does when it finds one, worse than useless.
+    """
+    from respeaker_led.device import contention
+
+    calls: list[object] = []
+    monkeypatch.setattr(contention, "release_device", lambda *a, **k: calls.append(1))
+
+    transport = UsbTransport(
+        retry_interval_s=0.01,
+        heartbeat_interval_s=0.01,
+        finder=lambda: None,
+        force_claim=True,
+    )
+    transport.start()
+    try:
+        time.sleep(0.15)
+        assert calls == []
+    finally:
+        transport.close()
+
+
+def test_force_claim_runs_once_and_then_reconnects(monkeypatch):
+    from respeaker_led.device import contention
+
+    device = FakeDevice()
+    device.fail_with = OSError("Access denied (insufficient permissions)")
+    calls: list[object] = []
+
+    def release(probe, **kwargs):
+        del probe, kwargs
+        calls.append(1)
+        device.fail_with = None  # the other process let go
+        return contention.ReleaseReport(reachable_before=False, reachable_after=True)
+
+    monkeypatch.setattr(contention, "release_device", release)
+    monkeypatch.setattr(contention, "device_probe", lambda *a, **k: lambda: True)
+
+    transport = UsbTransport(
+        retry_interval_s=0.01,
+        heartbeat_interval_s=0.01,
+        finder=lambda: device,
+        force_claim=True,
+    )
+    transport.start()
+    try:
+        until(lambda: transport.is_connected, "the claim never led to a connection")
+        # The retry loop runs every few milliseconds here. Stopping processes on
+        # that schedule would be a menace, so it happens once per connection.
+        time.sleep(0.15)
+        assert calls == [1]
+    finally:
+        transport.close()
+
+
+def test_a_claim_that_does_not_help_is_not_repeated_every_retry(monkeypatch):
+    from respeaker_led.device import contention
+
+    device = FakeDevice()
+    device.fail_with = OSError("Access denied (insufficient permissions)")
+    calls: list[object] = []
+
+    def release(probe, **kwargs):
+        del probe, kwargs
+        calls.append(1)
+        return contention.ReleaseReport(
+            reachable_before=False, reachable_after=False, note="nothing eligible"
+        )
+
+    monkeypatch.setattr(contention, "release_device", release)
+    monkeypatch.setattr(contention, "device_probe", lambda *a, **k: lambda: False)
+
+    transport = UsbTransport(
+        retry_interval_s=0.01,
+        heartbeat_interval_s=0.01,
+        finder=lambda: device,
+        force_claim=True,
+    )
+    transport.start()
+    try:
+        time.sleep(0.2)
+        assert calls == [1]
+        assert transport.is_connected is False
+        # last_error keeps reporting the current problem — access is still
+        # denied. What the claim concluded is separate information, and lives
+        # where it does not overwrite it.
+        assert "Access denied" in (transport.last_error or "")
+        assert "nothing eligible" in (transport.stats()["last_claim"] or "")
+    finally:
+        transport.close()
+
+
 def test_closing_the_transport_twice_is_not_an_error():
     transport = UsbTransport(finder=lambda: None)
     transport.start()

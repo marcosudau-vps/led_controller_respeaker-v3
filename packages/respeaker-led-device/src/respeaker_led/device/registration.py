@@ -29,6 +29,18 @@ _lock = threading.Lock()
 _transport: UsbTransport | None = None
 
 
+def as_bool(value: Any) -> bool:
+    """Coerce a sink option to a flag.
+
+    ``--sink-option force_claim=true`` arrives as text: the CLI cannot know what
+    type a given sink wants for a given option, so the conversion belongs to the
+    side that declared the option.
+    """
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().casefold() in {"1", "true", "yes", "on", "ja", "an"}
+
+
 def shared_transport(**options: Any) -> UsbTransport:
     """The one managed USB connection, created on first use and kept running.
 
@@ -56,16 +68,42 @@ def reset_shared_transport() -> None:
         transport.close()
 
 
-def create_frame_sink(*, led_count: int = xvf.RING_LED_COUNT, **options: Any) -> FrameSink:
+def _transport_options(force_claim: Any, claim_unrelated: Any) -> dict[str, Any]:
+    """Only what the caller actually asked for.
+
+    Force-claiming terminates another program, so it is never inferred from a
+    default. It has to be spelled out, every time, by whoever is running this.
+    """
+    options: dict[str, Any] = {}
+    if force_claim is not None:
+        options["force_claim"] = as_bool(force_claim)
+    if claim_unrelated is not None:
+        options["claim_unrelated"] = as_bool(claim_unrelated)
+    return options
+
+
+def create_frame_sink(
+    *,
+    led_count: int = xvf.RING_LED_COUNT,
+    force_claim: Any = None,
+    claim_unrelated: Any = None,
+    **options: Any,
+) -> FrameSink:
     del options
-    return ReSpeakerFrameSink(shared_transport(), led_count=led_count)
+    transport = shared_transport(**_transport_options(force_claim, claim_unrelated))
+    return ReSpeakerFrameSink(transport, led_count=led_count)
 
 
 def create_doa_provider(
-    *, max_hz: float = DEFAULT_MAX_HZ, **options: Any
+    *,
+    max_hz: float = DEFAULT_MAX_HZ,
+    force_claim: Any = None,
+    claim_unrelated: Any = None,
+    **options: Any,
 ) -> InputProvider:
     del options
-    return ReSpeakerDoaProvider(shared_transport(), max_hz=max_hz)
+    transport = shared_transport(**_transport_options(force_claim, claim_unrelated))
+    return ReSpeakerDoaProvider(transport, max_hz=max_hz)
 
 
 __all__ = [

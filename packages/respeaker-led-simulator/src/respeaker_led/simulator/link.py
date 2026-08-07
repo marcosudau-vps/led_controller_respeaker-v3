@@ -246,8 +246,18 @@ class SimulatorLink:
     # -- input --------------------------------------------------------------
 
     def latest_inputs(self) -> dict[str, Any] | None:
-        """The most recent slider reading, or ``None`` when nothing reported."""
+        """The most recent slider reading, or ``None`` when nothing reported.
+
+        A reading is *what a connected window says*, so no window means no
+        reading — decided here rather than left to the reader thread's cleanup.
+        A window's socket closing and its bookkeeping being tidied up are two
+        moments, and in between, a caller could otherwise see a reading from a
+        window that is already gone. Making it definitional removes the window
+        in which that is possible instead of narrowing it.
+        """
         with self._lock:
+            if not any(window.alive for window in self._windows):
+                return None
             return None if self._latest_inputs is None else dict(self._latest_inputs)
 
     # -- accepting and reading ----------------------------------------------

@@ -7,6 +7,7 @@ imported here; it reaches this package through entry points, which is what makes
 
 from __future__ import annotations
 
+from .contention import Holder, ReleaseReport, device_probe, find_holders, release_device
 from .provider import ReSpeakerDoaProvider, decode_doa
 from .registration import create_doa_provider, create_frame_sink, shared_transport
 from .sink import ReSpeakerFrameSink
@@ -17,7 +18,9 @@ __version__ = "3.0.0"
 
 __all__ = [
     "ConnectionState",
+    "Holder",
     "RING_LED_COUNT",
+    "ReleaseReport",
     "ReSpeakerDoaProvider",
     "ReSpeakerFrameSink",
     "UsbTransport",
@@ -25,5 +28,8 @@ __all__ = [
     "create_doa_provider",
     "create_frame_sink",
     "decode_doa",
+    "device_probe",
+    "find_holders",
+    "release_device",
     "shared_transport",
 ]

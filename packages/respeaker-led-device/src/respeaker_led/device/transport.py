@@ -49,11 +49,15 @@ class UsbTransport:
         on_connected: Callable[[], None] | None = None,
         on_disconnected: Callable[[str], None] | None = None,
         finder: Callable[[], Any] | None = None,
+        force_claim: bool = False,
+        claim_unrelated: bool = False,
     ) -> None:
         self.retry_interval_s = retry_interval_s
         self.heartbeat_interval_s = heartbeat_interval_s
         self.on_connected = on_connected
         self.on_disconnected = on_disconnected
+        self.force_claim = force_claim
+        self.claim_unrelated = claim_unrelated
         # Injectable so the reconnect and heartbeat logic can be exercised
         # without a device on the bus. Defaults to the real one.
         self._finder = finder if finder is not None else xvf.find
@@ -69,6 +73,14 @@ class UsbTransport:
         # Set whenever a fresh device appears, so whoever configures the device
         # on connect knows its settings were lost with the old handle.
         self._session_dirty = True
+
+        # Force-claiming is allowed once per connection cycle, not once per
+        # retry. The retry loop runs every few seconds forever; a transport that
+        # terminated processes on that schedule would be a menace. Cleared again
+        # on a successful connect, so a device lost and re-taken later can still
+        # be fought for once more.
+        self._claim_spent = False
+        self._last_claim: Any | None = None
 
         self._connect_count = 0
         self._disconnect_count = 0
@@ -101,6 +113,8 @@ class UsbTransport:
                 "last_connected_at": self._last_connected_at,
                 "last_error": self._last_error,
                 "retry_count": self._retry_count,
+                "force_claim": self.force_claim,
+                "last_claim": None if self._last_claim is None else self._last_claim.summary(),
             }
 
     def consume_session_dirty(self) -> bool:
@@ -209,6 +223,7 @@ class UsbTransport:
                         self._retry_count = 0
                         self._session_dirty = True
                         self._last_error = None
+                        self._claim_spent = False
                     logger.info("reSpeaker connected")
                     self._notify(self.on_connected, "on_connected")
                     return True
@@ -218,10 +233,61 @@ class UsbTransport:
             logger.debug("connection attempt failed: %s", exc)
             with self._state_lock:
                 self._last_error = str(exc)
+            if self._should_claim(exc):
+                return self._claim_and_retry()
 
         with self._state_lock:
             self._state = ConnectionState.DISCONNECTED
         return False
+
+    def _should_claim(self, exc: Exception) -> bool:
+        """Whether this failure is the kind another process could be causing.
+
+        A device that is simply absent is not contended, and running a process
+        hunt for it would be noise. The signature that matters is access being
+        denied to a device that *is* on the bus.
+        """
+        if not self.force_claim:
+            return False
+        with self._state_lock:
+            if self._claim_spent:
+                return False
+        text = str(exc).casefold()
+        return "access" in text or "errno 13" in text or "permission" in text
+
+    def _claim_and_retry(self) -> bool:
+        """Try to take the device from whatever is holding it, then reconnect.
+
+        Only reached when force-claiming was asked for explicitly. It runs at
+        most once between successful connections.
+        """
+        from . import contention
+
+        with self._state_lock:
+            self._claim_spent = True
+
+        logger.warning("the reSpeaker is held by another process; force claim was requested")
+        try:
+            report = contention.release_device(
+                contention.device_probe(), only_related=not self.claim_unrelated
+            )
+        except Exception as exc:
+            logger.warning("force claim failed: %s", exc)
+            with self._state_lock:
+                self._state = ConnectionState.DISCONNECTED
+            return False
+
+        self._last_claim = report
+        logger.warning("force claim: %s", report.summary())
+        if not report.reachable_after:
+            with self._state_lock:
+                self._state = ConnectionState.DISCONNECTED
+                self._last_error = report.note or report.summary()
+            return False
+        # The device answers now, so an ordinary connection attempt will work.
+        # Recursion is bounded: _claim_spent is set above, so the retry cannot
+        # come back here.
+        return self._try_connect()
 
     def _heartbeat(self) -> bool:
         """Prove the handle still works. A dead cable often reads fine until asked."""
