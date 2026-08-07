@@ -1,0 +1,11 @@
+presets:
+  dual_alternating_amber:
+    title: Dual Alternating — Amber
+    params:
+      color: "#FFB347"
+      secondary_color: "#4A1E00"
+  dual_alternating_teal:
+    title: Dual Alternating — Teal
+    params:
+      color: "#00D0C0"
+      secondary_color: "#00302C"

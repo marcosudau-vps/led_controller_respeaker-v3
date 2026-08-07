@@ -1,0 +1,10 @@
+presets:
+  notification_event_cyan:
+    title: Notification — Cyan
+    params: {color: "#00D0D0", duration_ms: 850, trail_length: 5}
+  notification_event_purple:
+    title: Notification — Purple
+    params: {color: "#8000FF", duration_ms: 850, trail_length: 5}
+  notification_event_white:
+    title: Notification — White
+    params: {color: "#FFFFFF", brightness: 0.70, duration_ms: 700, trail_length: 4}

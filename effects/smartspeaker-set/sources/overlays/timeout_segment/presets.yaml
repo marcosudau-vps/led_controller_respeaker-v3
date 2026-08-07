@@ -1,0 +1,7 @@
+presets:
+  timeout_segment_gentle_yellow_5s:
+    title: Timeout — 5 seconds
+    params: {color: "#FFC65C", duration_ms: 5000, segment_length: 6}
+  timeout_segment_gentle_cyan_10s:
+    title: Timeout — 10 seconds
+    params: {color: "#00D0D0", duration_ms: 10000, segment_length: 8}

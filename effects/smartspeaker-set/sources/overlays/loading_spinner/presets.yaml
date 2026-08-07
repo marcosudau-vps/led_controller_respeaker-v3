@@ -1,0 +1,7 @@
+presets:
+  loading_spinner_cyan:
+    title: Loading — Cyan
+    params: {color: "#00D0D0", secondary_color: "#001018", speed: 0.85, segment_length: 3}
+  loading_spinner_blue:
+    title: Loading — Blue
+    params: {color: "#3399FF", secondary_color: "#00101A", speed: 1.20, segment_length: 2}

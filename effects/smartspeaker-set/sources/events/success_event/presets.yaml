@@ -1,0 +1,7 @@
+presets:
+  success_event_green:
+    title: Success — Green
+    params: {color: "#00C066", duration_ms: 520}
+  success_event_soft:
+    title: Success — Soft
+    params: {color: "#00C066", brightness: 0.55, duration_ms: 700}

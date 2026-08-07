@@ -1,0 +1,7 @@
+presets:
+  speaking_rhythmic_cyan:
+    title: Speaking — Cyan
+    params: {color: "#00A0FF", brightness: 0.90, speed: 1.25, segment_length: 2}
+  speaking_rhythmic_blue:
+    title: Speaking — Blue
+    params: {color: "#3399FF", brightness: 0.85, speed: 1.00, segment_length: 3}

@@ -1,0 +1,11 @@
+presets:
+  palette_cycle_rainbow:
+    title: Palette Cycle — Rainbow
+    params:
+      colors: ["#FF0040", "#FF8000", "#FFE000", "#00C066", "#0080FF", "#8000FF"]
+      speed: 0.6
+  palette_cycle_cool:
+    title: Palette Cycle — Cool
+    params:
+      colors: ["#0040FF", "#0080FF", "#00C0FF", "#00D0C0"]
+      brightness: 0.55

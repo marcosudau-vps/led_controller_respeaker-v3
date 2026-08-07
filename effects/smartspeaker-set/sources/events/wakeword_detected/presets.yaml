@@ -1,0 +1,7 @@
+presets:
+  wakeword_detected_cyan:
+    title: Wake Word — Cyan
+    params: {color: "#00D0D0", duration_ms: 300}
+  wakeword_detected_blue:
+    title: Wake Word — Blue
+    params: {color: "#3399FF", duration_ms: 300}

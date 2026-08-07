@@ -1,0 +1,7 @@
+presets:
+  reconnect_network_state_standard_yellow:
+    title: Network Reconnect — Standard
+    params: {color: "#FFE000", secondary_color: "#4A3C00", brightness: 0.85}
+  reconnect_network_state_subtle_yellow:
+    title: Network Reconnect — Subtle
+    params: {color: "#C0A800", secondary_color: "#2A2200", brightness: 0.55}

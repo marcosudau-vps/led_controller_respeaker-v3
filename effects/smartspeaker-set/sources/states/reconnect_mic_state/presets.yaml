@@ -1,0 +1,7 @@
+presets:
+  reconnect_mic_state_standard_orange:
+    title: Microphone Reconnect — Standard
+    params: {color: "#FF8000", secondary_color: "#4A2400", brightness: 0.88}
+  reconnect_mic_state_subtle_orange:
+    title: Microphone Reconnect — Subtle
+    params: {color: "#C06000", secondary_color: "#2A1400", brightness: 0.55}

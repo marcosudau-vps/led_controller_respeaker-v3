@@ -1,0 +1,7 @@
+presets:
+  init_event_startup_blue:
+    title: Initialising — Blue
+    params: {color: "#3399FF", secondary_color: "#FFFFFF", duration_ms: 1400}
+  init_event_startup_cyan:
+    title: Initialising — Cyan
+    params: {color: "#00D0D0", secondary_color: "#FFFFFF", duration_ms: 1100}

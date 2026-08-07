@@ -1,0 +1,15 @@
+presets:
+  gradient_ring_dusk:
+    title: Gradient Ring — Dusk
+    params:
+      gradient:
+        - {at: 0.0, color: "#0040FF"}
+        - {at: 0.5, color: "#8000FF"}
+        - {at: 1.0, color: "#FF0080"}
+  gradient_ring_sunrise:
+    title: Gradient Ring — Sunrise
+    params:
+      gradient:
+        - {at: 0.0, color: "#FF0040"}
+        - {at: 0.5, color: "#FF8000"}
+        - {at: 1.0, color: "#FFE000"}

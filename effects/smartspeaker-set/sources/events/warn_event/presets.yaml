@@ -1,0 +1,7 @@
+presets:
+  warn_event_yellow:
+    title: Warning — Yellow
+    params: {color: "#FFE000", duration_ms: 1000, pulse_count: 2}
+  warn_event_soft:
+    title: Warning — Soft
+    params: {color: "#FFC65C", brightness: 0.55, duration_ms: 1200, pulse_count: 2}

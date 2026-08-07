@@ -1,0 +1,7 @@
+presets:
+  mic_mute_clear_red:
+    title: Muted — Clear
+    params: {color: "#FF0000", brightness: 0.90, segment_length: 1}
+  mic_mute_dim_red:
+    title: Muted — Dim
+    params: {color: "#FF0000", brightness: 0.40, segment_length: 1}

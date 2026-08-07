@@ -1,0 +1,7 @@
+presets:
+  ready_state_soft_green:
+    title: Ready — Soft Green
+    params: {color: "#00C066", brightness: 0.55, speed: 0.45, min_brightness: 0.16}
+  ready_state_calm_blue:
+    title: Ready — Calm Blue
+    params: {color: "#3399FF", brightness: 0.50, speed: 0.40, min_brightness: 0.14}

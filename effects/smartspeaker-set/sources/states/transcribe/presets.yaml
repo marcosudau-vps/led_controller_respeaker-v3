@@ -1,0 +1,7 @@
+presets:
+  transcribe_focused_blue:
+    title: Transcribing — Focused
+    params: {color: "#3399FF", brightness: 0.95, speed: 1.35, trail_length: 4, falloff: 0.62}
+  transcribe_fast_blue:
+    title: Transcribing — Fast
+    params: {color: "#3399FF", brightness: 0.95, speed: 2.20, trail_length: 3, falloff: 0.50}

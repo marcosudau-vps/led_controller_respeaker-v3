@@ -1,0 +1,12 @@
+presets:
+  pulse_signal_warning:
+    title: Pulse Signal — Warning
+    params:
+      color: "#FFB347"
+      pulse_count: 2
+  pulse_signal_alert:
+    title: Pulse Signal — Alert
+    params:
+      color: "#FF3B30"
+      duration_ms: 900
+      pulse_count: 3

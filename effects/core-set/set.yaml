@@ -1,0 +1,11 @@
+set_id: core-set
+source_id: core-set
+title: Core Set
+description: >-
+  Reference definitions covering every lifecycle form and every colour model.
+  Written to be read: each one shows how a contract is declared and how a frame
+  is produced, without any shortcut a real package could not take.
+version: 1
+tags:
+  - first-party
+  - reference

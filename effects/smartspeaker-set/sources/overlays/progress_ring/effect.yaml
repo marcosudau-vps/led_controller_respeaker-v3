@@ -1,0 +1,4 @@
+# The class in effect.py is the source of truth for the contract.
+source_id: smartspeaker-set
+entry_file: effect.py
+entry_class: ProgressRingOverlay

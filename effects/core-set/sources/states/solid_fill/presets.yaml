@@ -1,0 +1,12 @@
+presets:
+  solid_fill_calm_blue:
+    title: Solid Fill — Calm Blue
+    description: A restrained blue suitable as a background state.
+    params:
+      color: "#4A7BFF"
+      brightness: 0.45
+  solid_fill_warm_amber:
+    title: Solid Fill — Warm Amber
+    params:
+      color: "#FF9F1A"
+      brightness: 0.6

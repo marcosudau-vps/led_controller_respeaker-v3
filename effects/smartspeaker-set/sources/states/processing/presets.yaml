@@ -1,0 +1,7 @@
+presets:
+  processing_balanced_blue:
+    title: Processing — Balanced
+    params: {color: "#3399FF", brightness: 0.85, speed: 0.90, point_count: 3}
+  processing_fast_blue:
+    title: Processing — Fast
+    params: {color: "#3399FF", brightness: 0.90, speed: 1.60, point_count: 4}

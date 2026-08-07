@@ -1,0 +1,7 @@
+presets:
+  thinking_purple_sweep:
+    title: Thinking — Purple
+    params: {color: "#8000FF", brightness: 0.76, speed: 0.48, width: 5}
+  thinking_blue_sweep:
+    title: Thinking — Blue
+    params: {color: "#3399FF", brightness: 0.70, speed: 0.55, width: 6}

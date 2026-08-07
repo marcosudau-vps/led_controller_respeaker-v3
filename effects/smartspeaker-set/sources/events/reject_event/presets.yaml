@@ -1,0 +1,7 @@
+presets:
+  reject_event_red:
+    title: Rejected — Red
+    params: {color: "#FF0000", duration_ms: 460}
+  reject_event_soft:
+    title: Rejected — Soft
+    params: {color: "#FF4040", brightness: 0.60, duration_ms: 560}

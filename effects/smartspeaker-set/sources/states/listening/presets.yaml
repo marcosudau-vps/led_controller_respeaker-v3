@@ -1,0 +1,7 @@
+presets:
+  listening_calm_cyan:
+    title: Listening — Calm Cyan
+    params: {color: "#00D0D0", brightness: 0.68, speed: 0.65}
+  listening_calm_blue:
+    title: Listening — Calm Blue
+    params: {color: "#3399FF", brightness: 0.62, speed: 0.60}

@@ -1,0 +1,7 @@
+presets:
+  countdown_ring_traffic_light_10s:
+    title: Countdown — 10 seconds
+    params: {colors: ["#00C066", "#FFE000", "#FF0000"], duration_ms: 10000}
+  countdown_ring_traffic_light_30s:
+    title: Countdown — 30 seconds
+    params: {colors: ["#00C066", "#FFE000", "#FF0000"], duration_ms: 30000}

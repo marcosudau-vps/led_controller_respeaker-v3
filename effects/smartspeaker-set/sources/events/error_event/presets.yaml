@@ -1,0 +1,7 @@
+presets:
+  error_event_standard:
+    title: Error — Standard
+    params: {color: "#FF0000", duration_ms: 900, pulse_count: 3, repeat_count: 1}
+  error_event_critical:
+    title: Error — Critical
+    params: {color: "#FF0000", duration_ms: 1600, pulse_count: 3, repeat_count: 2}

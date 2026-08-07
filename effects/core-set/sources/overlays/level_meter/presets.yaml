@@ -1,0 +1,11 @@
+presets:
+  level_meter_transparent:
+    title: Level Meter — Over a State
+    description: The unfilled part stays transparent.
+    params:
+      background_color: null
+  level_meter_on_black:
+    title: Level Meter — On Black
+    description: The unfilled part is painted black and hides the layer below.
+    params:
+      background_color: "#000000"

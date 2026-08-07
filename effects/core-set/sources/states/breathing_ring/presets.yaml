@@ -1,0 +1,15 @@
+presets:
+  breathing_ring_soft_green:
+    title: Breathing Ring — Soft Green
+    params:
+      color: "#00C066"
+      brightness: 0.55
+      speed: 0.45
+      min_brightness: 0.16
+  breathing_ring_calm_cyan:
+    title: Breathing Ring — Calm Cyan
+    params:
+      color: "#00D0D0"
+      brightness: 0.68
+      speed: 0.65
+      min_brightness: 0.22

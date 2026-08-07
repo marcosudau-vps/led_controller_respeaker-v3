@@ -1,0 +1,11 @@
+presets:
+  fade_flash_white:
+    title: Fade Flash — White
+    params:
+      color: "#FFFFFF"
+      duration_ms: 900
+  fade_flash_quick_cyan:
+    title: Fade Flash — Quick Cyan
+    params:
+      color: "#00D0D0"
+      duration_ms: 400

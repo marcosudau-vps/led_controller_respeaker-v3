@@ -1,0 +1,14 @@
+presets:
+  rotating_segment_calm:
+    title: Rotating Segment — Calm
+    params:
+      color: "#4A7BFF"
+      brightness: 0.45
+      speed: 0.7
+      segment_length: 4
+  rotating_segment_over_state:
+    title: Rotating Segment — Over a State
+    description: Transparent background, so a lower layer stays visible.
+    params:
+      background_color: null
+      speed: 1.2

@@ -1,0 +1,10 @@
+presets:
+  direction_indicator_green:
+    title: Direction Indicator — Green
+    params:
+      color: "#00C066"
+  direction_indicator_white:
+    title: Direction Indicator — White
+    params:
+      color: "#FFFFFF"
+      brightness: 0.85
