@@ -70,17 +70,46 @@ es nicht im laufenden System.
 ### Entry-Point-Vertrag
 
 Die Deklarationen stehen bereits in beiden `pyproject.toml`. Die genannten
-Module **fehlen noch und sind zu erstellen**:
+Module **fehlen noch und sind zu erstellen**. Die Provider-Namen sind dabei
+**anzupassen** (siehe unten):
 
 | Gruppe | Name | Zielsymbol (anzulegen) |
 |---|---|---|
 | `lefx.frame_sinks` | `respeaker` | `respeaker_led.device.registration:create_frame_sink` |
-| `lefx.input_providers` | `respeaker_doa` | `respeaker_led.device.registration:create_doa_provider` |
+| `lefx.input_providers` | `respeaker.doa` | `respeaker_led.device.registration:create_doa_provider` |
 | `lefx.frame_sinks` | `simulator` | `respeaker_led.simulator.registration:create_frame_sink` |
-| `lefx.input_providers` | `simulator_doa` | `respeaker_led.simulator.registration:create_doa_provider` |
+| `lefx.input_providers` | `simulator.doa` | `respeaker_led.simulator.registration:create_doa_provider` |
 
 Bis diese Module existieren, meldet die Discovery beim Start eine Warnung und
 überspringt sie — das ist so getestet und beabsichtigt.
+
+#### Provider-Namen sind Fähigkeiten, keine Hersteller
+
+Ein Effekt braucht Richtungsdaten, nicht „Daten aus einem USB-Gerät". Deshalb:
+
+- Ein Entry Point heißt `<gerät>.<fähigkeit>`, also `respeaker.doa` und
+  `simulator.doa`. Damit kollidieren sie nicht, auch wenn beide Pakete
+  installiert sind.
+- Die Engine sieht nur die **Fähigkeit**. Eine Definition deklariert
+  `provider_id="doa"`.
+- Der Service aktiviert die Provider des gewählten Geräts und stellt sie der
+  Engine unter dem bloßen Fähigkeitsnamen bereit. `--sink simulator` wählt
+  also `simulator.doa` als `doa`.
+
+Damit läuft derselbe Effekt unverändert gegen Hardware und Simulator — das ist
+die praktische Bedeutung von „der Simulator ist ein vollwertiges Geräte-Double".
+
+**Daraus folgende Anpassungen in Phase 7:**
+
+1. `discovery.py` und `service.py`: Provider nach Gerät auswählen und unter dem
+   Fähigkeitsnamen registrieren (heute wird jeder gefundene Provider unter
+   seinem vollen Entry-Point-Namen durchgereicht).
+2. `effects/core-set/sources/overlays/direction_indicator/effect.py`:
+   `provider_id="respeaker_doa"` → `provider_id="doa"`, danach
+   `scripts/build_effects.py` erneut laufen lassen.
+3. Optional, falls je gebraucht: `--input-device NAME`, um Ein- und Ausgabe
+   getrennt zu wählen (Hardware-DoA bei Simulator-Anzeige). Nicht nötig für die
+   Abnahme.
 
 **Aufrufkonvention der Factories:** beide erhalten Keyword-Argumente; der
 Service übergibt derzeit `led_count`. Die Signaturen müssen daher
@@ -184,6 +213,11 @@ Nicht erneut zur Diskussion stellen:
 7. Der Import-Whitelist des Authoring-Builds gilt **nur für Effektquellen**.
    Device und Simulator sind normale Distributionen und dürfen `usb`, `socket`,
    `PySide6` usw. verwenden.
+8. **Der Simulator ist ein vollwertiger Geräteersatz, kein Vorschaumodus.**
+   Er erfüllt dieselben Ports, liefert DoA-Werte im selben Format und
+   Wertebereich wie die Hardware und besteht dieselbe Konformitätssuite. Kein
+   Effekt und kein Aufrufer darf unterscheiden müssen, welches von beidem
+   angeschlossen ist.
 
 ---
 
@@ -226,7 +260,11 @@ Vollständiges Geräte-Double: Anzeige **und** simulierte Eingaben.
   verbunden ist. Ohne Fenster: `available=False` mit Detail — der Dienst läuft
   weiter.
 - `SimulatorDoaProvider` liest Richtung und VAD zurück, die im Fenster per
-  Regler gesetzt werden.
+  Regler gesetzt werden. **Format und Wertebereich sind identisch zur
+  Hardware**: `direction_deg` als Float in `[0, 360)`, `detection_state` aus
+  `("none", "sound", "speech")`. Ohne verbundenes Fenster liefert `sample`
+  `None` — dieselbe Bedeutung wie ein nicht erreichbares Gerät, worauf die
+  Engine mit `waiting` und nach der Karenzzeit mit `failed` reagiert.
 - Qt-Anwendung: Ringanzeige parametrisiert auf `led_count`, Konsolenskript
   `respeaker-led-simulator` (Eintrag existiert bereits in der `pyproject.toml`).
 
@@ -235,13 +273,64 @@ Vollständiges Geräte-Double: Anzeige **und** simulierte Eingaben.
 | | Hardware | Simulator |
 |---|---|---|
 | Ports | identisch | identisch |
+| DoA-Format und -Wertebereich | identisch | identisch |
+| Fähigkeitsname für die Engine | `doa` | `doa` |
+| Konformitätssuite | dieselbe | dieselbe |
 | Transport | USB, Reconnect-Thread, Heartbeat | TCP-Loopback, Verbindung optional |
 | Ausgabe | Change-Detection sinnvoll (USB-Writes teuer) | jeder Frame kann gesendet werden |
 | Eingabe | `refresh` pollt echte Hardware, max. 30 Hz | `refresh` liest den letzten Reglerwert |
 | Nicht verfügbar | Kabel ab → `available=False` | Fenster zu → `available=False` |
 | Schwere Abhängigkeit | `pyusb`, `libusb-package` | `PySide6` **nur im `gui`-Extra** |
 
-### Abnahme
+Die ersten vier Zeilen sind der Punkt: alles, was oberhalb der Ports liegt,
+darf keinen Unterschied sehen. Die restlichen Zeilen sind Innenleben.
+
+### Teststrategie: eine Suite, zwei Geräte
+
+Weil Hardware und Simulator denselben Vertrag erfüllen, gehört **dieselbe
+Konformitätssuite gegen beide** ausgeführt. Sie ist die ausführbare Form des
+Port-Vertrags und der gemeinsame Nenner der beiden Pakete.
+
+`tests/device/test_device_contract.py`, parametrisiert über die verfügbaren
+Geräte:
+
+- Simulator: läuft immer, auch im CI.
+- Hardware: läuft, wenn ein Gerät angeschlossen ist, sonst `skip`.
+
+Prüft am Vertrag, nicht an der Implementierung:
+
+- `apply_frame` nimmt einen `OutputFrame` mit `led_count` Einträgen an und wirft
+  nicht, auch nicht bei nicht verfügbarem Gerät.
+- `status()` liefert `SinkStatus`; `available=False` trägt ein `detail`.
+- `sample(ctx)` liefert entweder `None` oder ein Mapping, dessen Werte gegen
+  `direction_indicator.runtime_input_schema` validieren — insbesondere
+  `direction_deg` in `[0, 360)` und `detection_state` aus den deklarierten
+  Enum-Werten.
+- `refresh(now)` respektiert die eigene Taktgrenze.
+- `close()` ist idempotent.
+- Ein voller Durchlauf über `ControllerService`: State setzen, Overlay auf einem
+  Channel, Event, Frame kommt an der Senke an.
+
+Daneben, ergänzend statt ersetzend:
+
+| Ebene | Womit | Wann |
+|---|---|---|
+| Konformität | echte Senke/Provider beider Geräte | immer (Simulator), bei Gerät auch Hardware |
+| Logik | Transport-Doppel: Change-Detection, Payload-Validierung, Reaktion auf Verbindungsabbruch | immer |
+| Gerätespezifisch | echtes USB | `@pytest.mark.hardware`, ohne Gerät `skip` |
+
+Die dritte Ebene ist die, die kein Doppel ersetzen kann: nimmt der reSpeaker
+`LED_RING_COLOR` wirklich an, kommt `DOA_VALUE` im erwarteten Format zurück,
+meldet sich ein gezogenes Kabel als `available=False`. Diese Tests sind zu
+schreiben — sie laufen nur nicht im CI.
+
+Empfohlene Marker in `pyproject.toml` ergänzen:
+
+```toml
+markers = ["hardware: needs a connected reSpeaker; skipped without one"]
+```
+
+### Manuelle Abnahme
 
 ```bash
 uv run lefx serve --sink simulator
@@ -267,17 +356,6 @@ Nach dem Geräteblock, ohne weitere Vorplanung:
 
 ## 7. Offene Hinweise
 
-**Entscheidung nötig — Provider-Namen des Simulators.**
-`core-set/direction_indicator` deklariert
-`InputSamplingPolicy(mode=PULL, provider_id="respeaker_doa")`. Der Simulator
-registriert unter `simulator_doa`. Damit bekäme der DoA-Effekt im
-Simulatorbetrieb **keine Daten** — der Effekt bliebe dauerhaft `waiting`.
-Beide Entry Points auf denselben Namen zu legen kollidiert, sobald beide Pakete
-installiert sind. Empfehlung: eine explizite Alias-Option am Service bzw. der
-CLI, etwa `--provider-alias respeaker_doa=simulator_doa`, und den
-Simulatorbetrieb entsprechend dokumentieren. Das ist in Phase 7 zu entscheiden
-und umzusetzen.
-
 **Sink-Optionen.** `create_sink` reicht `led_count` und beliebige weitere
 Optionen durch, aber die CLI hat derzeit **keinen Schalter für sink-spezifische
 Optionen** (z. B. Simulator-Port). Falls der Simulator konfigurierbar sein soll,
@@ -290,11 +368,6 @@ tolerieren.
 **Testumgebung.** Der System-Temp ist auf dieser Maschine nicht zuverlässig
 erreichbar; `pyproject.toml` setzt deshalb
 `addopts = "--basetemp=tests/.cache/tmp"`. Beibehalten.
-
-**Hardwaretests.** Alles ohne angeschlossenen reSpeaker muss ohne Gerät laufen —
-USB-Tests gegen ein Transport-Doppel schreiben, nicht gegen echte Hardware.
-Der Simulator ist ab Phase 7 das Mittel, um Phase 4 und 5 ohne Gerät
-vorzuführen.
 
 **Gebaute Artefakte** (`build/effects/*.lefxset`) sind reproduzierbare Ausgabe
 und per `.gitignore` ausgeschlossen. Vor einem Servicestart einmal
