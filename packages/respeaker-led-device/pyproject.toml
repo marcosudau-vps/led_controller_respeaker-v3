@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "respeaker-led-device"
+version = "3.0.0"
+description = "reSpeaker XVF3800 hardware integration: USB transport, LED frame sink and DoA input provider"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12,<3.13"
+keywords = ["respeaker", "xvf3800", "usb", "led", "doa"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Hardware :: Hardware Drivers",
+]
+
+# Depends on the SDK ports only. The engine is never imported here: the engine
+# consumes this package through entry points, not the other way round.
+dependencies = [
+    "lefx-sdk==3.0.0",
+    "libusb-package>=1.0.26.3,<1.1",
+    "pyusb>=1.3.1,<2",
+]
+
+# Output and input are registered separately so that a failing DoA read cannot
+# take the LED output with it, and vice versa.
+[project.entry-points."lefx.frame_sinks"]
+respeaker = "respeaker_led.device.registration:create_frame_sink"
+
+[project.entry-points."lefx.input_providers"]
+respeaker_doa = "respeaker_led.device.registration:create_doa_provider"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/respeaker_led"]

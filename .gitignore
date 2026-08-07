@@ -1,0 +1,30 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+tests/.cache/
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+artifacts/
+logs/
+runtime_state/
+
+# Gebaute Effektpakete sind reproduzierbare Ausgaben, keine Quellen.
+effects/**/build/
+*.lefx
+*.lefxset
+
+# Credentials and IDE state must never reach a public repository.
+deploy_key*
+*.pem
+id_ed25519*
+id_rsa*
+*.env
+.idea/
+.vscode/

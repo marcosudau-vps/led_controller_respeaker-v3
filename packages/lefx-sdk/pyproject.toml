@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lefx-sdk"
+version = "3.0.0"
+description = "LEFX V3 authoring contract: definition schema, value normalization and engine ports"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12,<3.13"
+keywords = ["lefx", "led", "effects", "sdk"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+
+# Deliberately empty. The SDK is what effect authors import and what every
+# other package depends on; a dependency here would propagate everywhere.
+dependencies = []
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lefx"]

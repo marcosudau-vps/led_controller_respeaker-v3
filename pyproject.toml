@@ -1,0 +1,43 @@
+[project]
+name = "respeaker-led-v3-workspace"
+version = "3.0.0"
+description = "Workspace root for the LEFX V3 effect system and the reSpeaker LED controller"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "lefx-sdk",
+    "lefx-engine",
+    "lefx-authoring",
+    "lefx-interfaces",
+    "respeaker-led-device",
+    "respeaker-led-simulator",
+]
+
+# The root is a workspace container, not a distributable. Nothing here is ever
+# published; every shippable artifact lives under packages/.
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+# Workspace members resolve to each other from the checkout rather than from an
+# index. This is what makes the dependency direction in the architecture test
+# and the direction declared in each package's pyproject the same thing.
+[tool.uv.sources]
+lefx-sdk = { workspace = true }
+lefx-engine = { workspace = true }
+lefx-authoring = { workspace = true }
+lefx-interfaces = { workspace = true }
+respeaker-led-device = { workspace = true }
+respeaker-led-simulator = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1,<0.29",
+    "pytest>=8.4.0,<9",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+cache_dir = "tests/.cache/pytest_cache"

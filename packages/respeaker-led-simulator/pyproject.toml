@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "respeaker-led-simulator"
+version = "3.0.0"
+description = "Software device double for the LED ring: frame sink, simulated DoA input and a visual ring window"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12,<3.13"
+keywords = ["respeaker", "led", "simulator", "preview"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+
+# The service-side half — sink, provider and transport client — carries no GUI
+# dependency. Only the person who opens the ring window needs Qt, so PySide6 is
+# an extra rather than a hard requirement.
+dependencies = [
+    "lefx-sdk==3.0.0",
+]
+
+[project.optional-dependencies]
+gui = [
+    "PySide6>=6.0.0",
+]
+
+[project.scripts]
+respeaker-led-simulator = "respeaker_led.simulator.app:main"
+
+[project.entry-points."lefx.frame_sinks"]
+simulator = "respeaker_led.simulator.registration:create_frame_sink"
+
+[project.entry-points."lefx.input_providers"]
+simulator_doa = "respeaker_led.simulator.registration:create_doa_provider"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/respeaker_led"]

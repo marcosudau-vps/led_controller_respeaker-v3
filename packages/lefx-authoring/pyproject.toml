@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lefx-authoring"
+version = "3.0.0"
+description = "LEFX V3 authoring tools: scaffolding, source validation and package building"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12,<3.13"
+keywords = ["lefx", "led", "effects", "build", "packaging"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+
+# Developer tooling, not part of a runtime installation. It needs the loader to
+# verify what it just built, hence the engine dependency.
+dependencies = [
+    "lefx-sdk==3.0.0",
+    "lefx-engine==3.0.0",
+    "PyYAML>=6.0.2,<7",
+]
+
+[project.scripts]
+lefx-pack = "lefx.authoring.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lefx"]
