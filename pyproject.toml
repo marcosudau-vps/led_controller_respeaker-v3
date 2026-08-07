@@ -37,6 +37,15 @@ dev = [
     "pytest>=8.4.0,<9",
 ]
 
+# Only for scripts/build_simulator.py, and deliberately not in dev: PyInstaller
+# and Qt together are a large download that everyone would otherwise pay for on
+# every sync, to build something most syncs never build.
+#     uv sync --group build
+build = [
+    "pyinstaller>=6.0,<7",
+    "PySide6>=6.0.0",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]

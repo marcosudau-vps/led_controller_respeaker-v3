@@ -18,6 +18,32 @@ uv pip install "respeaker-led-simulator[gui]"
 respeaker-led-simulator
 ```
 
+Ohne installiertes Konsolenskript geht es als Modul. `app.py` direkt als Datei
+zu starten geht **nicht** — die Datei erreicht ihre Nachbarmodule über relative
+Importe, und eine über den Pfad gestartete Datei hat kein Paket, relativ zu dem
+das ginge:
+
+```bash
+uv run python -m respeaker_led.simulator
+```
+
+## Als Exe
+
+Für eine Maschine ohne Python-Checkout, oder um das Fenster offen zu lassen,
+während am Checkout gearbeitet wird:
+
+```bash
+uv sync --group build
+```
+
+```bash
+uv run --group build python scripts/build_simulator.py
+```
+
+Ergebnis ist `build/dist/respeaker-led-simulator.exe` (~47 MB, eine Datei).
+`--onedir` startet schneller, `--windowed` verbirgt die Konsole — dann sieht man
+allerdings auch nicht mehr, wenn der Dienst nicht erreichbar ist.
+
 Damit lassen sich auch kontrollierte Overlays wie `direction_indicator` ohne
 angeschlossenen reSpeaker entwickeln und prüfen — der Effekt fragt nach der
 Fähigkeit `doa` und bekommt sie hier ebenso wie von der Hardware.
