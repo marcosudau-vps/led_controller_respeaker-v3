@@ -32,11 +32,14 @@ gui = [
 [project.scripts]
 respeaker-led-simulator = "respeaker_led.simulator.app:main"
 
+# A provider is named "<device>.<capability>". Registering the capability alone
+# would collide with the hardware's the moment both packages are installed;
+# naming the device keeps them apart while an effect still asks only for "doa".
 [project.entry-points."lefx.frame_sinks"]
 simulator = "respeaker_led.simulator.registration:create_frame_sink"
 
 [project.entry-points."lefx.input_providers"]
-simulator_doa = "respeaker_led.simulator.registration:create_doa_provider"
+"simulator.doa" = "respeaker_led.simulator.registration:create_doa_provider"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/respeaker_led"]

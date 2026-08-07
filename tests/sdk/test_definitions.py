@@ -334,7 +334,7 @@ def test_pull_sampling_requires_runtime_inputs():
 
 def test_provider_id_requires_pull_mode_and_content():
     with pytest.raises(SchemaError, match="only allowed with pull sampling"):
-        InputSamplingPolicy(mode=InputMode.PUSH, provider_id="respeaker_doa")
+        InputSamplingPolicy(mode=InputMode.PUSH, provider_id="doa")
     with pytest.raises(SchemaError, match="must not be empty"):
         InputSamplingPolicy(mode=InputMode.PULL, provider_id="  ")
 

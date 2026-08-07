@@ -82,7 +82,9 @@ def test_entry_points_are_declared_by_the_packages_that_provide_them():
     sinks = {entry.name for entry in entry_points(group="lefx.frame_sinks")}
     providers = {entry.name for entry in entry_points(group="lefx.input_providers")}
     assert {"respeaker", "simulator"} <= sinks
-    assert {"respeaker_doa", "simulator_doa"} <= providers
+    # "<device>.<capability>": distinct while both packages are installed, which
+    # is the situation this assertion is checking they survive.
+    assert {"respeaker.doa", "simulator.doa"} <= providers
 
 
 def test_an_entry_point_that_cannot_load_is_skipped_not_fatal(caplog):
@@ -103,6 +105,53 @@ def test_the_null_sink_keeps_the_frame_it_discarded():
     sink.apply_frame(OutputFrame(leds=(1, 2, 3), timestamp=0.0))
     assert sink.last_frame is not None
     assert sink.status().available is True
+
+
+# -- devices and capabilities -----------------------------------------------
+
+
+def test_a_provider_name_splits_into_a_device_and_a_capability():
+    from lefx.interfaces import split_provider_name
+
+    assert split_provider_name("respeaker.doa") == ("respeaker", "doa")
+    assert split_provider_name("simulator.doa") == ("simulator", "doa")
+    # No device means no device to select it with — it is simply always there.
+    assert split_provider_name("clock") == (None, "clock")
+
+
+def test_choosing_the_device_chooses_its_providers_and_names_them_by_capability():
+    """The reason ``provider_id="doa"`` resolves against either device.
+
+    A definition names what it needs, not who supplies it. Selecting the sink
+    selects the device, and its providers reach the engine under the bare
+    capability — so the same effect runs against hardware and simulator with
+    nothing in it to change.
+    """
+    from lefx.interfaces import create_providers
+    from respeaker_led.device.registration import reset_shared_transport
+    from respeaker_led.simulator.registration import reset_shared_link
+
+    # Both factories are really called, so this covers the keyword tolerance the
+    # contract asks of them as well as the naming. Port 0 keeps the simulator
+    # off a fixed port, and the resets stop the threads the factories started.
+    try:
+        for device in ("respeaker", "simulator"):
+            providers = create_providers(device=device, led_count=12, port=0)
+            assert set(providers) == {"doa"}
+            assert providers["doa"].name == f"{device}.doa"
+            assert providers["doa"].capability == "doa"
+            for provider in providers.values():
+                provider.close()
+    finally:
+        reset_shared_transport()
+        reset_shared_link()
+
+
+def test_another_devices_providers_are_not_built_at_all():
+    """Building them would open a second device's connection for nothing."""
+    from lefx.interfaces import create_providers
+
+    assert create_providers(device="null", led_count=12) == {}
 
 
 # -- the service ------------------------------------------------------------

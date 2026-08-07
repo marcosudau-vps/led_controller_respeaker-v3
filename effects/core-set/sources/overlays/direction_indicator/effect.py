@@ -18,10 +18,14 @@ class DirectionIndicator(BaseEffect):
     """Marks the direction a sound came from, one LED at a time.
 
     This package contains no USB code, no device handling and no reconnect
-    logic. It declares that it pulls from the provider ``respeaker_doa`` and
-    reads two validated values; the controller owns the device, the polling rate
-    and the cache. Ten of these running at once would still produce one hardware
-    read per interval.
+    logic. It declares that it pulls the capability ``doa`` and reads two
+    validated values; the controller owns the device, the polling rate and the
+    cache. Ten of these running at once would still produce one hardware read
+    per interval.
+
+    ``doa`` names what is needed — direction data — not who supplies it. The
+    reSpeaker and the simulator both offer it, so this definition runs unchanged
+    against either, and against whatever else offers it later.
 
     The whole effect is transparent: every position it does not mark stays
     ``None``, so the state underneath shows through untouched.
@@ -68,7 +72,7 @@ class DirectionIndicator(BaseEffect):
         directional=True,
         sampling=InputSamplingPolicy(
             mode=InputMode.PULL,
-            provider_id="respeaker_doa",
+            provider_id="doa",
             interval_ms=0,
         ),
         tags=("core", "overlay", "controlled", "doa"),

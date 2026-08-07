@@ -8,6 +8,17 @@ running system, with no code path to forget.
 
 An entry point resolves to a factory. Failing to load one is reported and
 skipped: a broken optional integration must not stop the service from starting.
+
+Input providers are named ``<device>.<capability>`` — ``respeaker.doa``,
+``simulator.doa``. The two halves do different jobs. The device half keeps the
+names distinct while both packages are installed, which they routinely are; the
+capability half is the only part a definition ever writes down. Choosing the
+device chooses which providers run, and they are handed to the engine under the
+bare capability, so the same ``provider_id="doa"`` resolves to the hardware or
+to the simulator with nothing in the definition to change.
+
+A provider registered without a device prefix belongs to no device and is always
+available — a clock or a system sensor has no cable to be unplugged.
 """
 
 from __future__ import annotations
@@ -23,6 +34,22 @@ logger = logging.getLogger("lefx.interfaces.discovery")
 
 SINK_GROUP = "lefx.frame_sinks"
 PROVIDER_GROUP = "lefx.input_providers"
+
+CAPABILITY_SEPARATOR = "."
+"""Splits ``<device>.<capability>`` in an input provider's entry point name."""
+
+
+def split_provider_name(name: str) -> tuple[str | None, str]:
+    """Separate the device from the capability it provides.
+
+    ``"respeaker.doa"`` becomes ``("respeaker", "doa")``; a bare ``"clock"``
+    becomes ``(None, "clock")`` — no device, so no device to select it with.
+    Only the first separator counts, so a capability may contain one.
+    """
+    device, separator, capability = name.partition(CAPABILITY_SEPARATOR)
+    if not separator or not device or not capability:
+        return None, name
+    return device, capability
 
 
 class NullSink:
@@ -101,12 +128,35 @@ def create_sink(name: str, **options: Any) -> FrameSink:
     return found[name].create(**options)
 
 
-def create_providers(**options: Any) -> dict[str, Any]:
-    """Build every installed input provider, skipping the ones that fail."""
+def create_providers(*, device: str | None = None, **options: Any) -> dict[str, Any]:
+    """Build the selected device's input providers, keyed by capability.
+
+    Providers belonging to another device are not built at all — building them
+    would open a second device's connection for no reason. Providers with no
+    device are always built.
+
+    ``options`` reaches every factory unchanged, which is why factories are
+    required to tolerate keywords they do not recognise.
+    """
     built: dict[str, Any] = {}
-    for name, discovered in available_providers().items():
+    claimed: dict[str, str] = {}
+    for name, discovered in sorted(available_providers().items()):
+        owner, capability = split_provider_name(name)
+        if owner is not None and owner != device:
+            continue
+        if capability in claimed:
+            # Two providers offering one capability would otherwise resolve by
+            # whichever the metadata happened to list first. Say who won.
+            logger.warning(
+                "input provider %r offers %r, which %r already provides; skipping it",
+                name,
+                capability,
+                claimed[capability],
+            )
+            continue
         try:
-            built[name] = discovered.create(**options)
+            built[capability] = discovered.create(**options)
+            claimed[capability] = name
         except Exception as exc:
             # A provider that cannot start is a missing data source, not a
             # reason for the service to refuse to run.
@@ -130,13 +180,19 @@ def describe() -> dict[str, Any]:
             ),
         ],
         "input_providers": [
-            {"name": item.name, "distribution": item.distribution}
+            {
+                "name": item.name,
+                "device": split_provider_name(item.name)[0],
+                "capability": split_provider_name(item.name)[1],
+                "distribution": item.distribution,
+            }
             for item in sorted(available_providers().values(), key=lambda item: item.name)
         ],
     }
 
 
 __all__ = [
+    "CAPABILITY_SEPARATOR",
     "Discovered",
     "NullSink",
     "PROVIDER_GROUP",
@@ -147,4 +203,5 @@ __all__ = [
     "create_sink",
     "describe",
     "provider_callables",
+    "split_provider_name",
 ]

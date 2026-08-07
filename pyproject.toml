@@ -45,3 +45,8 @@ cache_dir = "tests/.cache/pytest_cache"
 # reliably reachable on every machine this runs on, and a test run should not
 # depend on that.
 addopts = "--basetemp=tests/.cache/tmp"
+# Some things only a real device can answer: whether the firmware accepts
+# LED_RING_COLOR, whether DOA_VALUE comes back in the declared shape, whether a
+# pulled cable surfaces as available=False. Those tests exist and are skipped
+# where there is nothing to ask.
+markers = ["hardware: needs a connected reSpeaker; skipped without one"]

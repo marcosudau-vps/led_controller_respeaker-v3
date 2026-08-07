@@ -9,7 +9,15 @@ from __future__ import annotations
 
 from .api import API_PREFIX, create_app
 from .client import ControllerClient, Result
-from .discovery import NullSink, available_providers, available_sinks, create_sink, describe
+from .discovery import (
+    NullSink,
+    available_providers,
+    available_sinks,
+    create_providers,
+    create_sink,
+    describe,
+    split_provider_name,
+)
 from .service import ControllerService, StatusListener
 
 INTERFACES_VERSION = "3.0.0"
@@ -25,6 +33,8 @@ __all__ = [
     "available_providers",
     "available_sinks",
     "create_app",
+    "create_providers",
     "create_sink",
     "describe",
+    "split_provider_name",
 ]

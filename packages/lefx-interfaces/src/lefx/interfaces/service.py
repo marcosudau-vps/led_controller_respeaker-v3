@@ -48,6 +48,7 @@ class ControllerService:
         search_paths: list[str | Path] | None = None,
         state_file: str | Path | None = None,
         sink_options: Mapping[str, Any] | None = None,
+        input_device: str | None = None,
         autostart_providers: bool = True,
     ) -> None:
         self.config = EngineConfig(led_count=led_count, fps=fps)
@@ -56,8 +57,15 @@ class ControllerService:
         )
 
         self.sink_name, self.sink = self._build_sink(sink, dict(sink_options or {}))
+
+        # Choosing the output device chooses the input device with it: a
+        # reSpeaker's microphones come with its ring. Naming one separately is
+        # for the unusual case — hardware direction on a simulated display.
+        self.input_device = self.sink_name if input_device is None else input_device
         self.providers: dict[str, Any] = (
-            discovery.create_providers(led_count=led_count) if autostart_providers else {}
+            discovery.create_providers(device=self.input_device, led_count=led_count)
+            if autostart_providers
+            else {}
         )
 
         self.runtime = EffectRuntime(
@@ -116,9 +124,27 @@ class ControllerService:
             self._thread = None
         with self._lock:
             self.runtime.close()
+        self._close_providers()
         self.library.close()
         self._started_at = None
         logger.info("service stopped")
+
+    def _close_providers(self) -> None:
+        """Let providers release what they hold. Not every provider has anything.
+
+        Closing is optional on the port for the same reason ``refresh`` is: a
+        provider computing a value from the clock has nothing to release, and
+        requiring the method would be ceremony. One that owns a socket or a
+        thread does, and leaving it running would outlive the service.
+        """
+        for name, provider in self.providers.items():
+            close = getattr(provider, "close", None)
+            if close is None:
+                continue
+            try:
+                close()
+            except Exception:
+                logger.exception("input provider %r failed to close", name)
 
     def __enter__(self) -> "ControllerService":
         self.start()
@@ -379,6 +405,7 @@ class ControllerService:
                     "render_count": self._render_count,
                     "last_error": self._last_error,
                     "sink": self.sink_name,
+                    "input_device": self.input_device,
                 },
                 "effects": {
                     "definitions": len(self.library.registry),

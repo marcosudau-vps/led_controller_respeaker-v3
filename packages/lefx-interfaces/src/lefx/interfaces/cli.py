@@ -42,6 +42,18 @@ def parse_json_object(value: str | None, *, label: str) -> dict[str, Any]:
     return parsed
 
 
+def parse_option(value: str) -> tuple[str, str]:
+    """Parse one ``key=value`` pair for ``--sink-option``.
+
+    Values stay strings. What type a given sink wants for a given option is
+    known to that sink and to nothing here, so converting would mean guessing.
+    """
+    key, separator, raw = value.partition("=")
+    if not separator or not key.strip():
+        raise argparse.ArgumentTypeError(f"--sink-option wants key=value, got {value!r}")
+    return key.strip(), raw
+
+
 def parse_bool(value: str) -> bool:
     text = str(value).strip().casefold()
     if text in {"1", "true", "yes", "on", "ja", "an"}:
@@ -68,6 +80,20 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--port", type=int, default=8765)
     serve.add_argument("--port-pool", default="", help="Fallback ports, e.g. 8765,8770-8774")
     serve.add_argument("--sink", default="null", help="Frame sink to use, or 'null'")
+    serve.add_argument(
+        "--sink-option",
+        type=parse_option,
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        dest="sink_options",
+        help="Sink-specific option, repeatable (e.g. port=8770 for the simulator)",
+    )
+    serve.add_argument(
+        "--input-device",
+        default=None,
+        help="Take inputs from this device instead of the one providing the sink",
+    )
     serve.add_argument("--led-count", type=int, default=12)
     serve.add_argument("--fps", type=float, default=30.0)
 
@@ -164,7 +190,13 @@ def run_serve(args: argparse.Namespace) -> int:
     instance_path = paths.instance_file()
     hosting.write_instance(instance_path, instance)
 
-    service = ControllerService(sink=args.sink, led_count=args.led_count, fps=args.fps)
+    service = ControllerService(
+        sink=args.sink,
+        led_count=args.led_count,
+        fps=args.fps,
+        sink_options=dict(args.sink_options),
+        input_device=args.input_device,
+    )
     app = create_app(
         service,
         lifecycle_callback=lambda phase: hosting.update_instance_status(
@@ -179,6 +211,7 @@ def run_serve(args: argparse.Namespace) -> int:
                 "host": args.host,
                 "port": port,
                 "sink": service.sink_name,
+                "input_device": service.input_device,
                 "effects": len(service.library.registry),
             }
         ),
