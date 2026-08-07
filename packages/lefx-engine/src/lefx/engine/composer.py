@@ -15,6 +15,7 @@ from typing import Any, Callable, Mapping
 from lefx.sdk import (
     BaseEffect,
     CompositionMode,
+    DefinitionBase,
     InputContext,
     InputMode,
     RenderContext,
@@ -41,6 +42,44 @@ class LayerFrame:
     layer: LayerId
     invocation_id: str
     pixels: list[int | None]
+
+
+def check_frame(pixels: Any, definition: DefinitionBase, led_count: int) -> None:
+    """Hold a definition to the contract it declared.
+
+    The opacity check matters as much as the length one: a definition that calls
+    itself opaque and then returns ``None`` claims to cover the layer below while
+    actually leaving it visible.
+
+    The build runs this too, so a package that breaks the contract is caught
+    before it is ever shipped rather than on the frame that happens to hit it.
+    """
+    if not isinstance(pixels, (list, tuple)):
+        raise RenderError(f"{definition.id!r} returned {type(pixels).__name__}, expected a list")
+    if len(pixels) != led_count:
+        raise RenderError(
+            f"{definition.id!r} returned {len(pixels)} positions, expected {led_count}"
+        )
+    opaque = definition.composition is CompositionMode.OPAQUE
+    for index, value in enumerate(pixels):
+        if value is None:
+            if opaque:
+                raise RenderError(
+                    f"{definition.id!r} is declared opaque but returned None at "
+                    f"position {index}; use black to switch an LED off, or declare "
+                    "the definition transparent to let the layer below show through"
+                )
+            continue
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise RenderError(
+                f"{definition.id!r} returned {value!r} at position {index}; "
+                "expected an RGB integer or None"
+            )
+        if not 0 <= value <= MAX_COLOR:
+            raise RenderError(
+                f"{definition.id!r} returned {value:#x} at position {index}, "
+                "outside 0x000000..0xFFFFFF"
+            )
 
 
 class SceneComposer:
@@ -102,45 +141,8 @@ class SceneComposer:
             inputs=effective_inputs(definition, invocation, now),
         )
         pixels = instance.render(context)
-        self._check_frame(pixels, invocation, led_count)
+        check_frame(pixels, definition, led_count)
         return list(pixels)
-
-    def _check_frame(
-        self, pixels: Any, invocation: Invocation, led_count: int
-    ) -> None:
-        """Hold a definition to the contract it declared.
-
-        The opacity check matters as much as the length one: a definition that
-        calls itself opaque and then returns ``None`` is claiming to cover the
-        layer below while leaving it visible.
-        """
-        definition = invocation.definition
-        if not isinstance(pixels, (list, tuple)):
-            raise RenderError(f"{definition.id!r} returned {type(pixels).__name__}, expected a list")
-        if len(pixels) != led_count:
-            raise RenderError(
-                f"{definition.id!r} returned {len(pixels)} positions, expected {led_count}"
-            )
-        opaque = definition.composition is CompositionMode.OPAQUE
-        for index, value in enumerate(pixels):
-            if value is None:
-                if opaque:
-                    raise RenderError(
-                        f"{definition.id!r} is declared opaque but returned None at "
-                        f"position {index}; use black to switch an LED off, or declare "
-                        "the definition transparent to let the layer below show through"
-                    )
-                continue
-            if isinstance(value, bool) or not isinstance(value, int):
-                raise RenderError(
-                    f"{definition.id!r} returned {value!r} at position {index}; "
-                    "expected an RGB integer or None"
-                )
-            if not 0 <= value <= MAX_COLOR:
-                raise RenderError(
-                    f"{definition.id!r} returned {value:#x} at position {index}, "
-                    "outside 0x000000..0xFFFFFF"
-                )
 
     def _sample_inputs(
         self, instance: BaseEffect, invocation: Invocation, now: float, led_count: int
@@ -193,4 +195,4 @@ class SceneComposer:
         invocation.input_error = None
 
 
-__all__ = ["LayerFrame", "SceneComposer"]
+__all__ = ["LayerFrame", "SceneComposer", "check_frame"]

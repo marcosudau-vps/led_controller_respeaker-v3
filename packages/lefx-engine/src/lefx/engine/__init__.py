@@ -12,7 +12,7 @@ hardware, a simulator or nothing at all.
 
 from __future__ import annotations
 
-from .composer import LayerFrame, SceneComposer
+from .composer import LayerFrame, SceneComposer, check_frame
 from .config import EngineConfig
 from .errors import (
     AmbiguousTargetError,
@@ -88,6 +88,7 @@ __all__ = [
     "WrongTargetTypeError",
     "build_package_manifest",
     "build_registry",
+    "check_frame",
     "discover_packages",
     "duration_from_config",
     "effective_inputs",
