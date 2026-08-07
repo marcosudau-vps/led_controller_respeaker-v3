@@ -41,3 +41,7 @@ dev = [
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 cache_dir = "tests/.cache/pytest_cache"
+# Keep scratch files inside the checkout. The system temp directory is not
+# reliably reachable on every machine this runs on, and a test run should not
+# depend on that.
+addopts = "--basetemp=tests/.cache/tmp"
