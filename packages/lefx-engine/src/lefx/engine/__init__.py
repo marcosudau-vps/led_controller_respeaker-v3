@@ -33,7 +33,14 @@ from .inputs import (
     input_status,
 )
 from .invocation import Invocation, duration_from_config
-from .layers import COMPOSITION_ORDER, LAYER_PRIORITIES, LayerId, layer_for, parse_state_slot
+from .layers import (
+    COMPOSITION_ORDER,
+    LAYER_PRIORITIES,
+    LayerId,
+    layer_for,
+    parse_state_slot,
+    slot_for,
+)
 from .library import EffectLibrary, SourceEntry, discover_packages
 from .packages import (
     PACKAGE_FORMAT,
@@ -99,4 +106,5 @@ __all__ = [
     "normalize_channel",
     "parse_state_slot",
     "serialize_definition",
+    "slot_for",
 ]

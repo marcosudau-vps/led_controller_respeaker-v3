@@ -44,6 +44,9 @@ class Invocation:
     preset_id: str | None = None
     source: str | None = None
 
+    inputs_supplied: bool = False
+    """Whether activation carried runtime values, as opposed to schema defaults."""
+
     input_last_attempt_at: float | None = None
     input_last_success_at: float | None = None
     input_error: str | None = None
@@ -73,17 +76,13 @@ class Invocation:
         it was requested.
         """
         self.activated_at = now
-        if self.input_last_success_at is None and self.inputs_seeded:
+        if self.input_last_success_at is None and self.inputs_supplied:
+            # Values handed over at activation count as a reception, so an
+            # instance that was given data up front does not start out waiting.
+            # A schema default does not count: nothing has arrived from the
+            # source, and reporting otherwise would hide a source that never
+            # speaks at all.
             self.input_last_success_at = now
-
-    @property
-    def inputs_seeded(self) -> bool:
-        """Whether activation already carried a usable runtime value.
-
-        A non-empty initial input counts as a successful reception, so an
-        instance that was handed data up front does not start out ``waiting``.
-        """
-        return any(value is not None for value in self.inputs.values())
 
     def expires_at(self) -> float | None:
         if self.duration_ms is None or self.activated_at is None:

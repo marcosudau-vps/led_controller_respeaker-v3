@@ -71,6 +71,16 @@ class EffectRuntime:
         self._sequence = 0
         self.last_frame: OutputFrame | None = None
 
+    def set_registry(self, registry: EffectRegistry) -> None:
+        """Point the runtime at a rebuilt registry after a reload.
+
+        Anything still on a layer keeps rendering only if its definition
+        survived the reload; the composer drops the instances either way and
+        rebuilds them from whatever the new registry holds.
+        """
+        self.registry = registry
+        self.composer.set_registry(registry)
+
     # -- states -------------------------------------------------------------
 
     def set_state(
@@ -306,10 +316,13 @@ class EffectRuntime:
         params = resolve_configuration(definition, preset=preset_params, overrides=config)
 
         values = initial_runtime_inputs(definition)
+        supplied = False
         if inputs:
             if not definition.runtime_input_schema:
                 raise CommandError(f"{definition.id!r} declares no runtime inputs")
-            values.update(normalize_runtime_inputs(definition, inputs))
+            normalized = normalize_runtime_inputs(definition, inputs)
+            values.update(normalized)
+            supplied = bool(normalized)
 
         return Invocation(
             invocation_id=self._next_invocation_id(definition),
@@ -318,6 +331,7 @@ class EffectRuntime:
             params=params,
             inputs=values,
             created_at=now,
+            inputs_supplied=supplied,
             duration_ms=duration_from_config(definition, params, override_ms=duration_ms),
             channel=channel,
             preset_id=None if resolved.preset is None else resolved.preset.preset_id,

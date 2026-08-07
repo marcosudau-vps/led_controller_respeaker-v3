@@ -288,6 +288,57 @@ def test_an_initial_value_counts_as_a_successful_reception():
     assert evaluate_health(invocation.definition, invocation, 0.0) is InputHealth.HEALTHY
 
 
+def test_a_schema_default_is_not_a_reception():
+    """A default is what the definition says, not what the source said.
+
+    Counting it as a value would report a source that never speaks at all as
+    healthy for as long as the instance runs.
+    """
+    from .sample_effects import DIRECTION
+
+    from lefx.engine import EffectRuntime, build_registry
+    from lefx.sdk import (
+        ColorModel,
+        CompositionMode,
+        ControlledOverlayDefinition,
+        ParamDefinition,
+        ParamType,
+        BaseEffect,
+    )
+
+    class DefaultedOverlay(BaseEffect):
+        definition = ControlledOverlayDefinition(
+            id="defaulted_overlay",
+            title="Defaulted Overlay",
+            description="Has a runtime input that carries a default.",
+            parameter_schema={
+                "color": ParamDefinition(name="color", type=ParamType.COLOR, default="blue"),
+                "brightness": ParamDefinition(
+                    name="brightness", type=ParamType.FLOAT, default=1.0,
+                    minimum=0.0, maximum=1.0,
+                ),
+            },
+            runtime_inputs={
+                "direction_deg": DIRECTION,
+                "detection_state": ParamDefinition(
+                    name="detection_state", type=ParamType.ENUM,
+                    enum_values=("none", "sound"), default="none",
+                ),
+            },
+            color_model=ColorModel.MONO,
+            composition=CompositionMode.TRANSPARENT,
+        )
+
+        def render(self, ctx):
+            return ctx.transparent_frame()
+
+    engine = EffectRuntime(build_registry([DefaultedOverlay]), config=EngineConfig(led_count=4))
+    invocation = engine.set_overlay("defaulted_overlay", channel="doa", now=0.0)
+    assert invocation is not None
+    assert invocation.inputs["detection_state"] == "none"
+    assert evaluate_health(invocation.definition, invocation, 0.0) is InputHealth.WAITING
+
+
 def test_an_empty_update_is_a_heartbeat():
     engine = runtime()
     invocation = engine.set_overlay("direction_marker", channel="doa", now=0.0)

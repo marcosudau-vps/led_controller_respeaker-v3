@@ -96,6 +96,11 @@ class SceneComposer:
     def set_input_providers(self, providers: Mapping[str, InputProviderFn]) -> None:
         self._input_providers = dict(providers)
 
+    def set_registry(self, registry: EffectRegistry) -> None:
+        """Swap in a rebuilt registry, dropping instances of what is gone."""
+        self._registry = registry
+        self._instances.clear()
+
     @property
     def provider_ids(self) -> tuple[str, ...]:
         return tuple(sorted(self._input_providers))
