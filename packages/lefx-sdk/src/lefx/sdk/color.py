@@ -70,3 +70,39 @@ def position_for_angle(angle_deg: float, led_count: int) -> int:
     degrees_per_led = 360.0 / led_count
     position = (angle_deg % 360.0) / degrees_per_led
     return int(position + 0.5) % led_count
+
+
+def sector_for_angle(angle_deg: float, led_count: int) -> int:
+    """Map an angle to one of ``2 * led_count`` sectors around the ring.
+
+    An LED covers ``360 / led_count`` degrees, and a direction is just as
+    likely to point *between* two of them as at one. Halving the step gives a
+    scale on which both are expressible: on a twelve-LED ring the sectors are
+    15° wide, even sectors sit on an LED and odd ones sit in the gap.
+
+    That is not a detail of the ring but of how a direction is read off it. A
+    marker that can only land on an LED reports an angle up to half an LED away
+    from the one measured, and always in the same direction for the same
+    physical bearing — which is exactly the error a calibration is trying to
+    remove.
+    """
+    if led_count <= 0:
+        raise ValueError("led_count must be greater than zero")
+    sectors = 2 * led_count
+    degrees_per_sector = 360.0 / sectors
+    position = (angle_deg % 360.0) / degrees_per_sector
+    return int(position + 0.5) % sectors
+
+
+def positions_for_angle(angle_deg: float, led_count: int) -> tuple[int, ...]:
+    """The LED or LEDs that mark an angle.
+
+    One index when the direction sits on an LED, two when it falls between
+    them. Lighting both is how a ring says "between these" rather than
+    silently rounding to whichever is nearer.
+    """
+    sector = sector_for_angle(angle_deg, led_count)
+    lower = (sector // 2) % led_count
+    if sector % 2 == 0:
+        return (lower,)
+    return (lower, (lower + 1) % led_count)

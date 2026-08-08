@@ -101,6 +101,43 @@ class FakeTransport:
         self.closed += 1
 
 
+# -- what the entry points build --------------------------------------------
+
+
+def test_the_two_hardware_halves_share_one_usb_connection():
+    """Output and input are separate objects over *one* cable.
+
+    Separate so a failing read cannot take the LEDs down with it; one cable
+    because there is one, and two transports would spend their time taking it
+    from each other.
+    """
+    from respeaker_led.device import registration
+
+    registration.reset_shared_transport()
+    try:
+        # The service passes the same keywords to every installed factory, so
+        # an unfamiliar one has to be tolerated rather than raise.
+        sink = registration.create_frame_sink(led_count=12, host="ignored")
+        provider = registration.create_doa_provider(led_count=12, host="ignored")
+        assert sink.transport is provider.transport
+    finally:
+        registration.reset_shared_transport()
+
+
+def test_the_two_simulator_halves_share_one_link():
+    """The same arrangement, for the same reason: one window, one connection."""
+    from respeaker_led.simulator import registration
+
+    registration.reset_shared_link()
+    try:
+        sink = registration.create_frame_sink(led_count=12, port=0, force_claim="ignored")
+        provider = registration.create_doa_provider(led_count=12, force_claim="ignored")
+        assert sink.link is provider.link
+        assert sink.link.led_count == 12
+    finally:
+        registration.reset_shared_link()
+
+
 # -- the USB transport ------------------------------------------------------
 
 
@@ -585,6 +622,77 @@ def test_frames_reach_the_window():
     finally:
         window.close()
         sink.close()
+
+
+@pytest.mark.parametrize("led_count", [1, 5, 12, 24])
+def test_any_ring_size_travels_end_to_end(led_count):
+    """The ring size is configuration, and the whole path carries it.
+
+    Not just the frame: the window is told the size when it connects, because
+    it has to draw the ring before the first frame arrives. Twelve is the
+    hardware's number, not the system's.
+    """
+    link = SimulatorLink(host="127.0.0.1", port=free_port(), led_count=led_count)
+    link.start()
+    sink = SimulatorFrameSink(link, led_count=led_count)
+    window = FakeWindow(link.host, link.port)
+    try:
+        until(lambda: window.led_count == led_count, "the ring size never arrived")
+        for step in range(3):
+            sink.apply_frame(OutputFrame(leds=tuple([step] * led_count), timestamp=float(step)))
+            until(lambda: len(window.frames) > step, "a frame went missing")
+        assert [frame[0] for frame in window.frames[:3]] == [0, 1, 2]
+        assert all(len(frame) == led_count for frame in window.frames)
+        assert sink.status().available is True
+    finally:
+        window.close()
+        sink.close()
+
+
+def test_black_stays_black_on_the_wire():
+    """``0x000000`` is a colour that covers, not an LED that is off.
+
+    Nothing may drop it on the way — a transport that treated zero as "nothing
+    to send" would turn a deliberate black ring into whatever was there before.
+    """
+    link = SimulatorLink(host="127.0.0.1", port=free_port(), led_count=3)
+    link.start()
+    sink = SimulatorFrameSink(link, led_count=3)
+    window = FakeWindow(link.host, link.port)
+    try:
+        until(lambda: link.connected, "the window never connected")
+        sink.apply_frame(OutputFrame(leds=(0xFFFFFF,) * 3, timestamp=0.0))
+        until(lambda: window.frames, "no frame arrived")
+        sink.apply_frame(OutputFrame(leds=(0x000000,) * 3, timestamp=1.0))
+        until(lambda: len(window.frames) > 1, "the black frame never arrived")
+        assert window.frames[-1] == [0, 0, 0]
+    finally:
+        window.close()
+        sink.close()
+
+
+def test_a_closed_link_comes_back_when_it_is_started_again():
+    """Both devices are reached through one shared instance per process.
+
+    A service that stops closes it, and the next one in the same process starts
+    it again. The USB transport revives there; the link has to as well, or the
+    two devices would behave differently at exactly the point where the whole
+    design says they must not.
+    """
+    link = SimulatorLink(host="127.0.0.1", port=free_port())
+    link.start()
+    assert link.detail() is not None and "no ring window" in link.detail()
+
+    link.close()
+    assert link.detail() == "simulator link closed"
+
+    link.start()
+    try:
+        window = FakeWindow(link.host, link.port)
+        until(lambda: link.connected, "the revived link accepted no window")
+        window.close()
+    finally:
+        link.close()
 
 
 def test_a_window_reporting_nonsense_is_held_to_the_same_contract_as_the_firmware():

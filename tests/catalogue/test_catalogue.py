@@ -32,7 +32,7 @@ LED_COUNTS = (1, 5, 12, 24)
 MOMENTS = (0.0, 0.001, 0.37, 1.0, 2.5, 9.9, 60.0)
 
 EXPECTED = {
-    "core-set": 12,
+    "core-set": 13,
     "smartspeaker-set": 23,
 }
 
@@ -281,3 +281,39 @@ def test_both_sets_build_and_load_back(tmp_path):
         loaded_set = load_source(result["path"])
         assert len(loaded_set.packages) == expected
         assert all(package.source_id == set_name for package in loaded_set.packages)
+
+
+def test_building_leaves_nothing_behind_for_the_service_to_find_twice():
+    """A built catalogue must not also look like a pile of loose packages.
+
+    Building a set stages its members inside the set source directory, because
+    that is where the set format expects them. ``effects/`` is also one of the
+    directories the service scans for packages, so a staging directory left in
+    place is found again — every member as a package of its own, every one of
+    them rejected for an id the set has already registered. The service still
+    runs, and its source listing fills with errors that are not errors.
+    """
+    from lefx.engine import EffectLibrary
+
+    import sys
+
+    sys.path.insert(0, str(REPO_ROOT / "scripts"))
+    try:
+        from build_effects import build_set
+    finally:
+        sys.path.pop(0)
+
+    output = REPO_ROOT / "build/effects"
+    for set_name in EXPECTED:
+        build_set(CATALOGUE_ROOT / set_name, output_root=output)
+
+    assert list(CATALOGUE_ROOT.rglob("*.lefx")) == []
+
+    # The service's own defaults, in the order it uses them.
+    library = EffectLibrary(search_paths=[output, CATALOGUE_ROOT])
+    try:
+        broken = [entry for entry in library.sources() if entry["error"]]
+        assert broken == []
+        assert len(library.registry) == sum(EXPECTED.values())
+    finally:
+        library.close()

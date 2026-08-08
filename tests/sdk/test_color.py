@@ -7,8 +7,10 @@ from lefx.sdk import (
     clamp_channel,
     evenly_spaced_positions,
     position_for_angle,
+    positions_for_angle,
     rgb,
     scale_color,
+    sector_for_angle,
     segment_lengths,
 )
 
@@ -67,3 +69,56 @@ def test_angle_maps_to_nearest_led_without_bankers_rounding():
 def test_angle_requires_a_ring():
     with pytest.raises(ValueError):
         position_for_angle(0.0, 0)
+
+
+# -- half-LED sectors -------------------------------------------------------
+
+
+def test_the_ring_divides_into_twice_as_many_sectors_as_leds():
+    """Twelve LEDs, twenty-four sectors: 15° each, alternating LED and gap."""
+    assert sector_for_angle(0.0, 12) == 0
+    assert sector_for_angle(15.0, 12) == 1
+    assert sector_for_angle(30.0, 12) == 2
+    assert sector_for_angle(345.0, 12) == 23
+    assert sector_for_angle(360.0, 12) == 0
+    # Every sector is reachable and none is reachable twice.
+    assert {sector_for_angle(step * 15.0, 12) for step in range(24)} == set(range(24))
+
+
+def test_the_sector_size_follows_the_ring_size():
+    assert sector_for_angle(45.0, 4) == 1  # 4 LEDs, 8 sectors of 45°
+    assert sector_for_angle(45.0, 24) == 6  # 24 LEDs, 48 sectors of 7.5°
+
+
+def test_a_direction_on_an_led_marks_that_led_alone():
+    assert positions_for_angle(0.0, 12) == (0,)
+    assert positions_for_angle(30.0, 12) == (1,)
+    assert positions_for_angle(180.0, 12) == (6,)
+    assert positions_for_angle(330.0, 12) == (11,)
+
+
+def test_a_direction_between_two_leds_marks_both():
+    """The case a nearest-LED mapping cannot express.
+
+    Zero degrees on a reSpeaker is where the cable enters, which is between the
+    twelfth LED and the first — so "between two" is not an edge case here, it is
+    half of all the directions there are.
+    """
+    assert positions_for_angle(15.0, 12) == (0, 1)
+    assert positions_for_angle(165.0, 12) == (5, 6)
+    # The last gap wraps back to the first LED rather than running off the ring.
+    assert positions_for_angle(345.0, 12) == (11, 0)
+
+
+def test_every_angle_marks_one_or_two_adjacent_leds():
+    for degrees in range(0, 3600):
+        marked = positions_for_angle(degrees / 10.0, 12)
+        assert len(marked) in (1, 2)
+        assert all(0 <= position < 12 for position in marked)
+        if len(marked) == 2:
+            assert (marked[0] + 1) % 12 == marked[1]
+
+
+def test_sectors_require_a_ring():
+    with pytest.raises(ValueError):
+        sector_for_angle(0.0, 0)

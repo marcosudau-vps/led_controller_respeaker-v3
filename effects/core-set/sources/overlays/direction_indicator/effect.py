@@ -8,14 +8,14 @@ from lefx.sdk import (
     ParamDefinition,
     ParamType,
     RenderContext,
-    position_for_angle,
     parse_color,
+    positions_for_angle,
     scale_color,
 )
 
 
 class DirectionIndicator(BaseEffect):
-    """Marks the direction a sound came from, one LED at a time.
+    """Marks the direction a sound came from.
 
     This package contains no USB code, no device handling and no reconnect
     logic. It declares that it pulls the capability ``doa`` and reads two
@@ -25,7 +25,14 @@ class DirectionIndicator(BaseEffect):
 
     ``doa`` names what is needed — direction data — not who supplies it. The
     reSpeaker and the simulator both offer it, so this definition runs unchanged
-    against either, and against whatever else offers it later.
+    against either, and against whatever else offers it later. The bearing
+    arrives already expressed on the ring: how the microphone array is rotated
+    against the LEDs is the device's business, recorded once by calibrating it.
+
+    A direction is as likely to fall between two LEDs as on one, so it is read
+    on a scale of half-LED steps — 15° on a twelve-LED ring. Between two, both
+    are lit at half brightness, which reads as "there, in the middle" rather
+    than rounding to whichever LED happened to be nearer.
 
     The whole effect is transparent: every position it does not mark stays
     ``None``, so the state underneath shows through untouched.
@@ -87,13 +94,20 @@ class DirectionIndicator(BaseEffect):
             # nothing is the honest response to it.
             return frame
 
-        # Mirror the measurement, then apply the mounting offset. Offsetting
-        # first would mirror the physical alignment along with the angle.
+        # Mirror the reading, then rotate it. Rotating first would mirror the
+        # rotation along with the angle. Both are deliberate adjustments to the
+        # picture; the device's own mounting angle is already accounted for.
         measured = direction % 360.0
         if ctx.params["reverse"]:
             measured = (-measured) % 360.0
         aimed = measured + ctx.params["angle_offset_deg"]
 
-        color = scale_color(parse_color(ctx.params["color"]), ctx.params["brightness"])
-        frame[position_for_angle(aimed, ctx.led_count)] = color
+        marked = positions_for_angle(aimed, ctx.led_count)
+        # Two LEDs share the marker's brightness rather than each carrying it,
+        # so a direction between them does not read as twice as much light as
+        # one pointing straight at an LED.
+        brightness = ctx.params["brightness"] / len(marked)
+        color = scale_color(parse_color(ctx.params["color"]), brightness)
+        for position in marked:
+            frame[position] = color
         return frame

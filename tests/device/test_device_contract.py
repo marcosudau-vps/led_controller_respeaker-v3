@@ -77,10 +77,19 @@ def test_an_unavailable_sink_says_why(device):
     assert status.detail, "an unavailable sink must carry a reason"
 
 
-def test_a_frame_of_the_wrong_size_is_refused_rather_than_reshaped(device):
-    """Padding or truncating would light positions the sender never addressed."""
+@pytest.mark.parametrize("difference", [-1, +1])
+def test_a_frame_of_the_wrong_size_is_refused_rather_than_reshaped(device, difference):
+    """Padding or truncating would light positions the sender never addressed.
+
+    Both directions, because they fail differently: a short frame would leave
+    the tail showing whatever it showed last, and a long one would be silently
+    cut. A device says how many LEDs it has and takes exactly that many.
+    """
     device.attach()
-    device.sink.apply_frame(OutputFrame(leds=(0x00FF00,) * (device.led_count + 1), timestamp=0.0))
+    wrong = max(1, device.led_count + difference)
+    if wrong == device.led_count:
+        pytest.skip("a one-LED ring has no shorter frame")
+    device.sink.apply_frame(OutputFrame(leds=(0x00FF00,) * wrong, timestamp=0.0))
     assert device.sink.status().available is False
 
 
@@ -161,7 +170,48 @@ def test_refresh_keeps_to_its_own_rate(device):
 def test_the_provider_reports_its_own_state(device):
     status = device.provider.status(time.monotonic())
     assert status["provider_id"] == "doa"
-    assert set(status) >= {"provider_id", "age_ms", "last_error", "available"}
+    assert set(status) >= {"provider_id", "age_ms", "last_error", "available", "calibration"}
+
+
+# -- the calibration --------------------------------------------------------
+
+
+def test_a_device_reports_a_bearing_on_its_own_ring(device):
+    """How the array is rotated against the LEDs is the device's business.
+
+    Every device carries the rotation and applies it before handing the bearing
+    out, so an effect gets a direction it can point at without knowing which
+    way round anything was fitted — and without a per-device parameter of its
+    own, which two devices would need two of.
+    """
+    from lefx.sdk import DoaCalibration
+
+    device.attach()
+    device.publish(90.0, "sound")
+
+    turned = device.calibrated(DoaCalibration(angle_offset_deg=90.0))
+    turned.refresh(time.monotonic())
+    reading = turned.sample(context_for(device))
+    if reading is None:
+        pytest.skip(f"{device.name} reported no direction to check")
+
+    assert 0.0 <= reading["direction_deg"] < 360.0
+    assert turned.status(time.monotonic())["calibration"]["angle_offset_deg"] == 90.0
+
+    if device.steerable_inputs:
+        assert reading["direction_deg"] == pytest.approx(180.0)
+
+
+def test_an_uncalibrated_device_hands_out_what_it_measured(device):
+    """The default has to be the identity, or every reading would be adjusted
+    by an amount nobody chose."""
+    from lefx.sdk import DoaCalibration
+
+    plain = device.calibrated(DoaCalibration())
+    assert plain.status(time.monotonic())["calibration"] == {
+        "angle_offset_deg": 0.0,
+        "reverse": False,
+    }
 
 
 def test_closing_the_provider_twice_is_not_an_error(device):

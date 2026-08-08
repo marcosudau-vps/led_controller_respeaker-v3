@@ -8,6 +8,7 @@ dependencies = [
     "lefx-engine",
     "lefx-authoring",
     "lefx-interfaces",
+    "lefx-studio",
     "respeaker-led-device",
     "respeaker-led-simulator",
 ]
@@ -28,6 +29,7 @@ lefx-sdk = { workspace = true }
 lefx-engine = { workspace = true }
 lefx-authoring = { workspace = true }
 lefx-interfaces = { workspace = true }
+lefx-studio = { workspace = true }
 respeaker-led-device = { workspace = true }
 respeaker-led-simulator = { workspace = true }
 
@@ -53,7 +55,10 @@ cache_dir = "tests/.cache/pytest_cache"
 # Keep scratch files inside the checkout. The system temp directory is not
 # reliably reachable on every machine this runs on, and a test run should not
 # depend on that.
-addopts = "--basetemp=tests/.cache/tmp"
+# --strict-markers so a mistyped marker is an error rather than a test that
+# quietly stops being selectable: "-m 'not hardware'" is how the CI leaves the
+# device tests out, and a marker named "hardware " would silently include them.
+addopts = "--basetemp=tests/.cache/tmp --strict-markers"
 # Some things only a real device can answer: whether the firmware accepts
 # LED_RING_COLOR, whether DOA_VALUE comes back in the declared shape, whether a
 # pulled cable surfaces as available=False. Those tests exist and are skipped

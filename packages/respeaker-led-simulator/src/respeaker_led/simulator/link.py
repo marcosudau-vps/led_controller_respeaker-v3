@@ -144,10 +144,18 @@ class SimulatorLink:
         The service must run without a display, exactly as it runs without a
         cable; a taken port is a reason for ``status`` to say so, not to refuse
         to start.
+
+        Starting a link that was closed brings it back, the way starting a
+        stopped USB transport does. Both devices are reached through one shared
+        instance per process, and a shut-down service leaves that instance
+        behind; a link that stayed dead would make the next service in the same
+        process report a display that can never appear, while the hardware in
+        the same situation simply reconnects.
         """
         with self._lock:
-            if self._closed or self._server is not None:
+            if self._server is not None:
                 return
+            self._closed = False
             try:
                 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 if not sys.platform.startswith("win"):

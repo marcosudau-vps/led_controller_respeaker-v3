@@ -38,6 +38,15 @@ needs_hands = pytest.mark.skipif(
     not INTERACTIVE, reason="needs someone at the cable; set LEFX_INTERACTIVE=1"
 )
 
+HANDS_TIMEOUT_S = 120.0
+"""How long to wait for a person to reach the cable.
+
+Generous on purpose. The thing being measured is how the transport reacts, and
+that takes a second once the plug moves; everything before it is somebody
+reading a prompt and standing up. A tight window here does not make the test
+stricter, it makes it fail for a reason that has nothing to do with the device.
+"""
+
 
 @pytest.fixture
 def transport():
@@ -109,7 +118,7 @@ def test_an_unplugged_cable_surfaces_as_unavailable(transport):
     assert sink.status().available is True
 
     print("\n>>> Unplug the reSpeaker now.")
-    until(lambda: not transport.is_connected, "the unplug went unnoticed", timeout=30.0)
+    until(lambda: not transport.is_connected, "the unplug went unnoticed", timeout=HANDS_TIMEOUT_S)
 
     for _ in range(5):
         # The rule the render loop depends on, checked against a real unplug.
@@ -133,8 +142,8 @@ def test_replugging_restores_output_without_a_restart(transport):
     assert sink.status().available is True
 
     print("\n>>> Unplug the reSpeaker, then plug it back in.")
-    until(lambda: not transport.is_connected, "the unplug went unnoticed", timeout=30.0)
-    until(lambda: transport.is_connected, "it never came back", timeout=60.0)
+    until(lambda: not transport.is_connected, "the unplug went unnoticed", timeout=HANDS_TIMEOUT_S)
+    until(lambda: transport.is_connected, "it never came back", timeout=HANDS_TIMEOUT_S)
 
     sink.apply_frame(OutputFrame(leds=(0x00FF00,) * xvf.RING_LED_COUNT, timestamp=0.0))
     assert sink.status().available is True

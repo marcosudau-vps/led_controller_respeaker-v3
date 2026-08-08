@@ -16,7 +16,7 @@ from __future__ import annotations
 import threading
 from typing import Any, Mapping
 
-from lefx.sdk import InputContext
+from lefx.sdk import DoaCalibration, InputContext
 
 from .link import SimulatorLink
 
@@ -41,12 +41,24 @@ class SimulatorDoaProvider:
     name = "simulator.doa"
     capability = "doa"
 
-    def __init__(self, link: SimulatorLink, *, max_hz: float = DEFAULT_MAX_HZ) -> None:
+    def __init__(
+        self,
+        link: SimulatorLink,
+        *,
+        max_hz: float = DEFAULT_MAX_HZ,
+        calibration: DoaCalibration | None = None,
+    ) -> None:
         if max_hz <= 0:
             raise ValueError("max_hz must be greater than zero")
         self.link = link
         self.max_hz = float(max_hz)
         self.interval_s = 1.0 / self.max_hz
+        # Carried for the same reason the hardware carries it, and applied at
+        # the same point. A simulator whose readings needed no calibrating
+        # would be a device with one fewer way to be wrong than the one it
+        # stands in for, and the difference would show up first in whatever was
+        # being debugged against it.
+        self.calibration = calibration if calibration is not None else DoaCalibration()
         self._last_attempt_at: float | None = None
         self._lock = threading.RLock()
         self._snapshot: dict[str, Any] | None = None
@@ -78,6 +90,7 @@ class SimulatorDoaProvider:
 
         try:
             snapshot = self._validate(reading)
+            snapshot["direction_deg"] = self.calibration.apply(snapshot["direction_deg"])
         except ValueError as exc:
             with self._lock:
                 self._snapshot = None
@@ -133,6 +146,7 @@ class SimulatorDoaProvider:
                 "age_ms": age_ms,
                 "last_error": self._last_error,
                 "available": self._snapshot is not None,
+                "calibration": self.calibration.to_dict(),
             }
 
     def close(self) -> None:

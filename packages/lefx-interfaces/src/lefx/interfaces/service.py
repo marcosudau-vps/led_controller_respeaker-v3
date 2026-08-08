@@ -56,14 +56,22 @@ class ControllerService:
             search_paths=search_paths if search_paths is not None else paths.package_search_paths()
         )
 
-        self.sink_name, self.sink = self._build_sink(sink, dict(sink_options or {}))
+        self.device_options = dict(sink_options or {})
+        self.sink_name, self.sink = self._build_sink(sink, dict(self.device_options))
 
         # Choosing the output device chooses the input device with it: a
         # reSpeaker's microphones come with its ring. Naming one separately is
         # for the unusual case — hardware direction on a simulated display.
         self.input_device = self.sink_name if input_device is None else input_device
         self.providers: dict[str, Any] = (
-            discovery.create_providers(device=self.input_device, led_count=led_count)
+            # The same options go to both halves of a device. They configure the
+            # device, not the sink: a DoA calibration or a transport port is a
+            # property of the thing, and having to state it twice under two
+            # names would be a way to state it inconsistently. Factories ignore
+            # what they do not recognise, which is what makes one set do.
+            discovery.create_providers(
+                device=self.input_device, led_count=led_count, **self.device_options
+            )
             if autostart_providers
             else {}
         )

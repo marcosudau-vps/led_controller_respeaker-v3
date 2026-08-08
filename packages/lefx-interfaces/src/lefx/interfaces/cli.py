@@ -87,7 +87,10 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         metavar="KEY=VALUE",
         dest="sink_options",
-        help="Sink-specific option, repeatable (e.g. port=8770 for the simulator)",
+        help=(
+            "Device option, passed to the sink and its input providers, repeatable "
+            "(e.g. port=8770 for the simulator, angle_offset_deg=129.1 for the DoA)"
+        ),
     )
     serve.add_argument(
         "--input-device",

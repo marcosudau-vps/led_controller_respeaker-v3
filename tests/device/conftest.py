@@ -63,6 +63,14 @@ class Device:
     and those are the contract.
     """
 
+    calibrated: Callable[[Any], Any] = field(default=lambda calibration: None)
+    """Build a second provider of the same kind with a calibration applied.
+
+    How the array is rotated against the ring is a property of a device, so
+    every device has to be able to carry one — and to carry it the same way,
+    or an effect would start caring which one it was reading from.
+    """
+
 
 # -- the simulator ----------------------------------------------------------
 
@@ -82,6 +90,14 @@ class FakeWindow:
         self.protocol = protocol
         self.sock = socket.create_connection((host, port), timeout=2.0)
         self.frames: list[list[int]] = []
+        self.stamps: list[float] = []
+        """When each frame was rendered, as the frame itself carries it.
+
+        A window that falls behind is sent the current ring rather than a
+        backlog, so frames may be coalesced and "one more frame arrived" does
+        not mean "the frame I just caused arrived". The timestamp says which
+        one this is, which is the only way to wait for a particular render.
+        """
         self.led_count: int | None = None
         self._stop = threading.Event()
         self._reader = threading.Thread(target=self._read, daemon=True)
@@ -97,6 +113,7 @@ class FakeWindow:
                     self.led_count = message["led_count"]
                 elif message.get("type") == self.protocol.FRAME:
                     self.frames.append(list(message["leds"]))
+                    self.stamps.append(float(message["timestamp"]))
         except (OSError, self.protocol.ProtocolError):
             return
 
@@ -165,6 +182,7 @@ def build_simulator(led_count: int = 12) -> Device:
         detach=detach,
         publish=publish,
         steerable_inputs=True,
+        calibrated=lambda calibration: SimulatorDoaProvider(link, calibration=calibration),
     )
 
 
@@ -235,6 +253,7 @@ def build_hardware() -> Device:
         detach=lambda: pytest.skip("unplugging the cable needs a person"),
         publish=lambda *_: None,
         steerable_inputs=False,
+        calibrated=lambda calibration: ReSpeakerDoaProvider(transport, calibration=calibration),
     )
 
 

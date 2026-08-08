@@ -18,12 +18,15 @@ from __future__ import annotations
 import threading
 from typing import Any
 
-from lefx.sdk import FrameSink, InputProvider
+from lefx.sdk import FrameSink, InputProvider, resolve_calibration
 
 from . import xvf
 from .provider import DEFAULT_MAX_HZ, ReSpeakerDoaProvider
 from .sink import ReSpeakerFrameSink
 from .transport import UsbTransport
+
+DEVICE_NAME = "respeaker"
+"""The key this device's calibration is stored under."""
 
 _lock = threading.Lock()
 _transport: UsbTransport | None = None
@@ -99,14 +102,27 @@ def create_doa_provider(
     max_hz: float = DEFAULT_MAX_HZ,
     force_claim: Any = None,
     claim_unrelated: Any = None,
+    angle_offset_deg: Any = None,
+    reverse: Any = None,
+    calibration_file: Any = None,
     **options: Any,
 ) -> InputProvider:
     del options
     transport = shared_transport(**_transport_options(force_claim, claim_unrelated))
-    return ReSpeakerDoaProvider(transport, max_hz=max_hz)
+    return ReSpeakerDoaProvider(
+        transport,
+        max_hz=max_hz,
+        calibration=resolve_calibration(
+            DEVICE_NAME,
+            angle_offset_deg=angle_offset_deg,
+            reverse=reverse,
+            path=calibration_file,
+        ),
+    )
 
 
 __all__ = [
+    "DEVICE_NAME",
     "create_doa_provider",
     "create_frame_sink",
     "reset_shared_transport",

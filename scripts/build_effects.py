@@ -49,6 +49,15 @@ def build_set(set_root: Path, *, output_root: Path) -> dict:
     output_root.mkdir(parents=True, exist_ok=True)
     result = pack_effect_set(set_root, output_root / f"{set_root.name}.lefxset")
     result["packages"] = [package["effect_id"] for package in packages]
+
+    # The set archive now carries every one of these, and the staging directory
+    # sits inside a directory the service scans for packages. Left behind, each
+    # member would be found a second time as a package of its own and rejected
+    # for an id the set has already registered — a catalogue that builds
+    # correctly and then reports thirty-five broken sources at every start.
+    # Staging is intermediate output; it goes at the end for the same reason it
+    # goes at the beginning.
+    shutil.rmtree(staging)
     return result
 
 

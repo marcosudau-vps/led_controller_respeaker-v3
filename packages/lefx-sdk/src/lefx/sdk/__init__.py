@@ -33,13 +33,25 @@ A minimal state::
 
 from __future__ import annotations
 
+from .calibration import (
+    DEFAULT_CALIBRATION_FILE,
+    ENV_CALIBRATION_PATH,
+    DoaCalibration,
+    as_flag,
+    calibration_path,
+    load_calibration,
+    resolve_calibration,
+    save_calibration,
+)
 from .color import (
     blend,
     clamp_channel,
     evenly_spaced_positions,
     position_for_angle,
+    positions_for_angle,
     rgb,
     scale_color,
+    sector_for_angle,
     segment_lengths,
 )
 from .context import InputContext, RenderContext
@@ -106,8 +118,11 @@ __all__ = [
     "ControlledOverlayDefinition",
     "DefinitionBase",
     "DefinitionKind",
+    "DEFAULT_CALIBRATION_FILE",
     "DefinitionType",
+    "DoaCalibration",
     "DurationField",
+    "ENV_CALIBRATION_PATH",
     "EventDefinition",
     "FrameSink",
     "InputContext",
@@ -145,7 +160,14 @@ __all__ = [
     "parse_color",
     "parse_duration_ms",
     "parse_ratio",
+    "as_flag",
+    "calibration_path",
+    "load_calibration",
     "position_for_angle",
+    "positions_for_angle",
+    "resolve_calibration",
+    "save_calibration",
+    "sector_for_angle",
     "resolve_configuration",
     "resolved_default_configuration",
     "rgb",

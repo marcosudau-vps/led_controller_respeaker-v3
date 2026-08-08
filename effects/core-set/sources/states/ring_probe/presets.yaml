@@ -1,0 +1,18 @@
+presets:
+  ring_probe_zero:
+    title: Ring Probe — Zero
+    description: >-
+      Marks zero degrees. On a reSpeaker that is where the cable enters, which
+      falls between the last LED and the first — so this is also the quickest
+      way to see that a bearing between two LEDs really lights both.
+    params:
+      direction_deg: 0.0
+      color: "#FFB000"
+      brightness: 1.0
+  ring_probe_front:
+    title: Ring Probe — Front
+    description: Marks the direction opposite the cable, on a single LED.
+    params:
+      direction_deg: 180.0
+      color: "#00C066"
+      brightness: 1.0

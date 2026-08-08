@@ -8,6 +8,11 @@ one device read per interval, not ten per frame.
 
 An inactive VAD is a valid, healthy reading — the microphones heard nothing.
 Only an unreachable or malformed device counts as a failure.
+
+The bearing handed out is expressed on the LED ring, not on the microphone
+array: the rotation between the two is a property of this board and is applied
+here, so that an effect asking for ``doa`` gets a direction it can point at
+without knowing which way round the array was fitted.
 """
 
 from __future__ import annotations
@@ -17,7 +22,7 @@ import math
 import threading
 from typing import Any, Mapping
 
-from lefx.sdk import InputContext
+from lefx.sdk import DoaCalibration, InputContext
 
 from .transport import UsbTransport
 
@@ -65,12 +70,19 @@ class ReSpeakerDoaProvider:
     name = "respeaker.doa"
     capability = "doa"
 
-    def __init__(self, transport: UsbTransport, *, max_hz: float = DEFAULT_MAX_HZ) -> None:
+    def __init__(
+        self,
+        transport: UsbTransport,
+        *,
+        max_hz: float = DEFAULT_MAX_HZ,
+        calibration: DoaCalibration | None = None,
+    ) -> None:
         if max_hz <= 0:
             raise ValueError("max_hz must be greater than zero")
         self.transport = transport
         self.max_hz = float(max_hz)
         self.interval_s = 1.0 / self.max_hz
+        self.calibration = calibration if calibration is not None else DoaCalibration()
 
         self._lock = threading.RLock()
         self._snapshot: dict[str, Any] | None = None
@@ -92,6 +104,7 @@ class ReSpeakerDoaProvider:
 
         try:
             snapshot = decode_doa(self.transport.read("DOA_VALUE"))
+            snapshot["direction_deg"] = self.calibration.apply(snapshot["direction_deg"])
         except Exception as exc:
             with self._lock:
                 self._last_error = str(exc)
@@ -132,6 +145,7 @@ class ReSpeakerDoaProvider:
                 "age_ms": age_ms,
                 "last_error": self._last_error,
                 "available": self._snapshot is not None,
+                "calibration": self.calibration.to_dict(),
             }
 
     def close(self) -> None:

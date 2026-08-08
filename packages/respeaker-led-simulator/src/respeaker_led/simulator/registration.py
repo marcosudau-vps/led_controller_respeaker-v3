@@ -16,11 +16,14 @@ from __future__ import annotations
 import threading
 from typing import Any
 
-from lefx.sdk import FrameSink, InputProvider
+from lefx.sdk import FrameSink, InputProvider, resolve_calibration
 
 from .link import SimulatorLink
 from .provider import DEFAULT_MAX_HZ, SimulatorDoaProvider
 from .sink import SimulatorFrameSink
+
+DEVICE_NAME = "simulator"
+"""The key this device's calibration is stored under."""
 
 _lock = threading.Lock()
 _link: SimulatorLink | None = None
@@ -79,6 +82,9 @@ def create_doa_provider(
     host: str | None = None,
     port: int | str | None = None,
     max_hz: float = DEFAULT_MAX_HZ,
+    angle_offset_deg: Any = None,
+    reverse: Any = None,
+    calibration_file: Any = None,
     **options: Any,
 ) -> InputProvider:
     del options
@@ -86,7 +92,22 @@ def create_doa_provider(
     # this call finds the link the sink already configured and its own defaults
     # never come into play.
     link = shared_link(**_link_options(led_count, host, port))
-    return SimulatorDoaProvider(link, max_hz=max_hz)
+    return SimulatorDoaProvider(
+        link,
+        max_hz=max_hz,
+        calibration=resolve_calibration(
+            DEVICE_NAME,
+            angle_offset_deg=angle_offset_deg,
+            reverse=reverse,
+            path=calibration_file,
+        ),
+    )
 
 
-__all__ = ["create_doa_provider", "create_frame_sink", "reset_shared_link", "shared_link"]
+__all__ = [
+    "DEVICE_NAME",
+    "create_doa_provider",
+    "create_frame_sink",
+    "reset_shared_link",
+    "shared_link",
+]
