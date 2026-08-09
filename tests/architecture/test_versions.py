@@ -6,7 +6,7 @@ drifted would still build, still install, and still resolve — and would quietl
 pair a new engine with an old SDK on somebody's machine.
 
 The pins between them are the same rule stated a second way. The optional
-packages depend on ``led-ctrl-v3==<this version>``, not ``>=``, because they are
+packages depend on ``ledctrl-v3==<this version>``, not ``>=``, because they are
 not independently useful libraries; they are one thing cut where it has to be
 cut so that some of it can be left uninstalled.
 """
@@ -76,20 +76,20 @@ def test_every_internal_dependency_is_pinned_to_that_exact_version(distribution)
 
 
 def test_every_optional_distribution_is_reachable_through_an_extra():
-    """Nothing publishable may be unreachable through led-ctrl-v3.
+    """Nothing publishable may be unreachable through ledctrl-v3.
 
     A distribution that is built and uploaded but that no extra installs is a
-    package nobody can get to except by knowing it exists. led-ctrl-v3 is not a
+    package nobody can get to except by knowing it exists. ledctrl-v3 is not a
     metapackage any more — it carries the runtime itself — so what has to hold
     is about the extras, not about its dependencies.
     """
-    extras = manifest("led-ctrl-v3")["project"]["optional-dependencies"]
+    extras = manifest("ledctrl-v3")["project"]["optional-dependencies"]
     named = {
         PIN.match(item.strip())["name"]
         for name, group in extras.items() if name != "all"
         for item in group
     }
-    assert named == INTERNAL - {"led-ctrl-v3"}
+    assert named == INTERNAL - {"ledctrl-v3"}
 
     # And "all" really is all of them, so that one extra is enough to get
     # everything rather than most of it.
@@ -103,7 +103,7 @@ def test_the_runtime_distribution_declares_no_internal_dependency():
     An internal dependency here would be a cycle — the two optional packages
     already depend on this one — and pip would be entitled to complain.
     """
-    declared = manifest("led-ctrl-v3")["project"]["dependencies"]
+    declared = manifest("ledctrl-v3")["project"]["dependencies"]
     internal = [item for item in declared if PIN.match(item.strip())["name"] in INTERNAL]
     assert internal == []
 

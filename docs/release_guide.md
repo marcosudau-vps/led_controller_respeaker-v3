@@ -10,7 +10,7 @@ offizielle Releases (mit automatischem PyPI-Upload).
 | Repository | Rolle | Wer schreibt hinein? |
 |---|---|---|
 | [`marcosudau-vps/led_controller_respeaker-v3`](https://github.com/marcosudau-vps/led_controller_respeaker-v3) | **Entwicklung.** Vollständige Umgebung: Testsuite, Effektquellen, Studio, PyInstaller-Strecke, Dokumentation. | Du. Hier wird gearbeitet und getaggt. |
-| [`marcosudau-vps/led-ctrl-v3`](https://github.com/marcosudau-vps/led-ctrl-v3) | **Release.** Nur der Baum, aus dem die PyPI-Pakete gebaut werden. 105 Dateien statt einigen hundert. | Ausschließlich der Workflow `sync-release-repo.yml`. |
+| [`marcosudau-vps/led-ctrl-v3`](https://github.com/marcosudau-vps/led-ctrl-v3) | **Release.** Nur der Baum, aus dem die PyPI-Pakete gebaut werden. | Ausschließlich der Workflow `sync-release-repo.yml`. |
 
 > ⚠️ **Niemals von Hand ins Release-Repo pushen.** Dessen `main` wird bei jedem
 > Release maschinell überschrieben. Ein manueller Push geht verloren oder
@@ -31,9 +31,9 @@ erzwingt das, samt der `==`-Pins zwischen ihnen.
 
 | PyPI-Projekt | Rolle | Installiert durch |
 |---|---|---|
-| `led-ctrl-v3` | Schema, Laufzeit, API/CLI, reSpeaker **und beide Effektkataloge** | Standard |
-| `led-ctrl-v3-device-simulated-respeaker` | Software-Geräteersatz mit Ringfenster | `[simulated-respeaker]` |
-| `led-ctrl-v3-effect-creation` | `lefx-pack` und `lefx-studio`, bringt Qt | `[effect-creation]` |
+| `ledctrl-v3` | Schema, Laufzeit, API/CLI, reSpeaker **und beide Effektkataloge** | Standard |
+| `ledctrl-v3-device-simulated-respeaker` | Software-Geräteersatz mit Ringfenster | `[simulated-respeaker]` |
+| `ledctrl-v3-effect-creation` | `lefx-pack` und `lefx-studio`, bringt Qt | `[effect-creation]` |
 
 Drei und nicht neun, weil nur Optionales ein eigenes Projekt braucht. Schema,
 Engine, Steuerungsoberfläche und Hardware werden immer zusammen installiert —
@@ -42,8 +42,8 @@ kein Extra wählt je zwischen ihnen —, und die Kataloge werden zur Laufzeit ü
 davon unberührt: `tests/architecture/test_architecture.py` prüft sie jetzt über
 Modulverzeichnisse statt über Paketnamen, mit denselben Regeln.
 
-Die PyPI-Namen tragen das Präfix `led-ctrl-v3-`, die Importpfade heißen
-weiterhin `lefx.*`. Das ist Absicht: `led-ctrl-v3` ist ein Arbeitsname für
+Die PyPI-Namen tragen das Präfix `ledctrl-v3-`, die Importpfade heißen
+weiterhin `lefx.*`. Das ist Absicht: `ledctrl-v3` ist ein Arbeitsname für
 diesen Stand, und die `lefx-*`-Namen bleiben auf PyPI frei für die spätere
 eigenständige Veröffentlichung. Ein Auseinanderfallen von Distributions- und
 Importname ist auf PyPI üblich (`opencv-python` importiert sich als `cv2`) und
@@ -132,8 +132,8 @@ Das Feld `tag` dabei leer lassen.
    `github.repository == 'marcosudau-vps/led-ctrl-v3'` greift, `uv build
    --all-packages` läuft, `check_release.py` prüft das Gebaute — und dann lädt
    ein Job **pro Projekt** hoch.
-3. Unter [pypi.org/project/led-ctrl-v3](https://pypi.org/project/led-ctrl-v3/)
-   steht die Version bereit: `pip install --upgrade led-ctrl-v3`.
+3. Unter [pypi.org/project/ledctrl-v3](https://pypi.org/project/ledctrl-v3/)
+   steht die Version bereit: `pip install --upgrade ledctrl-v3`.
 
 Ein Job pro Projekt, weil ein einzelner Upload aller drei bei Trusted
 Publishing davon abhinge, wie PyPI ein frisch geprägtes Token über Projekte
@@ -169,7 +169,7 @@ gh run rerun --repo marcosudau-vps/led-ctrl-v3 <run-id> --failed
 Welche Projekte fehlen, beantwortet der Index direkt:
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://pypi.org/simple/led-ctrl-v3-effect-creation/
+curl -s -o /dev/null -w "%{http_code}\n" https://pypi.org/simple/ledctrl-v3-effect-creation/
 ```
 
 Nicht neu taggen und nicht die Version erhöhen. Ein erfolgreicher Upload lässt
@@ -226,26 +226,21 @@ ssh-keygen -t ed25519 -C "led-ctrl-v3-sync" -f led-ctrl-v3-sync -N ""
 
 Der Schlüssel gilt nur für dieses eine Repository und läuft nicht ab.
 
-### 2. Zugang zu PyPI
+### 2. Trusted Publishing auf PyPI
 
-Im Release-Repo unter *Settings → Environments* gibt es eine Umgebung `pypi`;
-nur ein Job, der sie benennt, kommt an ihre Secrets. Ein Reviewer darauf ist
-optional und eine gute Idee: dann verlangt jeder Upload eine Bestätigung.
+Kein Token, kein Passwort, nichts gespeichert: GitHub prägt pro Lauf ein
+kurzlebiges OIDC-Token, PyPI prüft es gegen den für das Projekt hinterlegten
+Publisher und gibt ein Upload-Token zurück, das Minuten gilt.
 
-**Aktuell: API-Token.** Das Secret `PYPI_API_TOKEN` liegt auf dieser Umgebung,
-`release.yml` gibt es an den Upload-Schritt weiter. Das ist ein Zwischenstand
-und Absicht: Trusted Publisher lassen sich **ausschließlich** über die
-PyPI-Weboberfläche anlegen — es gibt keine API dafür —, und ein Projekt, das
-noch nicht existiert, kann keinen haben. Ein kontoweites Token ist deshalb auch
-das Einzige, was die Projekte überhaupt erst anlegen kann.
+Voraussetzung ist die Umgebung `pypi` im Release-Repo unter
+*Settings → Environments*. Sie ist nicht bloß Ordnung: der Publisher prüft den
+Umgebungsnamen mit. Ein Reviewer darauf ist optional und eine gute Idee — dann
+verlangt jeder Upload eine Bestätigung.
 
-**Ziel: Trusted Publishing.** Sobald die drei Projekte existieren, unter
-[pypi.org/manage/account/publishing](https://pypi.org/manage/account/publishing/)
-für **jedes** einen Publisher eintragen:
+Für **jedes** der drei Projekte ist ein Publisher mit denselben Angaben nötig:
 
 | Feld | Wert |
 |---|---|
-| PyPI Project Name | `led-ctrl-v3`, `led-ctrl-v3-device-simulated-respeaker`, `led-ctrl-v3-effect-creation` |
 | Owner | `marcosudau-vps` |
 | Repository name | `led-ctrl-v3` |
 | Workflow name | `release.yml` |
@@ -254,11 +249,24 @@ für **jedes** einen Publisher eintragen:
 **Achtung:** Owner und Repository sind die des **Release**-Repos, nicht des
 Entwicklungs-Repos — dort läuft `release.yml`.
 
-Danach in [`.github/release-repo/release.yml`](../.github/release-repo/release.yml)
-die Zeile `password:` entfernen und `permissions: id-token: write` am
-`publish`-Job wiederherstellen (beides ist dort im Kommentar vermerkt), dann das
-Secret löschen und das Token auf PyPI widerrufen. Ab dann prägt GitHub pro Lauf
-ein kurzlebiges Token und es ist nirgends mehr eines gespeichert.
+Wo der Eintrag hingehört, hängt davon ab, ob das Projekt schon existiert:
+
+* **Projekt existiert noch nicht** → *Your account → Publishing → Add a new
+  pending publisher*, unter dem Konto, dem das Projekt gehören soll. Der
+  Publisher legt das Projekt beim ersten Upload gleich mit an.
+* **Projekt existiert bereits** → *Manage project → Publishing → Add a new
+  publisher*. Ein Pending Publisher ist hier wirkungslos: er greift nur für
+  Namen, die noch frei sind. Anlegen kann ihn nur, wer auf dem Projekt Owner
+  ist.
+
+Beides geht ausschließlich über die Weboberfläche; eine API dafür gibt es
+nicht.
+
+Die Projekte müssen nicht demselben Konto gehören — der Publisher hängt am
+Projekt, nicht am Konto. Zwei Konten sind allerdings auch zwei Stellen, an
+denen später jemand Owner sein muss; wer das vermeiden will, lädt das eine
+Konto beim anderen als Owner ein (*Manage project → Collaborators*) und
+verwaltet danach alles von dort.
 
 ---
 

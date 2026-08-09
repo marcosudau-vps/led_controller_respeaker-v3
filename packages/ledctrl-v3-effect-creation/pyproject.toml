@@ -3,8 +3,8 @@ requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "led-ctrl-v3-effect-creation"
-version = "3.0.1"
+name = "ledctrl-v3-effect-creation"
+version = "3.0.2"
 description = "LEFX V3 effect creation: scaffolding, source validation, package building and the desktop studio"
 readme = "README.md"
 license = "MIT"
@@ -19,7 +19,7 @@ classifiers = [
 ]
 
 # Everything that makes an effect, and nothing that runs one. A default
-# installation of led-ctrl-v3 does not have this package and does not need it:
+# installation of ledctrl-v3 does not have this package and does not need it:
 # it consumes finished .lefx and .lefxset files, which is the whole reason
 # creation is a separate distribution.
 #
@@ -40,7 +40,7 @@ dependencies = [
     # The runtime, which carries the schema to write against, the loader to
     # verify what was just built, and the control surface the studio drives a
     # device through. One name now, because those four layers ship together.
-    "led-ctrl-v3==3.0.1",
+    "ledctrl-v3==3.0.2",
     "PySide6>=6.0.0",
     # Imported directly to read and write a source tree. It arrives with the
     # runtime anyway, but a package that imports a thing declares it.

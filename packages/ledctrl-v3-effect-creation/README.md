@@ -1,12 +1,12 @@
-# led-ctrl-v3-effect-creation
+# ledctrl-v3-effect-creation
 
 Alles, was mit dem **Erstellen** von Effekten zu tun hat — und nichts, was mit
-dem Abspielen zu tun hat. Eine Laufzeitinstallation (`pip install led-ctrl-v3`)
+dem Abspielen zu tun hat. Eine Laufzeitinstallation (`pip install ledctrl-v3`)
 enthält dieses Paket nicht: sie bekommt fertige `.lefx`- und
 `.lefxset`-Dateien und braucht die Werkbank nicht, die sie hergestellt hat.
 
 ```bash
-pip install "led-ctrl-v3[effect-creation]"
+pip install "ledctrl-v3[effect-creation]"
 ```
 
 Das Paket hat zwei Hälften, die dieselbe Sache von zwei Seiten anfassen.

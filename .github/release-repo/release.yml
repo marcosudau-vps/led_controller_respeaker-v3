@@ -82,13 +82,14 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    # The secret lives on this environment rather than on the repository, so
-    # only a job that names the environment can read it.
+    # Part of what a trusted publisher matches on, so this name is not
+    # decoration: each project's publisher on PyPI names the environment "pypi",
+    # and a job that ran without it would be refused.
     environment: pypi
-    # One job per project. That shape is here for trusted publishing, where a
-    # single upload of all three would depend on how PyPI scopes a minted token
-    # across projects; with an API token it costs nothing and keeps a failure
-    # named after the project it belongs to.
+    # One job per project, each minting its own short-lived token from its own
+    # trusted publisher. A single upload of all three would depend on how PyPI
+    # scopes a minted token across projects; three uploads do not depend on it
+    # at all, and a failure names the project it belongs to.
     strategy:
       fail-fast: false
       # One at a time. Parallel uploads are parallel *new projects* the first
@@ -99,23 +100,25 @@ jobs:
       max-parallel: 1
       matrix:
         # Wheel-filename form, so the glob below is exact. A wheel is named
-        # {name}-{version}-..., so led_ctrl_v3-*.whl matches the runtime alone
-        # and never led_ctrl_v3_effect_creation-*.whl.
+        # {name}-{version}-..., so ledctrl_v3-*.whl matches the runtime alone
+        # and never ledctrl_v3_effect_creation-*.whl.
         distribution:
-          - led_ctrl_v3
-          - led_ctrl_v3_device_simulated_respeaker
-          - led_ctrl_v3_effect_creation
-    # Uploading with an API token, because trusted publishing needs a publisher
-    # registered per project through the PyPI web interface — there is no API
-    # for it — and a project that does not exist yet cannot have one. An
-    # account-scoped token is therefore also the only thing that can create
-    # these projects in the first place.
-    #
-    # It is meant to be temporary. Once the projects exist, register the three
-    # publishers (owner marcosudau-vps, repo led-ctrl-v3, workflow release.yml,
-    # environment pypi), then switch back by deleting the `password:` line
-    # below, restoring `permissions: id-token: write` here, and revoking the
-    # token together with the PYPI_API_TOKEN secret on the pypi environment.
+          - ledctrl_v3
+          - ledctrl_v3_device_simulated_respeaker
+          - ledctrl_v3_effect_creation
+    permissions:
+      # What trusted publishing needs, and the only reason this job has any
+      # permissions at all. GitHub mints a short-lived OIDC token, PyPI checks
+      # it against the publisher registered for that project, and hands back an
+      # upload token good for minutes. Nothing is stored anywhere.
+      #
+      # For this to resolve, each of the three projects must carry a publisher
+      # naming owner marcosudau-vps, repository led-ctrl-v3, workflow
+      # release.yml and environment pypi. A project that does not exist yet
+      # takes a *pending* publisher on the account that should own it; a
+      # project that already exists takes one under its own publishing
+      # settings, which only an owner of that project can add.
+      id-token: write
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -129,14 +132,12 @@ jobs:
           mv dist/${{ matrix.distribution }}-*.tar.gz upload/
           ls -l upload
 
+      # No password and no token: with id-token: write and nothing given here,
+      # the action does the OIDC exchange by itself. Adding a password would
+      # silently switch that off again, and take PEP 740 attestations with it.
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: upload/
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          # Attestations need trusted publishing, and an explicit password
-          # turns that off. Saying so beats a warning per job about an input
-          # that is being ignored. Remove this line together with `password`.
-          attestations: false
           # Makes a half-finished release resumable. PyPI refuses a file it
           # already has, so without this, re-running after a partial failure
           # fails again on everything that did work — and the only way forward

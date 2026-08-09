@@ -11,7 +11,7 @@ das ausschließlich maschinell beschrieben wird — siehe
 ## Installation
 
 ```bash
-pip install led-ctrl-v3
+pip install ledctrl-v3
 ```
 
 Das ist die Normalversion und für sich vollständig: Schema, Laufzeit,
@@ -20,9 +20,9 @@ fertige `.lefx`- und `.lefxset`-Dateien ab und hat mit dem *Erstellen* von
 Effekten nichts zu tun — das ist ein eigenes Paket.
 
 ```bash
-pip install "led-ctrl-v3[simulated-respeaker]"   # Software-Geräteersatz mit Ringfenster
-pip install "led-ctrl-v3[effect-creation]"       # lefx-pack und lefx-studio
-pip install "led-ctrl-v3[all]"                   # beides
+pip install "ledctrl-v3[simulated-respeaker]"   # Software-Geräteersatz mit Ringfenster
+pip install "ledctrl-v3[effect-creation]"       # lefx-pack und lefx-studio
+pip install "ledctrl-v3[all]"                   # beides
 ```
 
 Beide Effektkataloge sind in der Standardinstallation enthalten; welche geladen
@@ -42,17 +42,17 @@ Drei Distributionen, eine Versionsnummer, gemeinsam veröffentlicht.
 
 | PyPI-Projekt | Enthält | Installiert durch |
 |---|---|---|
-| `led-ctrl-v3` | `lefx.sdk`, `lefx.engine`, `lefx.interfaces`, `lefx.device.respeaker`, `lefx.sets.core_set`, `lefx.sets.smartspeaker_set` | Standard |
-| `led-ctrl-v3-device-simulated-respeaker` | `lefx.device.simulated_respeaker` | `[simulated-respeaker]` |
-| `led-ctrl-v3-effect-creation` | `lefx.effect_creation` (+ `.studio`) | `[effect-creation]` |
+| `ledctrl-v3` | `lefx.sdk`, `lefx.engine`, `lefx.interfaces`, `lefx.device.respeaker`, `lefx.sets.core_set`, `lefx.sets.smartspeaker_set` | Standard |
+| `ledctrl-v3-device-simulated-respeaker` | `lefx.device.simulated_respeaker` | `[simulated-respeaker]` |
+| `ledctrl-v3-effect-creation` | `lefx.effect_creation` (+ `.studio`) | `[effect-creation]` |
 
 Nur Optionales bekommt ein eigenes Projekt. Schema, Engine,
 Steuerungsoberfläche und Hardware werden immer zusammen installiert — kein
 Extra wählt je zwischen ihnen —, und welche Effektkataloge geladen werden, ist
 eine Laufzeitfrage (`included_lefxset`), keine Installationsfrage.
 
-Die PyPI-Namen tragen das Präfix `led-ctrl-v3-`; die Importpfade heißen
-`lefx.*`. `led-ctrl-v3` ist der Arbeitsname dieses Stands, die `lefx-*`-Namen
+Die PyPI-Namen tragen das Präfix `ledctrl-v3-`; die Importpfade heißen
+`lefx.*`. `ledctrl-v3` ist der Arbeitsname dieses Stands, die `lefx-*`-Namen
 bleiben auf PyPI frei.
 
 ## Schichten und Abhängigkeitsrichtung
@@ -112,7 +112,7 @@ uv run pytest -m "not hardware"
 ```
 
 Die Effektkataloge sind gebaute Ausgabe und liegen unter
-`packages/led-ctrl-v3/src/lefx/sets/<name>/` — derselbe Ort im Checkout wie in
+`packages/ledctrl-v3/src/lefx/sets/<name>/` — derselbe Ort im Checkout wie in
 einem installierten Wheel, weshalb `uv sync` plus `build_effects.py` genügt, um
 einen vollständigen Katalog zu haben.
 

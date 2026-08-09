@@ -8,8 +8,8 @@ because everything is installed together and the import would simply work.
 The rules are written about **layers** rather than distributions. They used to
 be the same thing, and for a while the matrix could be phrased in package
 names. It cannot any more: the schema, the engine, the control surface, the
-hardware and both catalogues ship in one distribution, so "led-ctrl-v3 may
-import led-ctrl-v3" would permit everything and forbid nothing. What is worth
+hardware and both catalogues ship in one distribution, so "ledctrl-v3 may
+import ledctrl-v3" would permit everything and forbid nothing. What is worth
 protecting was never the packaging — it is that the engine knows no device and
 the device knows no engine.
 
@@ -63,16 +63,16 @@ MAY_IMPORT: dict[str, frozenset[str]] = {
 # Which distribution may depend on which. Three, and the direction is the one
 # the layers have: the optional packages sit on the runtime, never the reverse.
 DISTRIBUTION_MAY_DEPEND: dict[str, frozenset[str]] = {
-    "led-ctrl-v3": frozenset(),
-    "led-ctrl-v3-effect-creation": frozenset({"led-ctrl-v3"}),
-    "led-ctrl-v3-device-simulated-respeaker": frozenset({"led-ctrl-v3"}),
+    "ledctrl-v3": frozenset(),
+    "ledctrl-v3-effect-creation": frozenset({"ledctrl-v3"}),
+    "ledctrl-v3-device-simulated-respeaker": frozenset({"ledctrl-v3"}),
 }
 
-CREATION_ROOT = PACKAGES_ROOT / "led-ctrl-v3-effect-creation/src/lefx/effect_creation"
+CREATION_ROOT = PACKAGES_ROOT / "ledctrl-v3-effect-creation/src/lefx/effect_creation"
 STUDIO_ROOT = CREATION_ROOT / "studio"
 SIMULATOR_ROOT = (
     PACKAGES_ROOT
-    / "led-ctrl-v3-device-simulated-respeaker/src/lefx/device/simulated_respeaker"
+    / "ledctrl-v3-device-simulated-respeaker/src/lefx/device/simulated_respeaker"
 )
 
 # Qt is the simulator's optional extra and must stay on the window side. A
@@ -206,14 +206,14 @@ def test_every_layer_is_in_the_distribution_it_belongs_to():
     effect creation must not have effect creation.
     """
     expected = {
-        "lefx.sdk": "led-ctrl-v3",
-        "lefx.engine": "led-ctrl-v3",
-        "lefx.interfaces": "led-ctrl-v3",
-        "lefx.device.respeaker": "led-ctrl-v3",
-        "lefx.sets.core_set": "led-ctrl-v3",
-        "lefx.sets.smartspeaker_set": "led-ctrl-v3",
-        "lefx.effect_creation": "led-ctrl-v3-effect-creation",
-        "lefx.device.simulated_respeaker": "led-ctrl-v3-device-simulated-respeaker",
+        "lefx.sdk": "ledctrl-v3",
+        "lefx.engine": "ledctrl-v3",
+        "lefx.interfaces": "ledctrl-v3",
+        "lefx.device.respeaker": "ledctrl-v3",
+        "lefx.sets.core_set": "ledctrl-v3",
+        "lefx.sets.smartspeaker_set": "ledctrl-v3",
+        "lefx.effect_creation": "ledctrl-v3-effect-creation",
+        "lefx.device.simulated_respeaker": "ledctrl-v3-device-simulated-respeaker",
     }
     assert {layer: distribution_of(layer) for layer in ALL_LAYERS} == expected
 

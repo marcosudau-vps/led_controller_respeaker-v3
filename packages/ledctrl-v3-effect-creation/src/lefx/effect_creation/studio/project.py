@@ -46,7 +46,7 @@ constant below is only the fallback for a project that has no package for the
 set yet, which is a project where somebody is about to add one.
 """
 
-NEW_SET_DISTRIBUTION = "led-ctrl-v3-set-{short}"
+NEW_SET_DISTRIBUTION = "ledctrl-v3-set-{short}"
 """How a distribution for a new set is named when there is not one already."""
 
 RECENT_FILE = Path.home() / ".lefx" / "studio.json"
