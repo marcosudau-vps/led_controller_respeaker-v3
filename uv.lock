@@ -5,12 +5,12 @@ requires-python = "==3.12.*"
 [manifest]
 members = [
     "lefx-authoring",
+    "lefx-device-respeaker",
+    "lefx-device-simulated-respeaker",
     "lefx-engine",
     "lefx-interfaces",
     "lefx-sdk",
     "lefx-studio",
-    "respeaker-led-device",
-    "respeaker-led-simulator",
     "respeaker-led-v3-workspace",
 ]
 
@@ -180,6 +180,43 @@ requires-dist = [
     { name = "lefx-sdk", editable = "packages/lefx-sdk" },
     { name = "pyyaml", specifier = ">=6.0.2,<7" },
 ]
+
+[[package]]
+name = "lefx-device-respeaker"
+version = "3.0.0"
+source = { editable = "packages/lefx-device-respeaker" }
+dependencies = [
+    { name = "lefx-sdk" },
+    { name = "libusb-package" },
+    { name = "pyusb" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lefx-sdk", editable = "packages/lefx-sdk" },
+    { name = "libusb-package", specifier = ">=1.0.26.3,<1.1" },
+    { name = "pyusb", specifier = ">=1.3.1,<2" },
+]
+
+[[package]]
+name = "lefx-device-simulated-respeaker"
+version = "3.0.0"
+source = { editable = "packages/lefx-device-simulated-respeaker" }
+dependencies = [
+    { name = "lefx-sdk" },
+]
+
+[package.optional-dependencies]
+gui = [
+    { name = "pyside6" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lefx-sdk", editable = "packages/lefx-sdk" },
+    { name = "pyside6", marker = "extra == 'gui'", specifier = ">=6.0.0" },
+]
+provides-extras = ["gui"]
 
 [[package]]
 name = "lefx-engine"
@@ -494,54 +531,17 @@ wheels = [
 ]
 
 [[package]]
-name = "respeaker-led-device"
-version = "3.0.0"
-source = { editable = "packages/respeaker-led-device" }
-dependencies = [
-    { name = "lefx-sdk" },
-    { name = "libusb-package" },
-    { name = "pyusb" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "lefx-sdk", editable = "packages/lefx-sdk" },
-    { name = "libusb-package", specifier = ">=1.0.26.3,<1.1" },
-    { name = "pyusb", specifier = ">=1.3.1,<2" },
-]
-
-[[package]]
-name = "respeaker-led-simulator"
-version = "3.0.0"
-source = { editable = "packages/respeaker-led-simulator" }
-dependencies = [
-    { name = "lefx-sdk" },
-]
-
-[package.optional-dependencies]
-gui = [
-    { name = "pyside6" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "lefx-sdk", editable = "packages/lefx-sdk" },
-    { name = "pyside6", marker = "extra == 'gui'", specifier = ">=6.0.0" },
-]
-provides-extras = ["gui"]
-
-[[package]]
 name = "respeaker-led-v3-workspace"
 version = "3.0.0"
 source = { virtual = "." }
 dependencies = [
     { name = "lefx-authoring" },
+    { name = "lefx-device-respeaker" },
+    { name = "lefx-device-simulated-respeaker" },
     { name = "lefx-engine" },
     { name = "lefx-interfaces" },
     { name = "lefx-sdk" },
     { name = "lefx-studio" },
-    { name = "respeaker-led-device" },
-    { name = "respeaker-led-simulator" },
 ]
 
 [package.dev-dependencies]
@@ -557,12 +557,12 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "lefx-authoring", editable = "packages/lefx-authoring" },
+    { name = "lefx-device-respeaker", editable = "packages/lefx-device-respeaker" },
+    { name = "lefx-device-simulated-respeaker", editable = "packages/lefx-device-simulated-respeaker" },
     { name = "lefx-engine", editable = "packages/lefx-engine" },
     { name = "lefx-interfaces", editable = "packages/lefx-interfaces" },
     { name = "lefx-sdk", editable = "packages/lefx-sdk" },
     { name = "lefx-studio", editable = "packages/lefx-studio" },
-    { name = "respeaker-led-device", editable = "packages/respeaker-led-device" },
-    { name = "respeaker-led-simulator", editable = "packages/respeaker-led-simulator" },
 ]
 
 [package.metadata.requires-dev]

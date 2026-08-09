@@ -26,7 +26,7 @@ from lefx.sdk import DoaCalibration, InputContext
 
 from .transport import UsbTransport
 
-logger = logging.getLogger("respeaker_led.device.provider")
+logger = logging.getLogger("lefx.device.respeaker.provider")
 
 DEFAULT_MAX_HZ = 30.0
 """Ceiling on device reads per second, independent of the render rate."""

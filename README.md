@@ -19,8 +19,8 @@ Pakete.
 | `lefx-engine` | `lefx.engine` | Layer, Komposition, Lebenszyklen, Registry, Paketladen |
 | `lefx-interfaces` | `lefx.interfaces` | HTTP-API, CLI, Client, Prozess-Hosting |
 | `lefx-authoring` | `lefx.authoring` | Scaffolding, Quellenvalidierung, Paketbau |
-| `respeaker-led-device` | `respeaker_led.device` | USB-Transport, LED-Ausgabe, DoA-Eingabe |
-| `respeaker-led-simulator` | `respeaker_led.simulator` | Software-Geräteersatz mit Ringanzeige |
+| `lefx-device-respeaker` | `lefx.device.respeaker` | USB-Transport, LED-Ausgabe, DoA-Eingabe |
+| `lefx-device-simulated-respeaker` | `lefx.device.simulated_respeaker` | Software-Geräteersatz mit Ringanzeige |
 
 ## Abhängigkeitsrichtung
 
@@ -29,8 +29,8 @@ lefx-sdk                 → (nichts)
 lefx-engine              → lefx-sdk
 lefx-authoring           → lefx-sdk, lefx-engine
 lefx-interfaces          → lefx-sdk, lefx-engine
-respeaker-led-device     → lefx-sdk
-respeaker-led-simulator  → lefx-sdk
+lefx-device-respeaker     → lefx-sdk
+lefx-device-simulated-respeaker  → lefx-sdk
 ```
 
 `lefx-interfaces` importiert weder Hardware noch Simulator. Beide melden ihre

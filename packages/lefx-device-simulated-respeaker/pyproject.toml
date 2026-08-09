@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "respeaker-led-simulator"
+name = "lefx-device-simulated-respeaker"
 version = "3.0.0"
 description = "Software device double for the LED ring: frame sink, simulated DoA input and a visual ring window"
 readme = "README.md"
@@ -30,16 +30,16 @@ gui = [
 ]
 
 [project.scripts]
-respeaker-led-simulator = "respeaker_led.simulator.app:main"
+lefx-simulator = "lefx.device.simulated_respeaker.app:main"
 
 # A provider is named "<device>.<capability>". Registering the capability alone
 # would collide with the hardware's the moment both packages are installed;
 # naming the device keeps them apart while an effect still asks only for "doa".
 [project.entry-points."lefx.frame_sinks"]
-simulator = "respeaker_led.simulator.registration:create_frame_sink"
+simulator = "lefx.device.simulated_respeaker.registration:create_frame_sink"
 
 [project.entry-points."lefx.input_providers"]
-"simulator.doa" = "respeaker_led.simulator.registration:create_doa_provider"
+"simulator.doa" = "lefx.device.simulated_respeaker.registration:create_doa_provider"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/respeaker_led"]
+packages = ["src/lefx"]

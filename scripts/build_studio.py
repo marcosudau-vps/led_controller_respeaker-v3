@@ -109,8 +109,8 @@ def hidden_imports() -> list[str]:
     """Modules nothing imports statically but something imports at runtime."""
     names = [
         # Reached only through entry points, by string.
-        "respeaker_led.device.registration",
-        "respeaker_led.simulator.registration",
+        "lefx.device.respeaker.registration",
+        "lefx.device.simulated_respeaker.registration",
         # The studio's own Qt pages are imported inside main().
         "lefx.studio.window",
         "lefx.studio.calibration_page",

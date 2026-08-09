@@ -35,8 +35,8 @@ OWNER_OF_MODULE = {
     "lefx.authoring": "lefx-authoring",
     "lefx.interfaces": "lefx-interfaces",
     "lefx.studio": "lefx-studio",
-    "respeaker_led.device": "respeaker-led-device",
-    "respeaker_led.simulator": "respeaker-led-simulator",
+    "lefx.device.respeaker": "lefx-device-respeaker",
+    "lefx.device.simulated_respeaker": "lefx-device-simulated-respeaker",
 }
 
 # The matrix. Read it as "may import", and note what is *not* there: neither
@@ -55,8 +55,8 @@ MAY_IMPORT: dict[str, frozenset[str]] = {
     # output from the same entry points the service reads, so installing it
     # does not decide which hardware you have.
     "lefx-studio": frozenset({"lefx-sdk", "lefx-engine", "lefx-authoring", "lefx-interfaces"}),
-    "respeaker-led-device": frozenset({"lefx-sdk"}),
-    "respeaker-led-simulator": frozenset({"lefx-sdk"}),
+    "lefx-device-respeaker": frozenset({"lefx-sdk"}),
+    "lefx-device-simulated-respeaker": frozenset({"lefx-sdk"}),
 }
 
 # Qt is the simulator's optional extra and must stay on the window side. A
@@ -144,7 +144,7 @@ def test_the_sdk_depends_on_nothing_at_all():
 # -- the specific rules the matrix exists for -------------------------------
 
 
-@pytest.mark.parametrize("distribution", ["respeaker-led-device", "respeaker-led-simulator"])
+@pytest.mark.parametrize("distribution", ["lefx-device-respeaker", "lefx-device-simulated-respeaker"])
 @pytest.mark.parametrize("forbidden", ["lefx.engine", "lefx.interfaces"])
 def test_a_device_package_never_reaches_the_engine_or_the_interfaces(distribution, forbidden):
     """The direction that makes a device replaceable.
@@ -157,7 +157,7 @@ def test_a_device_package_never_reaches_the_engine_or_the_interfaces(distributio
     assert offenders == []
 
 
-@pytest.mark.parametrize("forbidden", ["respeaker_led.device", "respeaker_led.simulator"])
+@pytest.mark.parametrize("forbidden", ["lefx.device.respeaker", "lefx.device.simulated_respeaker"])
 def test_the_interfaces_never_import_a_device_package(forbidden):
     """Entry points are the mechanism, not a convention.
 
@@ -197,14 +197,14 @@ def test_the_service_half_of_the_simulator_carries_no_qt(module):
     installed in this workspace — an import that succeeded here would prove
     nothing about the machine where it is not.
     """
-    path = PACKAGES_ROOT / "respeaker-led-simulator/src/respeaker_led/simulator" / f"{module}.py"
+    path = PACKAGES_ROOT / "lefx-device-simulated-respeaker/src/lefx/device/simulated_respeaker" / f"{module}.py"
     qt = sorted(name for name in imported_modules(parse(path)) if name.split(".")[0] == "PySide6")
     assert qt == []
 
 
 def test_every_simulator_module_is_either_gui_free_or_declared_gui_only():
     """So a new module cannot quietly become the one that pulls Qt in."""
-    directory = PACKAGES_ROOT / "respeaker-led-simulator/src/respeaker_led/simulator"
+    directory = PACKAGES_ROOT / "lefx-device-simulated-respeaker/src/lefx/device/simulated_respeaker"
     modules = {path.stem for path in directory.glob("*.py")} - {"__init__"}
     assert modules == set(GUI_FREE_SIMULATOR_MODULES) | GUI_ONLY_SIMULATOR_MODULES
 
@@ -212,7 +212,7 @@ def test_every_simulator_module_is_either_gui_free_or_declared_gui_only():
 def test_importing_the_simulator_package_does_not_import_qt():
     """The package's own ``__init__`` is the trap: it is what a factory reaches
     through, and one convenience re-export of the window would undo the extra."""
-    path = PACKAGES_ROOT / "respeaker-led-simulator/src/respeaker_led/simulator/__init__.py"
+    path = PACKAGES_ROOT / "lefx-device-simulated-respeaker/src/lefx/device/simulated_respeaker/__init__.py"
     reached = imported_modules(parse(path))
     assert not any(name.split(".")[0] == "PySide6" for name in reached)
     assert not any(name.rsplit(".", 1)[-1] in GUI_ONLY_SIMULATOR_MODULES for name in reached)

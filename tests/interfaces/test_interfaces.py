@@ -128,8 +128,8 @@ def test_choosing_the_device_chooses_its_providers_and_names_them_by_capability(
     nothing in it to change.
     """
     from lefx.interfaces import create_providers
-    from respeaker_led.device.registration import reset_shared_transport
-    from respeaker_led.simulator.registration import reset_shared_link
+    from lefx.device.respeaker.registration import reset_shared_transport
+    from lefx.device.simulated_respeaker.registration import reset_shared_link
 
     # Both factories are really called, so this covers the keyword tolerance the
     # contract asks of them as well as the naming. Port 0 keeps the simulator

@@ -20,7 +20,7 @@ from typing import Any, Callable
 from . import protocol
 from .link import default_port
 
-logger = logging.getLogger("respeaker_led.simulator.client")
+logger = logging.getLogger("lefx.device.simulated_respeaker.client")
 
 RECONNECT_INTERVAL_S = 1.0
 CONNECT_TIMEOUT_S = 2.0

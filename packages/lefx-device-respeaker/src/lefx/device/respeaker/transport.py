@@ -23,7 +23,7 @@ import usb.util
 
 from . import xvf
 
-logger = logging.getLogger("respeaker_led.device.transport")
+logger = logging.getLogger("lefx.device.respeaker.transport")
 
 
 class ConnectionState(enum.Enum):

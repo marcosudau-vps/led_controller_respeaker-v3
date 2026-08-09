@@ -60,12 +60,14 @@ def _is_allowed(module: str) -> tuple[bool, str]:
     root = module.split(".", 1)[0]
     if module in ALLOWED_ROOTS or module.startswith("lefx.sdk."):
         return True, ""
+    # Every part of this system now lives under ``lefx.``, so one rule covers
+    # the engine, the control surface and both device packages: a definition
+    # names the authoring contract and nothing else, which is what lets the same
+    # source run against hardware, against the simulator, or inside the studio.
     if root == "lefx":
-        return False, "only lefx.sdk is available to a package; the engine is not importable"
+        return False, "only lefx.sdk is available to a package; nothing else in lefx is importable"
     if root in ALLOWED_STDLIB:
         return True, ""
-    if root in {"respeaker_led", "lefx_engine"}:
-        return False, "packages must not reach into the controller or its integrations"
     return False, "not in the allowed standard library subset or the LEFX SDK"
 
 

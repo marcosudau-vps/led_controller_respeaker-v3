@@ -24,10 +24,10 @@ import time
 import pytest
 
 from lefx.sdk import InputContext, OutputFrame
-from respeaker_led.device import xvf
-from respeaker_led.device.provider import ReSpeakerDoaProvider, decode_doa
-from respeaker_led.device.sink import ReSpeakerFrameSink
-from respeaker_led.device.transport import UsbTransport
+from lefx.device.respeaker import xvf
+from lefx.device.respeaker.provider import ReSpeakerDoaProvider, decode_doa
+from lefx.device.respeaker.sink import ReSpeakerFrameSink
+from lefx.device.respeaker.transport import UsbTransport
 
 from .conftest import hardware_reachable, until
 

@@ -172,7 +172,7 @@ class Stack:
 
 
 def build_stack(tmp_path, core_effects, **device_options):
-    from respeaker_led.simulator.registration import reset_shared_link
+    from lefx.device.simulated_respeaker.registration import reset_shared_link
 
     reset_shared_link()
     service = ControllerService(
@@ -221,7 +221,7 @@ def calibrated_stack(tmp_path, core_effects):
 def test_the_service_found_its_device_through_the_entry_points(stack):
     """Nothing above imported the simulator; the metadata is how it got here."""
     assert stack.service.sink_name == "simulator"
-    assert type(stack.service.sink).__module__.startswith("respeaker_led.simulator")
+    assert type(stack.service.sink).__module__.startswith("lefx.device.simulated_respeaker")
 
 
 def test_the_engine_is_offered_the_capability_and_not_the_device(stack):

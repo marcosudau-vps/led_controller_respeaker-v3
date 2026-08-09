@@ -28,3 +28,7 @@ id_rsa*
 *.env
 .idea/
 .vscode/
+
+# Arbeitsnotizen und Auftragsdokumente aus der Entwicklung, kein Projektinhalt.
+Hinweise_HANDOFF.md*
+Auftrag_*.md

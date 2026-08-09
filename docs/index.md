@@ -43,8 +43,8 @@ flowchart TB
 
     subgraph GERAETE["Geräte — beide erfüllen dieselben Ports"]
         direction LR
-        DEV["<b>respeaker-led-device</b><br/><i>respeaker_led.device</i><br/><br/>UsbTransport · xvf · Sink · DoA-Provider<br/>Reconnect · Heartbeat · Change-Detection"]
-        SIM["<b>respeaker-led-simulator</b><br/><i>respeaker_led.simulator</i><br/><br/>TCP-Link · Protokoll · Sink · DoA-Provider<br/>Ringfenster <i>(Qt nur im gui-Extra)</i>"]
+        DEV["<b>lefx-device-respeaker</b><br/><i>lefx.device.respeaker</i><br/><br/>UsbTransport · xvf · Sink · DoA-Provider<br/>Reconnect · Heartbeat · Change-Detection"]
+        SIM["<b>lefx-device-simulated-respeaker</b><br/><i>lefx.device.simulated_respeaker</i><br/><br/>TCP-Link · Protokoll · Sink · DoA-Provider<br/>Ringfenster <i>(Qt nur im gui-Extra)</i>"]
     end
 
     CLI --> IFACE
@@ -102,8 +102,8 @@ nicht, und es gibt keine Codezeile, die man dafür vergessen könnte.
 | **lefx-authoring** | `lefx.authoring` | Die Werkbank für Effektquellen: Gerüst, Prüfung, Bauen. Nicht Teil einer Laufzeitinstallation. | sdk, engine |
 | **lefx-interfaces** | `lefx.interfaces` | Die Steuerungsoberfläche: `ControllerService`, HTTP-API, CLI, Client, Geräte-Discovery. | sdk, engine |
 | **lefx-studio** | `lefx.studio` | Die Desktop-Werkstatt: abspielen, Parameter regeln, DoA kalibrieren, Presets kuratieren, neue Quellen entwerfen und bauen. | sdk, engine, authoring, interfaces |
-| **respeaker-led-device** | `respeaker_led.device` | Die echte Hardware: USB-Transport, LED-Senke, DoA-Provider. | sdk |
-| **respeaker-led-simulator** | `respeaker_led.simulator` | Das Software-Double: lokaler Transport, Ringfenster, simulierte DoA. | sdk |
+| **lefx-device-respeaker** | `lefx.device.respeaker` | Die echte Hardware: USB-Transport, LED-Senke, DoA-Provider. | sdk |
+| **lefx-device-simulated-respeaker** | `lefx.device.simulated_respeaker` | Das Software-Double: lokaler Transport, Ringfenster, simulierte DoA. | sdk |
 
 ### Die erlaubte Richtung
 
@@ -113,8 +113,8 @@ lefx-engine              → lefx-sdk
 lefx-authoring           → lefx-sdk, lefx-engine
 lefx-interfaces          → lefx-sdk, lefx-engine
 lefx-studio              → lefx-sdk, lefx-engine, lefx-authoring, lefx-interfaces
-respeaker-led-device     → lefx-sdk
-respeaker-led-simulator  → lefx-sdk
+lefx-device-respeaker     → lefx-sdk
+lefx-device-simulated-respeaker  → lefx-sdk
 ```
 
 Diese Matrix ist keine Absichtserklärung, sondern ein Test:
@@ -327,8 +327,8 @@ respeaker-led-v3/
 │   ├── lefx-authoring/          lefx.authoring
 │   ├── lefx-interfaces/         lefx.interfaces
 │   ├── lefx-studio/             lefx.studio
-│   ├── respeaker-led-device/    respeaker_led.device
-│   └── respeaker-led-simulator/ respeaker_led.simulator
+│   ├── lefx-device-respeaker/    lefx.device.respeaker
+│   └── lefx-device-simulated-respeaker/ lefx.device.simulated_respeaker
 ├── effects/
 │   ├── core-set/                kuratierte Referenzdefinitionen
 │   └── smartspeaker-set/        portierter Produktivsatz

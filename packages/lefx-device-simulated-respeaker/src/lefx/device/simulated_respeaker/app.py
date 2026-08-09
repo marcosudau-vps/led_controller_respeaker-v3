@@ -1,4 +1,4 @@
-"""The ``respeaker-led-simulator`` console script.
+"""The ``lefx-simulator`` console script.
 
 Qt is imported here and only here, behind a check that turns a missing optional
 dependency into a sentence instead of a traceback. That is what keeps the extra
@@ -18,7 +18,7 @@ from .link import default_port
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="respeaker-led-simulator",
+        prog="lefx-simulator",
         description="Open the ring window and connect it to a running lefx service.",
     )
     parser.add_argument("--host", default=protocol.DEFAULT_HOST)
@@ -50,7 +50,7 @@ def main(argv: list[str] | None = None) -> int:
     except ImportError:
         print(
             "The ring window needs PySide6, which is an optional extra:\n"
-            '    uv pip install "respeaker-led-simulator[gui]"\n'
+            '    uv pip install "lefx-device-simulated-respeaker[gui]"\n'
             "The service half of the simulator works without it.",
             file=sys.stderr,
         )

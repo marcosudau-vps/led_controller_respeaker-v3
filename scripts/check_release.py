@@ -44,8 +44,8 @@ DISTRIBUTIONS = (
     "lefx-engine",
     "lefx-authoring",
     "lefx-interfaces",
-    "respeaker-led-device",
-    "respeaker-led-simulator",
+    "lefx-device-respeaker",
+    "lefx-device-simulated-respeaker",
 )
 
 GUI_DISTRIBUTION = "lefx-studio"
@@ -57,18 +57,18 @@ IMPORT_NAMES = (
     "lefx.engine",
     "lefx.authoring",
     "lefx.interfaces",
-    "respeaker_led.device",
-    "respeaker_led.simulator",
+    "lefx.device.respeaker",
+    "lefx.device.simulated_respeaker",
 )
 
 # The half of the simulator a service process loads. None of it may need Qt.
 GUI_FREE_MODULES = (
-    "respeaker_led.simulator.registration",
-    "respeaker_led.simulator.link",
-    "respeaker_led.simulator.protocol",
-    "respeaker_led.simulator.sink",
-    "respeaker_led.simulator.provider",
-    "respeaker_led.simulator.client",
+    "lefx.device.simulated_respeaker.registration",
+    "lefx.device.simulated_respeaker.link",
+    "lefx.device.simulated_respeaker.protocol",
+    "lefx.device.simulated_respeaker.sink",
+    "lefx.device.simulated_respeaker.provider",
+    "lefx.device.simulated_respeaker.client",
 )
 
 EXPECTED_SINKS = {"respeaker", "simulator"}
@@ -167,7 +167,7 @@ def check_simulator_without_qt(python: Path) -> None:
     require(result.returncode == 0, f"the simulator's service half imports without Qt\n{result.stderr}")
 
     # And the window says why rather than raising ImportError at the user.
-    window = run([str(script(python, 'respeaker-led-simulator'))])
+    window = run([str(script(python, 'lefx-simulator'))])
     require(
         window.returncode == 2 and "PySide6" in window.stderr,
         "the ring window explains that it needs the gui extra",
@@ -175,9 +175,9 @@ def check_simulator_without_qt(python: Path) -> None:
 
 
 def check_console_scripts(python: Path) -> None:
-    for name in ("lefx", "lefx-pack", "respeaker-led-device", "respeaker-led-simulator"):
+    for name in ("lefx", "lefx-pack", "lefx-respeaker", "lefx-simulator"):
         require(script(python, name).exists(), f"console script {name} is installed")
-    for name in ("lefx", "lefx-pack", "respeaker-led-device"):
+    for name in ("lefx", "lefx-pack", "lefx-respeaker"):
         result = run([str(script(python, name)), "--help"])
         require(result.returncode == 0, f"{name} --help runs")
 

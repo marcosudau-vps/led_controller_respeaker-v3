@@ -43,7 +43,7 @@ def qt_app():
 @pytest.fixture
 def page(qt_app, built_catalogue, tmp_path, monkeypatch):
     """A calibration page over a simulator whose DoA can be steered."""
-    from respeaker_led.simulator.registration import reset_shared_link
+    from lefx.device.simulated_respeaker.registration import reset_shared_link
 
     monkeypatch.setenv("LEFX_STATE_ROOT", str(tmp_path))
     monkeypatch.setenv("LEFX_DOA_CALIBRATION", str(tmp_path / "doa_calibration.json"))
@@ -238,7 +238,7 @@ def test_saving_records_it_under_the_device_it_was_measured_on(page, tmp_path):
 
 def test_the_recorded_calibration_is_what_the_next_provider_picks_up(page, tmp_path):
     """The whole point of writing it down: the next process starts corrected."""
-    from respeaker_led.simulator.registration import DEVICE_NAME, create_doa_provider
+    from lefx.device.simulated_respeaker.registration import DEVICE_NAME, create_doa_provider
 
     run_calibration(page, rotation=ROTATION)
     page._apply(persist=True)

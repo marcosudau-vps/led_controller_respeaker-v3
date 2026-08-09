@@ -1,13 +1,13 @@
-"""``respeaker-led-device`` — look at the device before doing anything to it.
+"""``lefx-respeaker`` — look at the device before doing anything to it.
 
 Force-claiming stops another program. That is not something to trigger blind
 from a service flag with no way to see what it would hit first, so the same
 machinery is available here as three commands that escalate in what they do:
 
-    respeaker-led-device probe     is the device reachable, and if not, who else
+    lefx-respeaker probe     is the device reachable, and if not, who else
                                    is holding a USB device
-    respeaker-led-device claim -n  what a claim would stop, stopping nothing
-    respeaker-led-device claim     stop it, then check the device answers
+    lefx-respeaker claim -n  what a claim would stop, stopping nothing
+    lefx-respeaker claim     stop it, then check the device answers
 
 ``claim`` only ever stops processes that identify themselves as reSpeaker
 software. Peripheral software — mouse, keyboard, RGB — holds WinUSB handles
@@ -28,7 +28,7 @@ from . import contention
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="respeaker-led-device",
+        prog="lefx-respeaker",
         description="Inspect the reSpeaker and, if asked, take it from another process.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
@@ -81,7 +81,7 @@ def run_probe(as_json: bool) -> int:
         print(f"  {holder.describe()}")
     print(
         "\nOnly the ones marked 'reSpeaker software' would be stopped by\n"
-        "'respeaker-led-device claim'. Try it with -n first."
+        "'lefx-respeaker claim'. Try it with -n first."
     )
     return 1
 

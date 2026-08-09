@@ -25,7 +25,7 @@ Vorhanden:
 
 **Ausstehend:**
 
-- **Phase 6 + 7** — `respeaker-led-device` und `respeaker-led-simulator`.
+- **Phase 6 + 7** — `lefx-device-respeaker` und `lefx-device-simulated-respeaker`.
   Zusammenhängender Geräteblock, gemeinsam umzusetzen. **Beide Paketgerüste
   existieren bereits** (pyproject, README, `__init__.py`); es fehlt der Inhalt.
 - **Phase 8** — Doku, Architekturtests/CI, Build/Release.
@@ -55,8 +55,8 @@ lefx-sdk                 → (nichts, nur stdlib)
 lefx-engine              → lefx-sdk
 lefx-authoring           → lefx-sdk, lefx-engine
 lefx-interfaces          → lefx-sdk, lefx-engine
-respeaker-led-device     → lefx-sdk            ← Phase 6
-respeaker-led-simulator  → lefx-sdk            ← Phase 7
+lefx-device-respeaker     → lefx-sdk            ← Phase 6
+lefx-device-simulated-respeaker  → lefx-sdk            ← Phase 7
 ```
 
 **Device und Simulator dürfen `lefx.engine` und `lefx.interfaces` nicht
@@ -75,10 +75,10 @@ Module **fehlen noch und sind zu erstellen**. Die Provider-Namen sind dabei
 
 | Gruppe | Name | Zielsymbol (anzulegen) |
 |---|---|---|
-| `lefx.frame_sinks` | `respeaker` | `respeaker_led.device.registration:create_frame_sink` |
-| `lefx.input_providers` | `respeaker.doa` | `respeaker_led.device.registration:create_doa_provider` |
-| `lefx.frame_sinks` | `simulator` | `respeaker_led.simulator.registration:create_frame_sink` |
-| `lefx.input_providers` | `simulator.doa` | `respeaker_led.simulator.registration:create_doa_provider` |
+| `lefx.frame_sinks` | `respeaker` | `lefx.device.respeaker.registration:create_frame_sink` |
+| `lefx.input_providers` | `respeaker.doa` | `lefx.device.respeaker.registration:create_doa_provider` |
+| `lefx.frame_sinks` | `simulator` | `lefx.device.simulated_respeaker.registration:create_frame_sink` |
+| `lefx.input_providers` | `simulator.doa` | `lefx.device.simulated_respeaker.registration:create_doa_provider` |
 
 Bis diese Module existieren, meldet die Discovery beim Start eine Warnung und
 überspringt sie — das ist so getestet und beabsichtigt.
@@ -181,10 +181,10 @@ Pfad: `C:\Users\marco\source\repos\led_controller_respeaker\.claude\worktrees\ef
 
 | Quelle | Zeilen | Ziel | Anmerkung |
 |---|---:|---|---|
-| `src/respeaker_led/integrations/usb_connection.py` | 250 | `respeaker_led.device.transport` | `UsbConnectionManager`: Geräteerkennung, Reconnect-Thread, Heartbeat (`read("VERSION")`), thread-sicheres `read`/`write`, `is_connected`, `connection_stats`. Belastbar, weitgehend übernehmbar. `_notify` dispatcht Callbacks bewusst off-thread — beibehalten. |
+| `src/respeaker_led/integrations/usb_connection.py` | 250 | `lefx.device.respeaker.transport` | `UsbConnectionManager`: Geräteerkennung, Reconnect-Thread, Heartbeat (`read("VERSION")`), thread-sicheres `read`/`write`, `is_connected`, `connection_stats`. Belastbar, weitgehend übernehmbar. `_notify` dispatcht Callbacks bewusst off-thread — beibehalten. |
 | `src/respeaker_led/integrations/adapters.py` | 127 | aufteilen | Enthält heute `ReSpeakerAdapter` mit **beiden** Richtungen. Ausgabe: `write("LED_EFFECT",[5])` einmalig + `write("LED_RING_COLOR", leds)` mit Change-Detection. Eingabe: `read("DOA_VALUE")` → Validierung → `{direction_deg, detection_state}`. |
-| `src/respeaker_led/python_control/xvf_host.py` | 414 | `respeaker_led.device.xvf` | **Statisch einbinden.** Heute per `importlib.util.spec_from_file_location` über einen Dateipfad geladen — genau die Konstruktion, die im PyInstaller-Build bricht. |
-| `examples/pyside6_demo.py`, `VirtualLedRingWidget` (Zeile 41) | ~60 | `respeaker_led.simulator.ring` | Ringzeichnung als Vorlage. Zwei Altlasten: LED-Anzahl ist auf 12 hartkodiert (muss `led_count` werden) und die Datei importiert `from src import ControllerService` (Pfad existiert nicht mehr). Nur das Widget übernehmen, nicht die Datei. |
+| `src/respeaker_led/python_control/xvf_host.py` | 414 | `lefx.device.respeaker.xvf` | **Statisch einbinden.** Heute per `importlib.util.spec_from_file_location` über einen Dateipfad geladen — genau die Konstruktion, die im PyInstaller-Build bricht. |
+| `examples/pyside6_demo.py`, `VirtualLedRingWidget` (Zeile 41) | ~60 | `lefx.device.simulated_respeaker.ring` | Ringzeichnung als Vorlage. Zwei Altlasten: LED-Anzahl ist auf 12 hartkodiert (muss `led_count` werden) und die Datei importiert `from src import ControllerService` (Pfad existiert nicht mehr). Nur das Widget übernehmen, nicht die Datei. |
 
 `DOA_VALUE`-Payload: zwei `uint16`. `payload[0]` → `direction_deg` (0–359),
 `payload[1]` → VAD, `0` → `"none"`, `1` → `"sound"`. Ein inaktives VAD ist ein
@@ -227,12 +227,12 @@ Beide Pakete erfüllen dieselben Ports und sind gegeneinander austauschbar. Das
 ist der Kern: der Dienst merkt nicht, ob die Gegenstelle Hardware oder Software
 ist.
 
-### `respeaker-led-device` (Phase 6)
+### `lefx-device-respeaker` (Phase 6)
 
 Abhängigkeiten stehen schon in der `pyproject.toml`: `lefx-sdk`, `pyusb`,
 `libusb-package`.
 
-Anzulegen unter `packages/respeaker-led-device/src/respeaker_led/device/`:
+Anzulegen unter `packages/lefx-device-respeaker/src/lefx/device/respeaker/`:
 
 - `transport.py` — `UsbTransport` (portiert aus `usb_connection.py`).
 - `xvf.py` — `xvf_host` statisch.
@@ -246,7 +246,7 @@ Anzulegen unter `packages/respeaker-led-device/src/respeaker_led/device/`:
   sich denselben Transport teilen** (Modul-Singleton oder Lazy-Factory), sonst
   öffnen zwei Objekte zwei USB-Verbindungen.
 
-### `respeaker-led-simulator` (Phase 7)
+### `lefx-device-simulated-respeaker` (Phase 7)
 
 Vollständiges Geräte-Double: Anzeige **und** simulierte Eingaben.
 
@@ -266,7 +266,7 @@ Vollständiges Geräte-Double: Anzeige **und** simulierte Eingaben.
   `None` — dieselbe Bedeutung wie ein nicht erreichbares Gerät, worauf die
   Engine mit `waiting` und nach der Karenzzeit mit `failed` reagiert.
 - Qt-Anwendung: Ringanzeige parametrisiert auf `led_count`, Konsolenskript
-  `respeaker-led-simulator` (Eintrag existiert bereits in der `pyproject.toml`).
+  `lefx-device-simulated-respeaker` (Eintrag existiert bereits in der `pyproject.toml`).
 
 ### Gemeinsamkeiten und Unterschiede
 

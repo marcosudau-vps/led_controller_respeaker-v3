@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "respeaker-led-device"
+name = "lefx-device-respeaker"
 version = "3.0.0"
 description = "reSpeaker XVF3800 hardware integration: USB transport, LED frame sink and DoA input provider"
 readme = "README.md"
@@ -30,7 +30,7 @@ dependencies = [
 # A separate command rather than only a service flag: force-claiming stops
 # somebody's program, and that should be visible before it is triggered.
 [project.scripts]
-respeaker-led-device = "respeaker_led.device.cli:main"
+lefx-respeaker = "lefx.device.respeaker.cli:main"
 
 # Output and input are registered separately so that a failing DoA read cannot
 # take the LED output with it, and vice versa.
@@ -39,10 +39,10 @@ respeaker-led-device = "respeaker_led.device.cli:main"
 # from the simulator's when both packages are installed; the capability half is
 # the only part an effect names, so the same definition runs against either.
 [project.entry-points."lefx.frame_sinks"]
-respeaker = "respeaker_led.device.registration:create_frame_sink"
+respeaker = "lefx.device.respeaker.registration:create_frame_sink"
 
 [project.entry-points."lefx.input_providers"]
-"respeaker.doa" = "respeaker_led.device.registration:create_doa_provider"
+"respeaker.doa" = "lefx.device.respeaker.registration:create_doa_provider"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/respeaker_led"]
+packages = ["src/lefx"]

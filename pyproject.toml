@@ -9,8 +9,8 @@ dependencies = [
     "lefx-authoring",
     "lefx-interfaces",
     "lefx-studio",
-    "respeaker-led-device",
-    "respeaker-led-simulator",
+    "lefx-device-respeaker",
+    "lefx-device-simulated-respeaker",
 ]
 
 # The root is a workspace container, not a distributable. Nothing here is ever
@@ -30,8 +30,8 @@ lefx-engine = { workspace = true }
 lefx-authoring = { workspace = true }
 lefx-interfaces = { workspace = true }
 lefx-studio = { workspace = true }
-respeaker-led-device = { workspace = true }
-respeaker-led-simulator = { workspace = true }
+lefx-device-respeaker = { workspace = true }
+lefx-device-simulated-respeaker = { workspace = true }
 
 [dependency-groups]
 dev = [

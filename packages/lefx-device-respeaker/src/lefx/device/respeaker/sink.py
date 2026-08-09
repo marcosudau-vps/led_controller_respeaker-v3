@@ -15,7 +15,7 @@ from lefx.sdk import OutputFrame, SinkStatus
 from . import xvf
 from .transport import UsbTransport
 
-logger = logging.getLogger("respeaker_led.device.sink")
+logger = logging.getLogger("lefx.device.respeaker.sink")
 
 
 class ReSpeakerFrameSink:

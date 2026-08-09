@@ -33,7 +33,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Callable, Collection, Iterable
 
-logger = logging.getLogger("respeaker_led.device.contention")
+logger = logging.getLogger("lefx.device.respeaker.contention")
 
 WINDOWS = sys.platform.startswith("win")
 

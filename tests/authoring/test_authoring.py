@@ -121,7 +121,8 @@ def test_the_sdk_and_a_stdlib_subset_are_available(tmp_path):
         ("import os", "not in the allowed"),
         ("import socket", "not in the allowed"),
         ("from lefx.engine import EffectRuntime", "only lefx.sdk is available"),
-        ("import respeaker_led.device", "must not reach into the controller"),
+        ("import lefx.device.respeaker", "only lefx.sdk is available"),
+        ("from lefx.interfaces import ControllerService", "only lefx.sdk is available"),
     ],
 )
 def test_reaching_outside_the_package_is_refused(tmp_path, statement, expected):

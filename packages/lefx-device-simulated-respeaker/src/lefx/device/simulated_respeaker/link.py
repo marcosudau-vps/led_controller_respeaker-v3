@@ -25,7 +25,7 @@ from typing import Any
 
 from . import protocol
 
-logger = logging.getLogger("respeaker_led.simulator.link")
+logger = logging.getLogger("lefx.device.simulated_respeaker.link")
 
 SEND_TIMEOUT_S = 2.0
 """A window that cannot absorb a few hundred bytes in this long is gone,

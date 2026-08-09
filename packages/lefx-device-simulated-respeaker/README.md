@@ -1,4 +1,4 @@
-# respeaker-led-simulator
+# lefx-device-simulated-respeaker
 
 Ein vollständiger Software-Ersatz für die Hardware — dieselben Ports, dieselbe
 Rolle. Der Dienst merkt nicht, dass die Gegenstelle kein Gerät ist.
@@ -14,8 +14,8 @@ Die dienstseitige Hälfte braucht kein Qt. PySide6 ist ein Extra und wird nur
 gebraucht, wenn das Fenster geöffnet wird:
 
 ```bash
-uv pip install "respeaker-led-simulator[gui]"
-respeaker-led-simulator
+uv pip install "lefx-device-simulated-respeaker[gui]"
+lefx-simulator
 ```
 
 Ohne installiertes Konsolenskript geht es als Modul. `app.py` direkt als Datei
@@ -24,7 +24,7 @@ Importe, und eine über den Pfad gestartete Datei hat kein Paket, relativ zu dem
 das ginge:
 
 ```bash
-uv run python -m respeaker_led.simulator
+uv run python -m lefx.device.simulated_respeaker
 ```
 
 ## Als Exe
@@ -40,7 +40,7 @@ uv sync --group build
 uv run --group build python scripts/build_simulator.py
 ```
 
-Ergebnis ist `build/dist/respeaker-led-simulator.exe` (~47 MB, eine Datei).
+Ergebnis ist `build/dist/lefx-simulator.exe` (~47 MB, eine Datei).
 `--onedir` startet schneller, `--windowed` verbirgt die Konsole — dann sieht man
 allerdings auch nicht mehr, wenn der Dienst nicht erreichbar ist.
 

@@ -18,14 +18,14 @@ import time
 import pytest
 
 from lefx.sdk import InputContext, OutputFrame
-from respeaker_led.device import xvf
-from respeaker_led.device.provider import ReSpeakerDoaProvider, decode_doa
-from respeaker_led.device.sink import ReSpeakerFrameSink
-from respeaker_led.device.transport import ConnectionState, UsbTransport
-from respeaker_led.simulator import protocol
-from respeaker_led.simulator.link import SimulatorLink
-from respeaker_led.simulator.provider import SimulatorDoaProvider
-from respeaker_led.simulator.sink import SimulatorFrameSink
+from lefx.device.respeaker import xvf
+from lefx.device.respeaker.provider import ReSpeakerDoaProvider, decode_doa
+from lefx.device.respeaker.sink import ReSpeakerFrameSink
+from lefx.device.respeaker.transport import ConnectionState, UsbTransport
+from lefx.device.simulated_respeaker import protocol
+from lefx.device.simulated_respeaker.link import SimulatorLink
+from lefx.device.simulated_respeaker.provider import SimulatorDoaProvider
+from lefx.device.simulated_respeaker.sink import SimulatorFrameSink
 
 from .conftest import FakeWindow, free_port, until
 
@@ -111,7 +111,7 @@ def test_the_two_hardware_halves_share_one_usb_connection():
     because there is one, and two transports would spend their time taking it
     from each other.
     """
-    from respeaker_led.device import registration
+    from lefx.device.respeaker import registration
 
     registration.reset_shared_transport()
     try:
@@ -126,7 +126,7 @@ def test_the_two_hardware_halves_share_one_usb_connection():
 
 def test_the_two_simulator_halves_share_one_link():
     """The same arrangement, for the same reason: one window, one connection."""
-    from respeaker_led.simulator import registration
+    from lefx.device.simulated_respeaker import registration
 
     registration.reset_shared_link()
     try:
@@ -234,7 +234,7 @@ def test_lifecycle_callbacks_run_off_the_caller_thread():
 
 def test_the_transport_never_stops_another_process_unless_asked(monkeypatch):
     """Force-claiming is opt-in, and the default path must not reach it at all."""
-    from respeaker_led.device import contention
+    from lefx.device.respeaker import contention
 
     calls: list[object] = []
     monkeypatch.setattr(contention, "release_device", lambda *a, **k: calls.append(1))
@@ -259,7 +259,7 @@ def test_an_absent_device_is_not_treated_as_contention(monkeypatch):
     Hunting for a process to stop because a cable is out would be both useless
     and, given what it does when it finds one, worse than useless.
     """
-    from respeaker_led.device import contention
+    from lefx.device.respeaker import contention
 
     calls: list[object] = []
     monkeypatch.setattr(contention, "release_device", lambda *a, **k: calls.append(1))
@@ -279,7 +279,7 @@ def test_an_absent_device_is_not_treated_as_contention(monkeypatch):
 
 
 def test_force_claim_runs_once_and_then_reconnects(monkeypatch):
-    from respeaker_led.device import contention
+    from lefx.device.respeaker import contention
 
     device = FakeDevice()
     device.fail_with = OSError("Access denied (insufficient permissions)")
@@ -312,7 +312,7 @@ def test_force_claim_runs_once_and_then_reconnects(monkeypatch):
 
 
 def test_a_claim_that_does_not_help_is_not_repeated_every_retry(monkeypatch):
-    from respeaker_led.device import contention
+    from lefx.device.respeaker import contention
 
     device = FakeDevice()
     device.fail_with = OSError("Access denied (insufficient permissions)")

@@ -7,7 +7,7 @@ at runtime, which works from a checkout and breaks in a frozen build, where
 there is no such file. Nothing about the wire protocol changed.
 
 The command-line front end of the original is deliberately not carried over;
-this package talks to the device through :mod:`respeaker_led.device.transport`,
+this package talks to the device through :mod:`lefx.device.respeaker.transport`,
 and a second, unmanaged access path to the same USB endpoint is exactly what
 that transport exists to prevent.
 

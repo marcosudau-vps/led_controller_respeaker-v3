@@ -1,4 +1,4 @@
-# respeaker-led-device
+# lefx-device-respeaker
 
 Die Anbindung an den reSpeaker XVF3800 über USB.
 
@@ -32,7 +32,7 @@ schickt einen in die falsche Richtung. Meistens läuft schlicht noch ein anderer
 Controller.
 
 ```bash
-respeaker-led-device probe
+lefx-respeaker probe
 ```
 
 `probe` sagt, ob das Gerät ansprechbar ist, und listet andernfalls die Prozesse,
@@ -40,7 +40,7 @@ die ein USB-Gerät halten — mit Kommandozeile, denn erfahrungsgemäß heißen 
 Kandidaten `python.exe`.
 
 ```bash
-respeaker-led-device claim --dry-run
+lefx-respeaker claim --dry-run
 ```
 
 `claim` beendet, was im Weg steht, und prüft danach nach. Zwei Dinge begrenzen

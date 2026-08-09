@@ -198,7 +198,7 @@ def test_every_entry_point_distribution_travels_with_the_bundle():
     module = build_studio()
     registered = set(module.entry_point_distributions())
 
-    assert {"respeaker-led-device", "respeaker-led-simulator"} <= registered
+    assert {"lefx-device-respeaker", "lefx-device-simulated-respeaker"} <= registered
     assert registered <= set(module.metadata_to_copy())
 
 
@@ -213,8 +213,8 @@ def test_the_whole_author_whitelist_is_a_hidden_import():
 
 def test_the_registration_modules_are_named_even_though_nothing_imports_them():
     hidden = set(build_studio().hidden_imports())
-    assert "respeaker_led.device.registration" in hidden
-    assert "respeaker_led.simulator.registration" in hidden
+    assert "lefx.device.respeaker.registration" in hidden
+    assert "lefx.device.simulated_respeaker.registration" in hidden
 
 
 def test_the_studios_own_qt_pages_are_named():

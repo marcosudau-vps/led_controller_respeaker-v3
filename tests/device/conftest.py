@@ -85,7 +85,7 @@ class FakeWindow:
     """
 
     def __init__(self, host: str, port: int) -> None:
-        from respeaker_led.simulator import protocol
+        from lefx.device.simulated_respeaker import protocol
 
         self.protocol = protocol
         self.sock = socket.create_connection((host, port), timeout=2.0)
@@ -140,7 +140,7 @@ def free_port() -> int:
 
 
 def build_simulator(led_count: int = 12) -> Device:
-    from respeaker_led.simulator import SimulatorDoaProvider, SimulatorFrameSink, SimulatorLink
+    from lefx.device.simulated_respeaker import SimulatorDoaProvider, SimulatorFrameSink, SimulatorLink
 
     link = SimulatorLink(host="127.0.0.1", port=free_port(), led_count=led_count)
     link.start()
@@ -199,7 +199,7 @@ def hardware_reachable() -> tuple[bool, str]:
     read-only command the transport uses as its heartbeat gives the true answer.
     """
     try:
-        from respeaker_led.device import UsbTransport, xvf
+        from lefx.device.respeaker import UsbTransport, xvf
     except Exception as exc:
         return False, f"the hardware package will not import: {exc}"
 
@@ -223,7 +223,7 @@ def hardware_reachable() -> tuple[bool, str]:
 
 
 def build_hardware() -> Device:
-    from respeaker_led.device import (
+    from lefx.device.respeaker import (
         RING_LED_COUNT,
         ReSpeakerDoaProvider,
         ReSpeakerFrameSink,

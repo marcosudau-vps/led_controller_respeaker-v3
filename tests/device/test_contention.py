@@ -16,8 +16,8 @@ import os
 
 import pytest
 
-from respeaker_led.device import contention
-from respeaker_led.device.contention import Holder, ReleaseReport
+from lefx.device.respeaker import contention
+from lefx.device.respeaker.contention import Holder, ReleaseReport
 
 
 def holder(pid: int, *, command: str = "python.exe app.py", strong: bool = True) -> Holder:

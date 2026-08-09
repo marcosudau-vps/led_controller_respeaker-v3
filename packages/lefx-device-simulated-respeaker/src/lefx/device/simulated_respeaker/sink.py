@@ -17,7 +17,7 @@ from lefx.sdk import OutputFrame, SinkStatus
 
 from .link import SimulatorLink
 
-logger = logging.getLogger("respeaker_led.simulator.sink")
+logger = logging.getLogger("lefx.device.simulated_respeaker.sink")
 
 
 class SimulatorFrameSink:

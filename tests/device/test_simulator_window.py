@@ -24,7 +24,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PySide6.QtGui import QImage  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
-from respeaker_led.simulator.ring import LedRingWidget  # noqa: E402
+from lefx.device.simulated_respeaker.ring import LedRingWidget  # noqa: E402
 
 from .conftest import FakeWindow, free_port, until  # noqa: E402
 
@@ -97,8 +97,8 @@ def test_the_window_connects_signals_that_actually_match_their_slots(qt_app):
     the client, the protocol and the widget are wired together the way the
     console script wires them.
     """
-    from respeaker_led.simulator.link import SimulatorLink
-    from respeaker_led.simulator.window import SimulatorWindow
+    from lefx.device.simulated_respeaker.link import SimulatorLink
+    from lefx.device.simulated_respeaker.window import SimulatorWindow
 
     link = SimulatorLink(host="127.0.0.1", port=free_port(), led_count=8)
     link.start()
@@ -135,7 +135,7 @@ def test_the_window_is_never_imported_by_the_service_half():
     import ast
     from pathlib import Path
 
-    import respeaker_led.simulator as package
+    import lefx.device.simulated_respeaker as package
 
     root = Path(package.__file__).parent
     service_side = [

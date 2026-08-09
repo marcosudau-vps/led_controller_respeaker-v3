@@ -5,8 +5,8 @@ package does. It is a device, not a preview: it fills the same ports, reports
 direction in the same shape and range, and passes the same conformance suite.
 
 Only the names exported here are service-side and free of Qt. The ring window
-lives in :mod:`respeaker_led.simulator.window` and is reached through the
-``respeaker-led-simulator`` console script.
+lives in :mod:`lefx.device.simulated_respeaker.window` and is reached through the
+``lefx-simulator`` console script.
 """
 
 from __future__ import annotations

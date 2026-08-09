@@ -34,11 +34,11 @@ BUILD_ROOT = REPO_ROOT / "build"
 DIST_DIR = BUILD_ROOT / "dist"
 WORK_DIR = BUILD_ROOT / "pyinstaller"
 
-NAME = "respeaker-led-simulator"
+NAME = "lefx-simulator"
 
 LAUNCHER = '''"""Generated entry point. Absolute imports only — see build_simulator.py."""
 
-from respeaker_led.simulator.app import main
+from lefx.device.simulated_respeaker.app import main
 
 raise SystemExit(main())
 '''
@@ -48,8 +48,8 @@ HIDDEN_IMPORTS = (
     # readable error instead of a traceback. Lazy imports are reached by
     # PyInstaller's analysis in most cases, but naming them costs nothing and
     # removes the question.
-    "respeaker_led.simulator.window",
-    "respeaker_led.simulator.ring",
+    "lefx.device.simulated_respeaker.window",
+    "lefx.device.simulated_respeaker.ring",
 )
 
 EXCLUDES = (
@@ -118,10 +118,10 @@ def check_requirements() -> list[str]:
             '    uv pip install "PySide6>=6.0.0"'
         )
     try:
-        import respeaker_led.simulator  # noqa: F401
+        import lefx.device.simulated_respeaker  # noqa: F401
     except ImportError:
         missing.append(
-            "respeaker_led.simulator is not importable:\n"
+            "lefx.device.simulated_respeaker is not importable:\n"
             "    uv sync"
         )
     return missing
