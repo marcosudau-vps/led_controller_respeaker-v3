@@ -4,12 +4,15 @@ requires-python = "==3.12.*"
 
 [manifest]
 members = [
+    "led-ctrl-v3",
     "lefx-device-respeaker",
     "lefx-device-simulated-respeaker",
     "lefx-effect-creation",
     "lefx-engine",
     "lefx-interfaces",
     "lefx-sdk",
+    "lefxset-core-set",
+    "lefxset-smartspeaker-set",
     "respeaker-led-v3-workspace",
 ]
 
@@ -164,6 +167,54 @@ wheels = [
 ]
 
 [[package]]
+name = "led-ctrl-v3"
+version = "3.0.0"
+source = { editable = "packages/led-ctrl-v3" }
+dependencies = [
+    { name = "lefx-device-respeaker" },
+    { name = "lefx-engine" },
+    { name = "lefx-interfaces" },
+    { name = "lefx-sdk" },
+]
+
+[package.optional-dependencies]
+all = [
+    { name = "lefx-device-simulated-respeaker", extra = ["gui"] },
+    { name = "lefx-effect-creation" },
+    { name = "lefxset-core-set" },
+    { name = "lefxset-smartspeaker-set" },
+]
+core-set = [
+    { name = "lefxset-core-set" },
+]
+effect-creation = [
+    { name = "lefx-effect-creation" },
+]
+simulated-respeaker = [
+    { name = "lefx-device-simulated-respeaker", extra = ["gui"] },
+]
+smartspeaker-set = [
+    { name = "lefxset-smartspeaker-set" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lefx-device-respeaker", editable = "packages/lefx-device-respeaker" },
+    { name = "lefx-device-simulated-respeaker", extras = ["gui"], marker = "extra == 'all'", editable = "packages/lefx-device-simulated-respeaker" },
+    { name = "lefx-device-simulated-respeaker", extras = ["gui"], marker = "extra == 'simulated-respeaker'", editable = "packages/lefx-device-simulated-respeaker" },
+    { name = "lefx-effect-creation", marker = "extra == 'all'", editable = "packages/lefx-effect-creation" },
+    { name = "lefx-effect-creation", marker = "extra == 'effect-creation'", editable = "packages/lefx-effect-creation" },
+    { name = "lefx-engine", editable = "packages/lefx-engine" },
+    { name = "lefx-interfaces", editable = "packages/lefx-interfaces" },
+    { name = "lefx-sdk", editable = "packages/lefx-sdk" },
+    { name = "lefxset-core-set", marker = "extra == 'all'", editable = "packages/lefxset-core-set" },
+    { name = "lefxset-core-set", marker = "extra == 'core-set'", editable = "packages/lefxset-core-set" },
+    { name = "lefxset-smartspeaker-set", marker = "extra == 'all'", editable = "packages/lefxset-smartspeaker-set" },
+    { name = "lefxset-smartspeaker-set", marker = "extra == 'smartspeaker-set'", editable = "packages/lefxset-smartspeaker-set" },
+]
+provides-extras = ["simulated-respeaker", "effect-creation", "core-set", "smartspeaker-set", "all"]
+
+[[package]]
 name = "lefx-device-respeaker"
 version = "3.0.0"
 source = { editable = "packages/lefx-device-respeaker" }
@@ -241,6 +292,7 @@ dependencies = [
     { name = "lefx-engine" },
     { name = "lefx-sdk" },
     { name = "pydantic" },
+    { name = "pyyaml" },
     { name = "tzdata", marker = "sys_platform == 'win32'" },
     { name = "uvicorn" },
 ]
@@ -251,6 +303,7 @@ requires-dist = [
     { name = "lefx-engine", editable = "packages/lefx-engine" },
     { name = "lefx-sdk", editable = "packages/lefx-sdk" },
     { name = "pydantic", specifier = ">=2.12.5,<2.13" },
+    { name = "pyyaml", specifier = ">=6.0.2,<7" },
     { name = "tzdata", marker = "sys_platform == 'win32'", specifier = ">=2025.2" },
     { name = "uvicorn", specifier = ">=0.44.0,<0.45" },
 ]
@@ -259,6 +312,16 @@ requires-dist = [
 name = "lefx-sdk"
 version = "3.0.0"
 source = { editable = "packages/lefx-sdk" }
+
+[[package]]
+name = "lefxset-core-set"
+version = "3.0.0"
+source = { editable = "packages/lefxset-core-set" }
+
+[[package]]
+name = "lefxset-smartspeaker-set"
+version = "3.0.0"
+source = { editable = "packages/lefxset-smartspeaker-set" }
 
 [[package]]
 name = "libusb-package"
@@ -515,12 +578,15 @@ name = "respeaker-led-v3-workspace"
 version = "3.0.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "led-ctrl-v3" },
     { name = "lefx-device-respeaker" },
     { name = "lefx-device-simulated-respeaker" },
     { name = "lefx-effect-creation" },
     { name = "lefx-engine" },
     { name = "lefx-interfaces" },
     { name = "lefx-sdk" },
+    { name = "lefxset-core-set" },
+    { name = "lefxset-smartspeaker-set" },
 ]
 
 [package.dev-dependencies]
@@ -535,12 +601,15 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "led-ctrl-v3", editable = "packages/led-ctrl-v3" },
     { name = "lefx-device-respeaker", editable = "packages/lefx-device-respeaker" },
     { name = "lefx-device-simulated-respeaker", editable = "packages/lefx-device-simulated-respeaker" },
     { name = "lefx-effect-creation", editable = "packages/lefx-effect-creation" },
     { name = "lefx-engine", editable = "packages/lefx-engine" },
     { name = "lefx-interfaces", editable = "packages/lefx-interfaces" },
     { name = "lefx-sdk", editable = "packages/lefx-sdk" },
+    { name = "lefxset-core-set", editable = "packages/lefxset-core-set" },
+    { name = "lefxset-smartspeaker-set", editable = "packages/lefxset-smartspeaker-set" },
 ]
 
 [package.metadata.requires-dev]

@@ -1,0 +1,74 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "led-ctrl-v3"
+version = "3.0.0"
+description = "LED ring control for the reSpeaker XVF3800 — the LEFX V3 system, installed as one thing"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12,<3.13"
+keywords = ["respeaker", "xvf3800", "led", "effects", "lefx"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Hardware :: Hardware Drivers",
+]
+
+# The default installation, and the whole of it: the schema, the runtime, the
+# control surface and the hardware. It plays finished .lefx and .lefxset files
+# on a reSpeaker and does nothing else — no catalogue, no simulator, no
+# authoring tools. Every one of those is a real thing to install rather than a
+# feature to switch on, and each is one line below.
+#
+#     pip install led-ctrl-v3
+#
+# This distribution contains no code. It is the name the system is installed
+# under, so that "which packages do I need" has one answer instead of four.
+dependencies = [
+    "lefx-sdk==3.0.0",
+    "lefx-engine==3.0.0",
+    "lefx-interfaces==3.0.0",
+    "lefx-device-respeaker==3.0.0",
+]
+
+[project.optional-dependencies]
+# The software device double, with its ring window. The window is included
+# because someone asking for a simulator is asking to see one; a service host
+# that wants the sink without a GUI toolkit installs
+# lefx-device-simulated-respeaker directly, which is what the extra on *that*
+# package is for.
+simulated-respeaker = ["lefx-device-simulated-respeaker[gui]==3.0.0"]
+
+# Everything to do with making effects: scaffolding, validation, the packer and
+# the studio. Brings Qt. Not needed to run anything.
+effect-creation = ["lefx-effect-creation==3.0.0"]
+
+# The catalogues. Which of the installed ones actually load is a separate
+# question, answered by included_lefxset in config.yaml.
+core-set = ["lefxset-core-set==3.0.0"]
+smartspeaker-set = ["lefxset-smartspeaker-set==3.0.0"]
+
+all = [
+    "lefx-device-simulated-respeaker[gui]==3.0.0",
+    "lefx-effect-creation==3.0.0",
+    "lefxset-core-set==3.0.0",
+    "lefxset-smartspeaker-set==3.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/marcosudau-vps/led_controller_respeaker-v3"
+Source = "https://github.com/marcosudau-vps/led_controller_respeaker-v3"
+
+# No modules, no packages — the dependency list is the content. Without this,
+# hatchling looks for something to include and fails rather than building an
+# empty wheel, because an empty wheel is usually a mistake. Here it is the point.
+[tool.hatch.build.targets.wheel]
+bypass-selection = true
+
+[tool.hatch.build.targets.sdist]
+include = ["README.md"]

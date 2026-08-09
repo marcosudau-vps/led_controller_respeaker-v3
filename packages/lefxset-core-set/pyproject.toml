@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lefxset-core-set"
+version = "3.0.0"
+description = "LEFX V3 core set: reference definitions covering every lifecycle form and every colour model"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12,<3.13"
+keywords = ["lefx", "led", "effects", "catalogue"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+
+# A catalogue, not a library. It ships one built .lefxset and the four lines
+# needed to say where it is; it depends on nothing, because a package format is
+# not an import.
+dependencies = []
+
+# How an installed set is found. The service reads this group the same way it
+# reads the sink and provider groups: uninstall the distribution and the set is
+# gone, with no path to forget and no list to edit.
+#
+# The name is the set id, which is also what INCLUDED_LEFXSET selects on.
+[project.entry-points."lefx.effect_sets"]
+core-set = "lefx.sets.core_set:package_file"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lefx"]
+
+# The archive is built output, so it is gitignored, and hatchling excludes
+# ignored files by default — a wheel with the module in it and no catalogue.
+# "artifacts" is the exception list for exactly that case: include it if it is
+# there. Deliberately not force-include, which fails the build when the file is
+# absent and would make "uv sync" impossible in a fresh checkout, since the
+# tool that builds the archive is itself a workspace member.
+#
+# That leaves one hole — a wheel built before the sets were — and it is closed
+# where it belongs, in scripts/check_release.py, which opens every built wheel
+# and looks for the archive inside.
+[tool.hatch.build]
+artifacts = ["src/lefx/sets/core_set/*.lefxset"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/lefx", "README.md"]

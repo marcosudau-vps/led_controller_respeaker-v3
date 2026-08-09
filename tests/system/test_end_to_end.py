@@ -89,6 +89,11 @@ class Stack:
         # without anything having to wait for it. It only ever moves forward:
         # each rendered frame carries the moment it was rendered at, and that is
         # how a frame is matched to the call that caused it.
+        #
+        # It also never falls *behind* the real one — see ``render``. The app's
+        # lifespan starts the service's own render thread, which polls on
+        # time.monotonic(), and anything that rate-limits by comparing
+        # timestamps would then see this clock go backwards.
         self.clock = time.monotonic()
         service.add_listener(lambda event, payload: self.events.append((event, payload)))
 
@@ -145,7 +150,14 @@ class Stack:
         first. Waiting for the render's own timestamp asks for the frame this
         call caused, which is the one the assertions are about.
         """
-        self.clock += advance_s
+        # Ahead of the real clock, not merely ahead of the last hand-made
+        # moment. The service's own render thread is running and refreshing the
+        # input providers with time.monotonic(); a provider that polls at 30 Hz
+        # skips any refresh less than 33 ms after its last attempt, and a
+        # hand-made moment that had fallen behind real time would be exactly
+        # that. The reading then never arrives, and the failure looks like a
+        # device fault rather than two clocks disagreeing.
+        self.clock = max(self.clock + advance_s, time.monotonic() + advance_s)
         moment = self.clock
         self.service.render_once(moment)
         if self.window is None:

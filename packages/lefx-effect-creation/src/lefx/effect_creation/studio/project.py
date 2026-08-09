@@ -28,9 +28,18 @@ from typing import Any, Iterable
 logger = logging.getLogger("lefx.effect_creation.studio.project")
 
 CATALOGUE_DIR = "effects"
-BUILD_DIR = "build/effects"
 CALIBRATION_FILE = "doa_calibration.json"
 STATE_FILE = "build/studio-state.json"
+
+SET_PACKAGE_DIR = "packages"
+"""Where a built set lands: inside the distribution that ships it.
+
+There used to be a ``build/effects`` for this, and it was a third place a
+``.lefxset`` could be. Now each set has exactly one home — the package tree of
+``lefxset-<name>`` — and that home is the same directory in a checkout, in an
+editable workspace and in an installed wheel. A set that is built is a set that
+is installed; there is no step in between that can be forgotten.
+"""
 
 RECENT_FILE = Path.home() / ".lefx" / "studio.json"
 """Where the last project is remembered.
@@ -59,10 +68,24 @@ class Project:
         """Where effect *sources* live, one directory per set."""
         return self.root / CATALOGUE_DIR
 
+    def build_target(self, set_name: str) -> Path:
+        """Where the named set's archive belongs, built or not."""
+        return (
+            self.root / SET_PACKAGE_DIR / f"lefxset-{set_name}"
+            / "src" / "lefx" / "sets" / set_name.replace("-", "_") / f"{set_name}.lefxset"
+        )
+
     @property
-    def build_root(self) -> Path:
-        """Where built ``.lefxset`` archives are put and looked for."""
-        return self.root / BUILD_DIR
+    def built_set_dirs(self) -> list[Path]:
+        """The directories holding this project's built archives.
+
+        Globbed off the project rather than read from the installed entry
+        points on purpose. The studio is pointed at *a checkout* — possibly not
+        the one it was built from — and has to show that checkout's catalogue,
+        not whichever one happened to be installed alongside the executable.
+        """
+        found = self.root.glob(f"{SET_PACKAGE_DIR}/lefxset-*/src/lefx/sets/*")
+        return sorted(path for path in found if path.is_dir() and path.name != "__pycache__")
 
     @property
     def package_search_paths(self) -> list[Path]:
@@ -71,7 +94,7 @@ class Project:
         The built catalogue first, then the source tree — the same two places
         ``lefx serve`` looks, so the studio shows what the service would load.
         """
-        return [self.build_root, self.catalogue_root]
+        return [*self.built_set_dirs, self.catalogue_root]
 
     @property
     def calibration_file(self) -> Path:
@@ -122,7 +145,7 @@ class Project:
         it is where a first effect gets written — but the window should say so
         rather than present an empty list as if it were a finding.
         """
-        return self.catalogue_root.is_dir() or self.build_root.is_dir()
+        return self.catalogue_root.is_dir() or bool(self.built_set_dirs)
 
     @property
     def label(self) -> str:
@@ -132,7 +155,7 @@ class Project:
         return {
             "root": str(self.root),
             "catalogue": str(self.catalogue_root),
-            "build": str(self.build_root),
+            "build": [str(path) for path in self.built_set_dirs],
             "sets": [path.name for path in self.sets()],
             "is_project": self.looks_like_a_project,
         }
@@ -154,18 +177,15 @@ class Project:
         from lefx.effect_creation import build_effect_set
 
         results: list[dict[str, Any]] = []
-        self.build_root.mkdir(parents=True, exist_ok=True)
         for set_root in self.sets():
+            target = self.build_target(set_root.name)
+            target.parent.mkdir(parents=True, exist_ok=True)
             staging = set_root / "effects"
             if staging.exists():
                 shutil.rmtree(staging)
             try:
                 results.append(
-                    build_effect_set(
-                        set_root,
-                        self.sources_in(set_root),
-                        self.build_root / f"{set_root.name}.lefxset",
-                    )
+                    build_effect_set(set_root, self.sources_in(set_root), target)
                 )
             finally:
                 shutil.rmtree(staging, ignore_errors=True)
@@ -236,14 +256,15 @@ def iter_paths(project: Project) -> Iterable[tuple[str, Path]]:
     """For the window's status line and for tests to assert against."""
     yield "Wurzel", project.root
     yield "Quellen", project.catalogue_root
-    yield "Gebaut", project.build_root
+    for path in project.built_set_dirs:
+        yield f"Gebaut ({path.name})", path
     yield "Kalibrierung", project.calibration_file
 
 
 __all__ = [
-    "BUILD_DIR",
     "CALIBRATION_FILE",
     "CATALOGUE_DIR",
+    "SET_PACKAGE_DIR",
     "RECENT_FILE",
     "STATE_FILE",
     "Project",

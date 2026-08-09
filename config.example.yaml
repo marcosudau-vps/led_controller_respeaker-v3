@@ -1,0 +1,61 @@
+# LEFX V3 — projektweite Konfiguration.
+#
+# Kopieren nach config.yaml (im Arbeitsverzeichnis des Dienstes) oder nach
+# ~/.lefx/config.yaml, oder mit LEFX_CONFIG auf eine beliebige Datei zeigen.
+# Ohne Datei gilt für jeden Schlüssel der hier gezeigte Standardwert.
+#
+# Jeder Schlüssel lässt sich zur Laufzeit über eine Umgebungsvariable
+# überschreiben: der Slug in Großbuchstaben, mit LEFX_-Präfix oder ohne.
+# Die präfigierte Form gewinnt, wenn beide gesetzt sind.
+#
+#     LED_COUNT=5 lefx serve
+#     LEFX_PORT=8770 lefx status
+#     INCLUDED_LEFXSET=[core, smartspeaker] lefx serve
+#
+# Ein Kommandozeilenschalter schlägt beides. `lefx config` zeigt für jeden
+# Wert, welcher gerade gilt und woher er kommt.
+
+# Wie viele LEDs der Ring hat. Der Renderer prüft jeden Frame dagegen.
+led_count: 12
+
+# Bildrate der Renderschleife.
+fps: 30.0
+
+# Adresse und Port von `lefx serve` — und zugleich, wo die Client-Kommandos
+# den Dienst suchen. Ein belegter Port fällt auf den Pool zurück.
+host: 127.0.0.1
+port: 8765
+
+# Welche Frame-Senke benutzt wird: respeaker, simulator, null, oder was sonst
+# installiert ist. `lefx sinks` listet das Installierte auf.
+sink: "null"
+
+# Zusätzliche Schlüsselwörter für die Fabriken des gewählten Geräts. Sie gehen
+# an Senke und Eingabeprovider gleichermaßen, weil sie das Gerät konfigurieren
+# und nicht eine Hälfte davon.
+sink_options: {}
+#   port: 8770                 # Simulator: Port des lokalen Transports
+#   angle_offset_deg: 129.1    # reSpeaker: gemessene Verdrehung des Arrays
+
+# Gerät, dessen Eingabeprovider laufen. Standardmäßig das der Senke — die
+# Mikrofone eines reSpeakers gehören zu seinem Ring. Getrennt zu benennen ist
+# der ungewöhnliche Fall: Hardware-Richtung auf simulierter Anzeige.
+input_device: null
+
+# Wohin Logs, die Instanzdatei und der persistierte Zustand geschrieben werden.
+# Ohne Angabe ein Unterverzeichnis des Temp-Verzeichnisses.
+state_root: null
+
+# Zusätzliche Verzeichnisse, die nach .lefx- und .lefxset-Dateien durchsucht
+# werden — getrennt wie PATH. Ersetzt die installierten Sätze *nicht*, sondern
+# kommt hinzu.
+package_path: []
+
+# Welche installierten Effektsätze geladen werden. Leer heißt: alle.
+# Die Namen dürfen mit oder ohne -Suffix geschrieben werden; core und core-set
+# meinen denselben Satz.
+included_lefxset: []
+#   [core, smartspeaker]
+
+# Logging-Level des Dienstprozesses.
+log_level: INFO

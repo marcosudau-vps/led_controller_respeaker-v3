@@ -10,6 +10,9 @@ dependencies = [
     "lefx-interfaces",
     "lefx-device-respeaker",
     "lefx-device-simulated-respeaker",
+    "lefxset-core-set",
+    "lefxset-smartspeaker-set",
+    "led-ctrl-v3",
 ]
 
 # The root is a workspace container, not a distributable. Nothing here is ever
@@ -30,6 +33,9 @@ lefx-effect-creation = { workspace = true }
 lefx-interfaces = { workspace = true }
 lefx-device-respeaker = { workspace = true }
 lefx-device-simulated-respeaker = { workspace = true }
+lefxset-core-set = { workspace = true }
+lefxset-smartspeaker-set = { workspace = true }
+led-ctrl-v3 = { workspace = true }
 
 [dependency-groups]
 dev = [

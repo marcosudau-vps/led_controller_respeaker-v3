@@ -41,17 +41,43 @@ DIST_DIR = REPO_ROOT / "build/dist-packages"
 # it, and it is installed afterwards into the same environment — which is both
 # the real upgrade path and the proof that a runtime installation works without
 # any of the tooling that made the effects it plays.
+# What "pip install led-ctrl-v3" brings, named as a person would ask for it —
+# the metapackage and two of its extras, resolved through the built wheels
+# rather than listed here. That is the point: if the extras are wrong, this
+# installs the wrong thing and every check below is run against it.
+RUNTIME_REQUESTS = (
+    "led-ctrl-v3",
+    "led-ctrl-v3[core-set]",
+    "led-ctrl-v3[smartspeaker-set]",
+    # Not the [simulated-respeaker] extra, which pulls the gui extra with it:
+    # the distribution alone is what proves the service half needs no Qt.
+    "lefx-device-simulated-respeaker",
+)
+
+# Every distribution the workspace publishes, which is what uv build produces.
 DISTRIBUTIONS = (
     "lefx-sdk",
     "lefx-engine",
     "lefx-interfaces",
     "lefx-device-respeaker",
     "lefx-device-simulated-respeaker",
+    "lefxset-core-set",
+    "lefxset-smartspeaker-set",
+    "led-ctrl-v3",
 )
 
 GUI_DISTRIBUTION = "lefx-effect-creation"
 
 ALL_DISTRIBUTIONS = (*DISTRIBUTIONS, GUI_DISTRIBUTION)
+
+# The catalogue distributions and the archive each one has to actually contain.
+# A wheel built before scripts/build_effects.py ran installs cleanly, offers its
+# entry point, and delivers nothing — the one failure the "artifacts" include in
+# their pyproject cannot prevent.
+EFFECT_SET_WHEELS = {
+    "lefxset-core-set": "lefx/sets/core_set/core-set.lefxset",
+    "lefxset-smartspeaker-set": "lefx/sets/smartspeaker_set/smartspeaker-set.lefxset",
+}
 
 IMPORT_NAMES = (
     "lefx.sdk",
@@ -59,6 +85,8 @@ IMPORT_NAMES = (
     "lefx.interfaces",
     "lefx.device.respeaker",
     "lefx.device.simulated_respeaker",
+    "lefx.sets.core_set",
+    "lefx.sets.smartspeaker_set",
 )
 
 # The half of the simulator a service process loads. None of it may need Qt.
@@ -73,6 +101,7 @@ GUI_FREE_MODULES = (
 
 EXPECTED_SINKS = {"respeaker", "simulator"}
 EXPECTED_PROVIDERS = {"respeaker.doa", "simulator.doa"}
+EXPECTED_EFFECT_SETS = {"core-set", "smartspeaker-set"}
 
 
 class CheckFailed(RuntimeError):
@@ -118,18 +147,33 @@ def make_environment(root: Path) -> Path:
 
     # --find-links points at what was just built; third-party dependencies still
     # come from the index, because the point here is our packaging, not theirs.
-    result = run(
+    result = install(python, *RUNTIME_REQUESTS)
+    if result.returncode != 0:
+        raise CheckFailed(f"installing the built artefacts failed:\n{result.stderr}")
+    return python
+
+
+def install(python: Path, *requests: str) -> subprocess.CompletedProcess:
+    """Install from what was just built, and from nothing else.
+
+    --refresh-package for every distribution of ours is not a precaution, it is
+    a correction: a local wheel is cached by name and version, our version does
+    not change between builds during development, and without this the check
+    installs whatever it installed last time. It did — a wheel four commits old
+    passed every step here while the freshly built one sat unopened in
+    build/dist-packages.
+    """
+    refresh = [item for name in ALL_DISTRIBUTIONS for item in ("--refresh-package", name)]
+    return run(
         [
             "uv", "pip", "install",
             "--python", str(python),
             "--find-links", str(DIST_DIR),
-            *DISTRIBUTIONS,
+            *refresh,
+            *requests,
         ],
         cwd=REPO_ROOT,
     )
-    if result.returncode != 0:
-        raise CheckFailed(f"installing the built artefacts failed:\n{result.stderr}")
-    return python
 
 
 def script(python: Path, name: str) -> Path:
@@ -142,6 +186,23 @@ def check_imports(python: Path) -> None:
         result = run([str(python), "-c", f"import {name}"])
         detail = "" if result.returncode == 0 else f"\n{result.stderr}"
         require(result.returncode == 0, f"import {name}{detail}")
+
+
+def check_the_catalogue_wheels_carry_a_catalogue(wheels: list[Path]) -> None:
+    """Look inside the built wheel, before anything installs it."""
+    import zipfile
+
+    for distribution, member in EFFECT_SET_WHEELS.items():
+        prefix = distribution.replace("-", "_")
+        matching = [path for path in wheels if path.name.startswith(f"{prefix}-")]
+        require(len(matching) == 1, f"exactly one wheel for {distribution}")
+        with zipfile.ZipFile(matching[0]) as archive:
+            names = set(archive.namelist())
+        require(
+            member in names,
+            f"{matching[0].name} contains {member} "
+            "(run scripts/build_effects.py before building)",
+        )
 
 
 def check_versions(python: Path, distributions=DISTRIBUTIONS) -> None:
@@ -211,9 +272,66 @@ def check_entry_points(python: Path) -> None:
         {item["capability"] for item in catalogue["input_providers"]} == {"doa"},
         "every installed provider offers the bare capability the engine asks for",
     )
+
+    sets = {item["name"] for item in catalogue["effect_sets"]}
+    require(EXPECTED_EFFECT_SETS <= sets, f"both effect sets are discovered ({sorted(sets)})")
+    require(
+        all(item["enabled"] and item["archive"] for item in catalogue["effect_sets"]),
+        "each installed set is enabled and points at an archive that is there",
+    )
     require(
         result.stderr.strip() == "",
         f"nothing warned while loading the entry points\n{result.stderr}",
+    )
+
+
+def check_the_catalogue_loads(python: Path) -> None:
+    """The sets arrived as effects, not merely as files.
+
+    Installed rather than built: this is the only place the wheel's copy of the
+    archive is opened by the loader that will open it in production. Run from
+    outside the checkout, so that nothing is found by sitting next to it.
+    """
+    code = (
+        "import json\n"
+        "from lefx.interfaces import ControllerService\n"
+        "service = ControllerService(led_count=12)\n"
+        "try:\n"
+        "    sources = {e['source_id']: e for e in service.library.sources()}\n"
+        "    broken = {n: e['error'] for n, e in sources.items() if e['error']}\n"
+        "    assert not broken, broken\n"
+        "    print(json.dumps({'count': len(service.library.registry),\n"
+        "                      'sources': sorted(sources)}))\n"
+        "finally:\n"
+        "    service.stop()\n"
+    )
+    result = run([str(python), "-c", code], cwd=REPO_ROOT.parent)
+    require(
+        result.returncode == 0,
+        f"the installed catalogue loads with no broken source\n{result.stdout}\n{result.stderr}",
+    )
+    loaded = json.loads(result.stdout)
+    require(loaded["count"] > 0, f"the installed sets registered {loaded['count']} definitions")
+    require(
+        EXPECTED_EFFECT_SETS <= set(loaded["sources"]),
+        f"both sets are among the loaded sources ({loaded['sources']})",
+    )
+
+
+def check_the_selection_narrows_the_catalogue(python: Path) -> None:
+    """INCLUDED_LEFXSET, in the form it is documented in.
+
+    Checked from a real environment rather than a unit test because what it
+    selects on is entry point metadata, which only an installation has.
+    """
+    import os as _os
+
+    code = "from lefx.interfaces import discovery\nprint(sorted(discovery.installed_effect_sets()))\n"
+    result = run([str(python), "-c", code], env={**_os.environ, "INCLUDED_LEFXSET": "[core]"})
+    require(
+        result.returncode == 0 and result.stdout.strip() == "['core-set']",
+        f"INCLUDED_LEFXSET=[core] leaves only the core set: "
+        f"{result.stdout.strip()}\n{result.stderr}",
     )
 
 
@@ -246,17 +364,19 @@ def check_effect_creation_installs_on_top(python: Path) -> None:
     Deliberately last and deliberately into the same environment: this is the
     order a person adds an extra in, and it is the order that shows effect
     creation brings its own Qt rather than needing one to have been there.
+
+    Asked for as ``led-ctrl-v3[all]`` rather than by distribution name, so that
+    the extra is what is exercised. An extra that named the wrong package would
+    otherwise be invisible here and visible only to whoever typed it.
     """
-    result = run(
-        [
-            "uv", "pip", "install",
-            "--python", str(python),
-            "--find-links", str(DIST_DIR),
-            GUI_DISTRIBUTION,
-        ],
-        cwd=REPO_ROOT,
+    result = install(python, "led-ctrl-v3[all]")
+    require(result.returncode == 0, f"led-ctrl-v3[all] installs on top\n{result.stderr}")
+
+    installed = run(
+        [str(python), "-c", "import json;from importlib.metadata import version;"
+         f"print(json.dumps(version({GUI_DISTRIBUTION!r})))"]
     )
-    require(result.returncode == 0, f"{GUI_DISTRIBUTION} installs on top\n{result.stderr}")
+    require(installed.returncode == 0, f"the [all] extra pulled in {GUI_DISTRIBUTION}")
 
     check_versions(python, ALL_DISTRIBUTIONS)
 
@@ -285,7 +405,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        build_distributions()
+        wheels = build_distributions()
+        check_the_catalogue_wheels_carry_a_catalogue(wheels)
         root = Path(tempfile.mkdtemp(prefix="lefx-release-", dir=REPO_ROOT / "build"))
         print(f"installing into {root.relative_to(REPO_ROOT)}")
         try:
@@ -294,6 +415,8 @@ def main(argv: list[str] | None = None) -> int:
             check_imports(python)
             check_console_scripts(python)
             check_entry_points(python)
+            check_the_catalogue_loads(python)
+            check_the_selection_narrows_the_catalogue(python)
             check_simulator_without_qt(python)
             check_the_service_starts(python)
             check_effect_creation_installs_on_top(python)

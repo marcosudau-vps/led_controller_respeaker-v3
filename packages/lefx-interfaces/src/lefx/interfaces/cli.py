@@ -7,6 +7,11 @@ its own.
 Plain ``set`` always means on. An implicit toggle would make a repeated command
 or a retry do the opposite of what it did the first time, so switching something
 off is spelled out.
+
+Flag defaults come from :mod:`lefx.interfaces.config`, so a config.yaml or an
+environment variable moves the default and an explicit flag still wins. That is
+the whole of the interaction: there is no flag that reads configuration itself,
+and no setting that only some commands honour.
 """
 
 from __future__ import annotations
@@ -16,6 +21,7 @@ import json
 import sys
 from typing import Any
 
+from . import config
 from .client import ControllerClient, Result
 
 LIST_KINDS = {
@@ -64,8 +70,13 @@ def parse_bool(value: str) -> bool:
 
 
 def add_connection(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8765)
+    """Where a client command looks for the service.
+
+    The same two settings the service binds to, so configuring a port once
+    moves both ends of the conversation rather than one.
+    """
+    parser.add_argument("--host", default=config.get("host"))
+    parser.add_argument("--port", type=int, default=config.get("port"))
     parser.add_argument("--timeout", type=float, default=5.0)
 
 
@@ -76,10 +87,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     serve = sub.add_parser("serve", help="Run the controller service")
-    serve.add_argument("--host", default="127.0.0.1")
-    serve.add_argument("--port", type=int, default=8765)
+    serve.add_argument("--host", default=config.get("host"))
+    serve.add_argument("--port", type=int, default=config.get("port"))
     serve.add_argument("--port-pool", default="", help="Fallback ports, e.g. 8765,8770-8774")
-    serve.add_argument("--sink", default="null", help="Frame sink to use, or 'null'")
+    serve.add_argument("--sink", default=config.get("sink"), help="Frame sink to use, or 'null'")
     serve.add_argument(
         "--sink-option",
         type=parse_option,
@@ -94,13 +105,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     serve.add_argument(
         "--input-device",
-        default=None,
+        default=config.get("input_device"),
         help="Take inputs from this device instead of the one providing the sink",
     )
-    serve.add_argument("--led-count", type=int, default=12)
-    serve.add_argument("--fps", type=float, default=30.0)
+    serve.add_argument("--led-count", type=int, default=config.get("led_count"))
+    serve.add_argument("--fps", type=float, default=config.get("fps"))
 
-    sinks = sub.add_parser("sinks", help="List installed frame sinks and input providers")
+    sinks = sub.add_parser("sinks", help="List installed frame sinks, providers and effect sets")
+
+    settings = sub.add_parser(
+        "config", help="Show every setting, its value and where the value came from"
+    )
+    settings.add_argument("--json", action="store_true")
 
     status = sub.add_parser("status", help="Show the service status")
     add_connection(status)
@@ -193,11 +209,15 @@ def run_serve(args: argparse.Namespace) -> int:
     instance_path = paths.instance_file()
     hosting.write_instance(instance_path, instance)
 
+    # Configured options first, flags on top: --sink-option overrides one key
+    # rather than replacing the whole mapping, which is what a person setting
+    # a single port on the command line means by it.
+    options = {**config.get("sink_options"), **dict(args.sink_options)}
     service = ControllerService(
         sink=args.sink,
         led_count=args.led_count,
         fps=args.fps,
-        sink_options=dict(args.sink_options),
+        sink_options=options,
         input_device=args.input_device,
     )
     app = create_app(
@@ -236,6 +256,26 @@ def run_sinks() -> int:
     return 0
 
 
+def run_config(args: argparse.Namespace) -> int:
+    """Every setting, its value, and which of the four places it came from.
+
+    The question this answers is not "what can be configured" — that is the
+    table in config.py and the documentation generated from it — but "why is
+    this machine behaving like that", which needs the source as much as the
+    value.
+    """
+    described = config.describe()
+    if args.json:
+        print(json.dumps(described, indent=2, sort_keys=True, default=str))
+        return 0
+
+    print(f"config file: {described['file'] or 'none'}")
+    width = max(len(row["slug"]) for row in described["settings"])
+    for row in described["settings"]:
+        print(f"  {row['slug']:<{width}}  {row['value']!r:<28}  from {row['source']}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -254,6 +294,8 @@ def _dispatch(parser: argparse.ArgumentParser, args: argparse.Namespace) -> int:
         return run_serve(args)
     if args.command == "sinks":
         return run_sinks()
+    if args.command == "config":
+        return run_config(args)
 
     client = ControllerClient(host=args.host, port=args.port, timeout=args.timeout)
 
@@ -271,16 +313,17 @@ def _dispatch(parser: argparse.ArgumentParser, args: argparse.Namespace) -> int:
         return emit_result(client.show(args.target))
 
     if args.command == "set":
-        config = parse_json_object(args.config, label="--config")
+        # Not named "config": that is the settings module, imported above.
+        values = parse_json_object(args.config, label="--config")
         if args.subject == "state":
             return emit_result(
-                client.set_state(args.target, config, slot=args.slot, action=args.action)
+                client.set_state(args.target, values, slot=args.slot, action=args.action)
             )
         return emit_result(
             client.set_overlay(
                 args.target,
                 channel=args.channel,
-                config=config,
+                config=values,
                 inputs=parse_json_object(args.inputs, label="--inputs"),
                 action=args.action,
             )

@@ -1,10 +1,10 @@
-"""Finding frame sinks and input providers without importing them.
+"""Finding devices and effect sets without importing them.
 
 This is what makes the distribution boundary real rather than conventional. The
-service never imports the hardware package or the simulator; it reads the entry
-point groups ``lefx.frame_sinks`` and ``lefx.input_providers`` and uses whatever
-is installed. Leaving a package out of an installation leaves it out of the
-running system, with no code path to forget.
+service never imports the hardware package, the simulator or a catalogue; it
+reads the entry point groups ``lefx.frame_sinks``, ``lefx.input_providers`` and
+``lefx.effect_sets`` and uses whatever is installed. Leaving a package out of an
+installation leaves it out of the running system, with no code path to forget.
 
 An entry point resolves to a factory. Failing to load one is reported and
 skipped: a broken optional integration must not stop the service from starting.
@@ -26,14 +26,18 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from importlib.metadata import EntryPoint, entry_points
+from pathlib import Path
 from typing import Any, Callable, Mapping
 
 from lefx.sdk import FrameSink, InputContext, OutputFrame, SinkStatus
+
+from . import config
 
 logger = logging.getLogger("lefx.interfaces.discovery")
 
 SINK_GROUP = "lefx.frame_sinks"
 PROVIDER_GROUP = "lefx.input_providers"
+EFFECT_SET_GROUP = "lefx.effect_sets"
 
 CAPABILITY_SEPARATOR = "."
 """Splits ``<device>.<capability>`` in an input provider's entry point name."""
@@ -169,9 +173,101 @@ def provider_callables(providers: Mapping[str, Any]) -> dict[str, Callable[[Inpu
     return {name: provider.sample for name, provider in providers.items()}
 
 
+# -- effect sets ------------------------------------------------------------
+
+
+def normalize_set_id(name: str) -> str:
+    """The one form two spellings of a set both reduce to.
+
+    ``core``, ``core-set``, ``Core_Set`` and ``core set`` are the same set. The
+    id in a ``set.yaml`` carries the ``-set`` suffix and the entry point uses
+    that id, but nobody writing ``INCLUDED_LEFXSET`` wants to type it, and
+    telling them they must would be a rule with no purpose behind it.
+    """
+    reduced = name.strip().casefold().replace("_", "-").replace(" ", "-")
+    return reduced[: -len("-set")] if reduced.endswith("-set") else reduced
+
+
+def available_effect_sets() -> dict[str, Discovered]:
+    """Every installed catalogue, keyed by the set id its entry point declares."""
+    return _load(EFFECT_SET_GROUP)
+
+
+def installed_effect_sets(included: list[str] | None = None) -> dict[str, Path]:
+    """The archives of the installed sets that are switched on, by set id.
+
+    ``included`` is a list of names in any of the forms ``normalize_set_id``
+    accepts; ``None`` reads ``included_lefxset`` from the configuration, and an
+    empty selection means every installed set. Empty-means-all rather than
+    empty-means-none because the selection exists to *narrow* an installation,
+    and a fresh install with no config file should play what it installed.
+
+    A name that matches nothing installed is a warning, not an error: naming a
+    set you have not installed yet is a mistake worth seeing, and not one worth
+    refusing to start over.
+    """
+    if included is None:
+        included = config.get("included_lefxset")
+    wanted = {normalize_set_id(name) for name in included}
+
+    found: dict[str, Path] = {}
+    matched: set[str] = set()
+    for set_id, discovered in sorted(available_effect_sets().items()):
+        key = normalize_set_id(set_id)
+        if wanted and key not in wanted:
+            continue
+        matched.add(key)
+        try:
+            path = Path(discovered.factory())
+        except Exception as exc:
+            logger.warning("effect set %r could not say where its archive is: %s", set_id, exc)
+            continue
+        if not path.is_file():
+            # The distribution is installed but its archive is not there. In a
+            # checkout that means build_effects.py has not run; in an
+            # installation it means a broken wheel. Either way, silence here
+            # would show up much later as an effect id nobody can resolve.
+            logger.warning(
+                "effect set %r is installed but %s is missing; it will not be loaded",
+                set_id, path,
+            )
+            continue
+        found[set_id] = path
+
+    for name in sorted(wanted - matched):
+        logger.warning(
+            "included_lefxset names %r, which is not installed (installed: %s)",
+            name, ", ".join(sorted(available_effect_sets())) or "none",
+        )
+    return found
+
+
+def effect_set_search_paths(included: list[str] | None = None) -> list[Path]:
+    """The directories the enabled sets live in, for the library to scan.
+
+    Directories rather than files because that is what the engine's discovery
+    takes, and because each catalogue distribution holds exactly one archive in
+    a directory of its own — so the two are the same list said differently.
+    """
+    seen: dict[Path, None] = {}
+    for path in installed_effect_sets(included).values():
+        seen.setdefault(path.parent, None)
+    return list(seen)
+
+
 def describe() -> dict[str, Any]:
     """What is installed, for the status output and the sources listing."""
+    enabled = installed_effect_sets()
     return {
+        "effect_sets": [
+            {
+                "name": item.name,
+                "distribution": item.distribution,
+                "enabled": item.name in enabled,
+                "archive": str(enabled[item.name]) if item.name in enabled else None,
+            }
+            for item in sorted(available_effect_sets().values(), key=lambda item: item.name)
+        ],
         "sinks": [
             {"name": NullSink.name, "distribution": "lefx-interfaces", "builtin": True},
             *(
@@ -193,15 +289,20 @@ def describe() -> dict[str, Any]:
 
 __all__ = [
     "CAPABILITY_SEPARATOR",
+    "EFFECT_SET_GROUP",
     "Discovered",
     "NullSink",
     "PROVIDER_GROUP",
     "SINK_GROUP",
+    "available_effect_sets",
     "available_providers",
     "available_sinks",
     "create_providers",
     "create_sink",
     "describe",
+    "effect_set_search_paths",
+    "installed_effect_sets",
+    "normalize_set_id",
     "provider_callables",
     "split_provider_name",
 ]

@@ -30,7 +30,9 @@ from tests.architecture.scan import REPO_ROOT
 def test_everything_is_derived_from_the_one_root(tmp_path):
     project = Project.at(tmp_path)
     assert project.catalogue_root == tmp_path / "effects"
-    assert project.build_root == tmp_path / "build" / "effects"
+    assert project.build_target("core-set") == (
+        tmp_path / "packages/lefxset-core-set/src/lefx/sets/core_set/core-set.lefxset"
+    )
     assert project.calibration_file == tmp_path / "doa_calibration.json"
     assert all(project.root in path.parents or path == project.root
                for _, path in iter_paths(project))
@@ -38,9 +40,15 @@ def test_everything_is_derived_from_the_one_root(tmp_path):
 
 def test_the_search_order_is_the_one_the_service_uses():
     """Built catalogue first, then sources — so the studio shows what a service
-    would load, not something adjacent to it."""
+    would load, not something adjacent to it.
+
+    The built half is globbed off the project rather than read from the
+    installed entry points: the studio is pointed at *a* checkout, possibly not
+    the one it was built from, and has to show that checkout's catalogue.
+    """
     project = Project.at(REPO_ROOT)
-    assert project.package_search_paths == [project.build_root, project.catalogue_root]
+    assert project.package_search_paths == [*project.built_set_dirs, project.catalogue_root]
+    assert {path.name for path in project.built_set_dirs} == {"core_set", "smartspeaker_set"}
 
 
 def test_a_relative_path_becomes_an_absolute_one(tmp_path, monkeypatch):
@@ -51,7 +59,7 @@ def test_a_relative_path_becomes_an_absolute_one(tmp_path, monkeypatch):
 def test_the_scratch_state_stays_out_of_the_way(tmp_path):
     """A studio session must not leave a background state a real service picks up."""
     project = Project.at(tmp_path)
-    assert project.build_root in project.state_file.parents or "build" in project.state_file.parts
+    assert "build" in project.state_file.parts
 
 
 def test_the_real_checkout_is_recognised_as_a_project():
@@ -160,7 +168,7 @@ def test_a_project_builds_its_own_catalogue(tmp_path):
     results = project.build_catalogue()
 
     assert [item["set_id"] for item in results] == ["core-set"]
-    assert (project.build_root / "core-set.lefxset").is_file()
+    assert project.build_target("core-set").is_file()
     # And the staging directory is gone, exactly as the script leaves it — it
     # sits inside a directory the service scans.
     assert list((root / "effects/core-set").glob("effects/*.lefx")) == []

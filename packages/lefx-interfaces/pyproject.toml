@@ -25,6 +25,9 @@ dependencies = [
     "fastapi>=0.135.3,<0.136",
     "pydantic>=2.12.5,<2.13",
     "uvicorn>=0.44.0,<0.45",
+    # config.yaml. The settings layer lives here because this is the package
+    # that turns settings into locations, ports and a running process.
+    "PyYAML>=6.0.2,<7",
     "tzdata>=2025.2; platform_system == 'Windows'",
 ]
 

@@ -36,7 +36,16 @@ OWNER_OF_MODULE = {
     "lefx.interfaces": "lefx-interfaces",
     "lefx.device.respeaker": "lefx-device-respeaker",
     "lefx.device.simulated_respeaker": "lefx-device-simulated-respeaker",
+    "lefx.sets.core_set": "lefxset-core-set",
+    "lefx.sets.smartspeaker_set": "lefxset-smartspeaker-set",
 }
+
+# Distributions whose whole content is their dependency list. The declared-
+# dependency check below cannot apply to one: it compares what is declared
+# against what may be imported, and a metapackage declares everything and
+# imports nothing. So it is exempted by name, and a separate test holds it to
+# the property that makes the exemption safe — that it really has no code.
+DEPENDENCY_ONLY = frozenset({"led-ctrl-v3"})
 
 # The matrix. Read it as "may import", and note what is *not* there: neither
 # device package may reach the engine or the interfaces, and the interfaces may
@@ -55,6 +64,13 @@ MAY_IMPORT: dict[str, frozenset[str]] = {
     "lefx-interfaces": frozenset({"lefx-sdk", "lefx-engine"}),
     "lefx-device-respeaker": frozenset({"lefx-sdk"}),
     "lefx-device-simulated-respeaker": frozenset({"lefx-sdk"}),
+    # A catalogue is data. It ships one archive and a function that says where
+    # the archive is, so it imports nothing at all — not even the SDK, because
+    # a package format is not an import. That is what lets a set be installed
+    # and uninstalled without touching anything that runs.
+    "lefxset-core-set": frozenset(),
+    "lefxset-smartspeaker-set": frozenset(),
+    "led-ctrl-v3": frozenset(),
 }
 
 # Qt is the simulator's optional extra and must stay on the window side. A
@@ -113,7 +129,18 @@ def violations(distribution: str) -> list[str]:
 def test_the_matrix_covers_every_distribution_in_the_workspace():
     """A new package must be placed in the matrix, not silently unchecked."""
     assert set(ALL_DISTRIBUTIONS) == set(MAY_IMPORT)
-    assert set(OWNER_OF_MODULE.values()) == set(MAY_IMPORT)
+    assert set(OWNER_OF_MODULE.values()) | DEPENDENCY_ONLY == set(MAY_IMPORT)
+
+
+@pytest.mark.parametrize("distribution", sorted(DEPENDENCY_ONLY))
+def test_a_dependency_only_distribution_really_has_no_code(distribution):
+    """What makes the exemption above safe rather than convenient.
+
+    The moment led-ctrl-v3 grows a module, it stops being a name for an
+    installation and becomes a seventh package with an unchecked dependency
+    list — the exact thing the matrix exists to prevent.
+    """
+    assert source_files(distribution) == []
 
 
 @pytest.mark.parametrize("distribution", ALL_DISTRIBUTIONS)
@@ -129,6 +156,8 @@ def test_the_declared_dependencies_agree_with_the_matrix(distribution):
     a broken package; a dependency declared beyond the matrix would let the
     import in later without anything noticing.
     """
+    if distribution in DEPENDENCY_ONLY:
+        pytest.skip("a metapackage declares everything and imports nothing")
     text = (PACKAGES_ROOT / distribution / "pyproject.toml").read_bytes()
     declared = tomllib.loads(text.decode("utf-8"))["project"]["dependencies"]
     internal = {

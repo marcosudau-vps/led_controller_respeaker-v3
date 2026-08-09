@@ -32,3 +32,7 @@ id_rsa*
 # Arbeitsnotizen und Auftragsdokumente aus der Entwicklung, kein Projektinhalt.
 Hinweise_HANDOFF.md*
 Auftrag_*.md
+
+# Die Konfiguration einer Installation, nicht des Projekts. config.example.yaml
+# ist die Vorlage und liegt im Repository.
+/config.yaml

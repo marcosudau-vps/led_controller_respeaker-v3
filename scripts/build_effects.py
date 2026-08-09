@@ -1,7 +1,11 @@
-"""Build every effect set in ``effects/``.
+"""Build every effect set in ``effects/`` into the distribution that ships it.
 
-Each set directory holds editable sources under ``sources/`` and receives the
-built packages in ``effects/``, which the set archive is then assembled from.
+Each set directory holds editable sources under ``sources/``. The archive built
+from them lands inside ``packages/lefxset-<name>/``, which is the one place a
+built set ever lives: the same directory in a checkout, in the editable
+workspace and in an installed wheel. That is what makes ``uv sync`` enough to
+have a catalogue and ``uv build`` enough to ship one.
+
 Built artefacts are reproducible output and are not committed.
 
     uv run python scripts/build_effects.py
@@ -20,6 +24,17 @@ from lefx.effect_creation import SourceError, pack_effect, pack_effect_set, vali
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CATALOGUE_ROOT = REPO_ROOT / "effects"
+PACKAGES_ROOT = REPO_ROOT / "packages"
+
+
+def distribution_root(set_name: str) -> Path:
+    return PACKAGES_ROOT / f"lefxset-{set_name}"
+
+
+def distribution_dir(set_name: str) -> Path:
+    """Where ``<set_name>.lefxset`` belongs, whether or not it is there yet."""
+    module = set_name.replace("-", "_")
+    return distribution_root(set_name) / "src" / "lefx" / "sets" / module
 
 
 def source_dirs(set_root: Path) -> list[Path]:
@@ -29,7 +44,19 @@ def source_dirs(set_root: Path) -> list[Path]:
     )
 
 
-def build_set(set_root: Path, *, output_root: Path) -> dict:
+def build_set(set_root: Path, *, output_root: Path | None = None) -> dict:
+    """Validate, pack and assemble one set. ``output_root`` overrides the target."""
+    if output_root is None:
+        if not distribution_root(set_root.name).is_dir():
+            raise SourceError(
+                f"{set_root.name} has no distribution at "
+                f"{distribution_root(set_root.name).relative_to(REPO_ROOT).as_posix()}. "
+                "Add the package, or pass --output to build somewhere else."
+            )
+        target_dir = distribution_dir(set_root.name)
+    else:
+        target_dir = Path(output_root)
+
     staging = set_root / "effects"
     if staging.exists():
         shutil.rmtree(staging)
@@ -46,8 +73,8 @@ def build_set(set_root: Path, *, output_root: Path) -> dict:
             print(f"  warning: {source.name}: {warning}", file=sys.stderr)
         packages.append(pack_effect(source, staging / f"{report.identifier}.lefx"))
 
-    output_root.mkdir(parents=True, exist_ok=True)
-    result = pack_effect_set(set_root, output_root / f"{set_root.name}.lefxset")
+    target_dir.mkdir(parents=True, exist_ok=True)
+    result = pack_effect_set(set_root, target_dir / f"{set_root.name}.lefxset")
     result["packages"] = [package["effect_id"] for package in packages]
 
     # The set archive now carries every one of these, and the staging directory
@@ -66,8 +93,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--set", dest="only", help="Build one set instead of all of them")
     parser.add_argument(
         "--output",
-        default=str(REPO_ROOT / "build" / "effects"),
-        help="Where the .lefxset files are written",
+        default=None,
+        help="Build into this directory instead of into each set's own distribution",
     )
     args = parser.parse_args(argv)
 
@@ -82,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
     for root in roots:
         print(f"building {root.name}", file=sys.stderr)
         try:
-            results.append(build_set(root, output_root=Path(args.output)))
+            results.append(build_set(root, output_root=args.output))
         except SourceError as exc:
             print(json.dumps({"ok": False, "set": root.name, "error": str(exc)}, indent=2))
             return 1
