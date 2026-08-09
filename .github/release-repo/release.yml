@@ -143,3 +143,10 @@ jobs:
           # turns that off. Saying so beats a warning per job about an input
           # that is being ignored. Remove this line together with `password`.
           attestations: false
+          # Makes a half-finished release resumable. PyPI refuses a file it
+          # already has, so without this, re-running after a partial failure
+          # fails again on everything that did work — and the only way forward
+          # would be a version nobody needed. With it, the run can simply be
+          # repeated until all nine are up. It cannot mask a mistake: the
+          # version is new on every release, so there is nothing to skip.
+          skip-existing: true
