@@ -130,11 +130,18 @@ def test_a_mapping_setting_survives_both_routes(tmp_path, monkeypatch):
 
 
 def test_a_path_list_splits_on_the_path_separator_and_not_on_spaces(monkeypatch):
-    """Because a directory may contain a space and a name may not."""
+    """Because a directory may contain a space and a set name may not.
+
+    Written with os.pathsep rather than a literal, and with directories that
+    contain no colon: on Linux the separator *is* a colon, so a Windows path
+    spelled out here would split down the middle and the test would be about
+    the machine rather than about the code.
+    """
     import os
 
-    monkeypatch.setenv("PACKAGE_PATH", f"C:\\Program Files\\fx{os.pathsep}/opt/fx")
-    assert config.get("package_path") == ["C:\\Program Files\\fx", "/opt/fx"]
+    entries = ["/opt/effect packages", "/srv/fx"]
+    monkeypatch.setenv("PACKAGE_PATH", os.pathsep.join(entries))
+    assert config.get("package_path") == entries
 
 
 def test_an_unusable_value_names_the_setting_and_the_source(monkeypatch):
