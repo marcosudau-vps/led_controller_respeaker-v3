@@ -1,0 +1,102 @@
+# Mirror the release tree into marcosudau-vps/led-ctrl-v3 and tag it there.
+#
+# Runs on a tag, because a tag is the one thing scripts/release.py only creates
+# after CI has gone green for that exact commit. Everything downstream of here
+# — the mirror, the tag over there, the upload to PyPI — is therefore already
+# behind a check, and there is no path that reaches PyPI without passing it.
+#
+# It can also be run by hand with no tag. That mirrors the tree without tagging,
+# so the release repository's release.yml stays idle and nothing is published:
+# the way to look at what a release would contain before committing to one.
+name: Sync the release repository
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to set over there. Leave empty to mirror without publishing."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  UV_PYTHON: "3.12"
+  RELEASE_REPO: marcosudau-vps/led-ctrl-v3
+
+jobs:
+  sync:
+    name: Materialise and push
+    runs-on: ubuntu-latest
+    if: github.repository == 'marcosudau-vps/led_controller_respeaker-v3'
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Sync the workspace
+        run: uv sync
+
+      # The archives are output here and sources over there, so they have to
+      # exist before the tree is materialised. sync_release_tree.py refuses to
+      # run without them rather than shipping empty catalogue wheels.
+      - name: Build the effect catalogues
+        run: uv run python scripts/build_effects.py
+
+      - name: Work out which tag this is
+        id: tag
+        run: |
+          if [ "${GITHUB_REF}" != "${GITHUB_REF#refs/tags/}" ]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out the release repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.RELEASE_REPO }}
+          path: release-repo
+          ssh-key: ${{ secrets.RELEASE_REPO_DEPLOY_KEY }}
+          fetch-depth: 0
+
+      # --clean, because this is a mirror rather than a merge: a file removed
+      # from the whitelist has to disappear over there, and a leftover would
+      # otherwise be published forever.
+      - name: Materialise the release tree
+        run: uv run python scripts/sync_release_tree.py --target release-repo --clean
+
+      - name: Commit and push
+        working-directory: release-repo
+        run: |
+          git config user.name "lefx release bot"
+          git config user.email "noreply@github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "the release tree is unchanged"
+          else
+            git commit -m "release: sync from ${GITHUB_SHA::8}${TAG:+ ($TAG)}"
+            git push origin HEAD:main
+          fi
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+
+      # Last, and only with a tag. This is what starts release.yml over there,
+      # so it must not happen before the tree it describes is pushed.
+      - name: Tag the release commit over there
+        if: steps.tag.outputs.tag != ''
+        working-directory: release-repo
+        run: |
+          git tag -a "$TAG" -m "$TAG"
+          git push origin "$TAG"
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}

@@ -17,7 +17,7 @@ nebenbei mit ab.
 
 | | Seite | Inhalt |
 |---|---|---|
-| — | [index.md](index.md) | Das System auf einen Blick: sieben Pakete, ihre Rollen, die Pfade eines Frames und einer Richtung. **Fertig.** |
+| — | [index.md](index.md) | Das System auf einen Blick: neun Distributionen, ihre Rollen, die Pfade eines Frames und einer Richtung. **Fertig.** |
 
 ---
 

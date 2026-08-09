@@ -1,0 +1,11 @@
+# Becomes .gitignore in the release repository.
+#
+# Short on purpose. This tree is generated, and the one thing that has to be
+# tracked here and is *not* tracked in the development repository is the built
+# .lefxset catalogue — output there, source here.
+__pycache__/
+*.pyc
+.venv/
+build/
+dist/
+*.egg-info/

@@ -289,8 +289,13 @@ def check_the_catalogue_loads(python: Path) -> None:
     """The sets arrived as effects, not merely as files.
 
     Installed rather than built: this is the only place the wheel's copy of the
-    archive is opened by the loader that will open it in production. Run from
-    outside the checkout, so that nothing is found by sitting next to it.
+    archive is opened by the loader that will open it in production.
+
+    Run from an empty directory, because the service also scans ``effects/``
+    beside the working directory. Anywhere with archives lying about — a
+    checkout, a build directory, the parent of either — would load them too and
+    fail on a duplicate id, reporting a packaging fault where there is only a
+    stray file.
     """
     code = (
         "import json\n"
@@ -305,7 +310,8 @@ def check_the_catalogue_loads(python: Path) -> None:
         "finally:\n"
         "    service.stop()\n"
     )
-    result = run([str(python), "-c", code], cwd=REPO_ROOT.parent)
+    with tempfile.TemporaryDirectory(prefix="lefx-elsewhere-") as elsewhere:
+        result = run([str(python), "-c", code], cwd=elsewhere)
     require(
         result.returncode == 0,
         f"the installed catalogue loads with no broken source\n{result.stdout}\n{result.stderr}",

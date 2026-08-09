@@ -1,16 +1,15 @@
-# What has to hold before a commit is allowed to be part of this repository.
+# What has to hold before a commit is allowed to be part of this repository —
+# and, since scripts/release.py waits for this workflow on the exact commit it
+# is about to tag, what has to hold before anything reaches PyPI. Nothing here
+# pushes or publishes; that is sync-release-repo.yml, and it runs on a tag.
 #
-# There is no remote yet, and nothing here pushes or publishes anything. The
-# file exists so that the checks are written down in an executable form and are
-# already in place the day the repository gets one — and so that "it works on
-# this machine" and "it works" stay separable in the meantime.
-#
-# The six steps mirror the ways this workspace can break: the packages stop
+# The steps mirror the ways this workspace can break: the packages stop
 # resolving against each other, a definition stops building, behaviour
-# regresses, a package boundary is crossed, a V1 concept comes back, or the
-# distributions stop being buildable. The last one is not covered by the tests:
-# an editable workspace imports from the checkout, so a wheel that ships the
-# wrong files passes every test and fails at installation.
+# regresses, a package boundary is crossed, a V1 concept comes back, the
+# distributions stop being buildable, or the release tree stops being
+# materialisable. The last two are not covered by the tests: an editable
+# workspace imports from the checkout, so a wheel that ships the wrong files
+# passes every test and fails at installation.
 name: CI
 
 on:
@@ -82,8 +81,20 @@ jobs:
       - name: Check for returning V1 concepts
         run: uv run pytest -q tests/architecture/test_legacy.py
 
-      # 6. Build all six distributions, install them into an empty environment
+      # 6. Build all nine distributions, install them into an empty environment
       #    and exercise what only an installation can show: entry points,
-      #    console scripts, and the simulator's service half with no Qt present.
+      #    console scripts, the catalogue wheels actually carrying a catalogue,
+      #    INCLUDED_LEFXSET selecting on installed metadata, and the simulator's
+      #    service half with no Qt present.
       - name: Build the distributions and smoke-test the artefacts
         run: uv run python scripts/check_release.py
+
+      # 7. The release tree can be materialised and stands on its own. Checked
+      #    here rather than discovered on a tag: the sync workflow is the one
+      #    step of a release that has no way back, and finding out then that a
+      #    file is missing from the whitelist means finding out after the tag.
+      - name: Materialise the release tree and build it
+        run: |
+          uv run python scripts/sync_release_tree.py --target ../release-tree --clean
+          cd ../release-tree
+          uv build --all-packages --out-dir dist
