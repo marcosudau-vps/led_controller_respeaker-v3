@@ -130,15 +130,14 @@ Das Feld `tag` dabei leer lassen.
 2. Dieser Tag startet dort `release.yml`. Der Guard
    `github.repository == 'marcosudau-vps/led-ctrl-v3'` greift, `uv build
    --all-packages` läuft, `check_release.py` prüft das Gebaute — und dann lädt
-   ein Job **pro Projekt** über OIDC Trusted Publishing hoch, ohne Token und
-   ohne Passwort.
+   ein Job **pro Projekt** hoch.
 3. Unter [pypi.org/project/led-ctrl-v3](https://pypi.org/project/led-ctrl-v3/)
    steht die Version bereit: `pip install --upgrade led-ctrl-v3`.
 
-Ein Job pro Projekt, weil ein einzelner Upload aller neun davon abhinge, wie
-PyPI ein frisch geprägtes Token über Projekte hinweg skopiert. Neun Uploads
-hängen davon gar nicht ab, und ein Fehlschlag nennt das Projekt, zu dem er
-gehört.
+Ein Job pro Projekt, weil ein einzelner Upload aller neun bei Trusted
+Publishing davon abhinge, wie PyPI ein frisch geprägtes Token über Projekte
+hinweg skopiert. Neun Uploads hängen davon gar nicht ab, und ein Fehlschlag
+nennt das Projekt, zu dem er gehört.
 
 ### Wenn CI ausfällt
 
@@ -152,7 +151,8 @@ Verlangt eine Begründung und schreibt sie in die Ausgabe. Nur dafür gedacht.
 
 ## Einrichtung (einmalig)
 
-Drei Dinge. Nur das letzte lässt sich nicht mit einem GitHub-Token erledigen.
+Alles davon ist erledigt. Es steht hier, damit es nachvollziehbar und
+wiederholbar ist — etwa, wenn eines der Repositories neu angelegt wird.
 
 ### 0. Das Release-Repo braucht einen ersten Commit
 
@@ -184,11 +184,22 @@ ssh-keygen -t ed25519 -C "led-ctrl-v3-sync" -f led-ctrl-v3-sync -N ""
 
 Der Schlüssel gilt nur für dieses eine Repository und läuft nicht ab.
 
-### 2. Trusted Publisher auf PyPI — neunmal (nur von Hand)
+### 2. Zugang zu PyPI
 
-Für **jedes** der neun Projekte aus der Tabelle oben, unter
+Im Release-Repo unter *Settings → Environments* gibt es eine Umgebung `pypi`;
+nur ein Job, der sie benennt, kommt an ihre Secrets. Ein Reviewer darauf ist
+optional und eine gute Idee: dann verlangt jeder Upload eine Bestätigung.
+
+**Aktuell: API-Token.** Das Secret `PYPI_API_TOKEN` liegt auf dieser Umgebung,
+`release.yml` gibt es an den Upload-Schritt weiter. Das ist ein Zwischenstand
+und Absicht: Trusted Publisher lassen sich **ausschließlich** über die
+PyPI-Weboberfläche anlegen — es gibt keine API dafür —, und ein Projekt, das
+noch nicht existiert, kann keinen haben. Ein kontoweites Token ist deshalb auch
+das Einzige, was die neun Projekte überhaupt erst anlegen kann.
+
+**Ziel: Trusted Publishing.** Sobald die neun Projekte existieren, unter
 [pypi.org/manage/account/publishing](https://pypi.org/manage/account/publishing/)
-einen *pending publisher* anlegen (das geht, bevor das Projekt existiert):
+für **jedes** einen Publisher eintragen:
 
 | Feld | Wert |
 |---|---|
@@ -201,9 +212,11 @@ einen *pending publisher* anlegen (das geht, bevor das Projekt existiert):
 **Achtung:** Owner und Repository sind die des **Release**-Repos, nicht des
 Entwicklungs-Repos — dort läuft `release.yml`.
 
-Dazu im Release-Repo unter *Settings → Environments* eine Umgebung namens
-`pypi` anlegen. Ein Reviewer darauf ist optional und eine gute Idee: dann
-verlangt jeder Upload eine Bestätigung.
+Danach in [`.github/release-repo/release.yml`](../.github/release-repo/release.yml)
+die Zeile `password:` entfernen und `permissions: id-token: write` am
+`publish`-Job wiederherstellen (beides ist dort im Kommentar vermerkt), dann das
+Secret löschen und das Token auf PyPI widerrufen. Ab dann prägt GitHub pro Lauf
+ein kurzlebiges Token und es ist nirgends mehr eines gespeichert.
 
 ---
 

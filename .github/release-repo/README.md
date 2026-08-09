@@ -45,7 +45,6 @@ Die vier ersten sind die Normalversion; der Rest sind Extras von
 3. Der Tag startet dort `sync-release-repo.yml`, das diesen Baum erzeugt,
    hierher committet und hier denselben Tag setzt.
 4. Dieser Tag startet hier `release.yml`: bauen, das Gebaute in einer leeren
-   Umgebung installieren und benutzen, dann pro Projekt über OIDC Trusted
-   Publishing nach PyPI hochladen — ohne Token und ohne Passwort.
+   Umgebung installieren und benutzen, dann pro Projekt nach PyPI hochladen.
 
 Ein Tag hier bedeutet also: drüben geprüft.
