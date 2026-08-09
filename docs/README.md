@@ -1,9 +1,8 @@
 # Dokumentation — Gliederung
 
-> **Status: Vorschlag.** Diese Seite ist die geplante Struktur, noch nicht die
-> fertige Doku. Geschrieben ist bisher nur [index.md](index.md). Die Tabellen
-> unten sagen pro Kapitel, was neu entsteht und was aus der V2-Doku übernommen
-> werden kann.
+> **Status: im Entstehen.** Fertig sind [index.md](index.md) und **Teil I**.
+> Die Tabellen unten sagen pro Kapitel, was noch fehlt und was aus der V2-Doku
+> übernommen werden kann.
 
 Die V2-Doku war ein flacher Lauf aus zwölf Kapiteln, weil es *ein* System gab.
 V3 zerfällt in Dinge, die verschiedene Leute an verschiedenen Tagen tun:
@@ -28,9 +27,9 @@ nebenbei mit ab.
 
 | # | Kapitel | Inhalt | Herkunft |
 |---|---|---|---|
-| 01 | `konzepte/01-grundidee.md` | Warum die Effektlogik von der Anwendung getrennt ist, was ein Effekt kennt und was nicht, das Grundmodell in fünf Absätzen | V2 `01_overview` — kürzen, der Systemüberblick steht jetzt in `index.md` |
-| 02 | `konzepte/02-layer-und-komposition.md` | LED-Frame, der Fünferstapel, Prioritäten, opaque/transparent, `None` ≠ Schwarz, Kompositionsablauf | V2 `03` — **weitgehend übernehmbar**, nur die Scene/Visual-Indirektion streichen |
-| 03 | `konzepte/03-lebenszyklusformen.md` | State, Controlled Overlay, Timed Overlay, Event: Vergleich, Entscheidungshilfe, Verläufe | V2 `04` — Substanz bleibt, Mechanik neu (der Typ *ist* jetzt die Klasse) |
+| 01 | [Grundidee](konzepte/01-grundidee.md) | Der Effekt als Funktion, wer *was* / *wie* / *wann* beantwortet, die vier Zusagen, was ein Effekt nicht tut | ✅ **fertig** |
+| 02 | [Layer und Komposition](konzepte/02-layer-und-komposition.md) | Frame, `None` ≠ Schwarz, der Fünferstapel, Komposition an einem Beispiel, opaque/transparent, globale Ausgabe | ✅ **fertig** |
+| 03 | [Lebenszyklusformen](konzepte/03-lebenszyklusformen.md) | Entscheidungsbaum, Vergleichstabelle, die vier Formen einzeln, Event-Warteschlange, „nur die Engine beendet etwas" | ✅ **fertig** |
 
 ---
 
