@@ -71,14 +71,29 @@ GUI_DISTRIBUTION = "led-ctrl-v3-effect-creation"
 
 ALL_DISTRIBUTIONS = (*DISTRIBUTIONS, GUI_DISTRIBUTION)
 
-# The catalogue distributions and the archive each one has to actually contain.
-# A wheel built before scripts/build_effects.py ran installs cleanly, offers its
-# entry point, and delivers nothing — the one failure the "artifacts" include in
-# their pyproject cannot prevent.
-EFFECT_SET_WHEELS = {
-    "led-ctrl-v3-set-core": "lefx/sets/core_set/core-set.lefxset",
-    "led-ctrl-v3-set-smartspeaker": "lefx/sets/smartspeaker_set/smartspeaker-set.lefxset",
-}
+def effect_set_wheels() -> dict[str, str]:
+    """Which distribution has to contain which archive, read off the tree.
+
+    A wheel built before scripts/build_effects.py ran installs cleanly, offers
+    its entry point, and delivers nothing — the one failure the "artifacts"
+    include in each catalogue's pyproject cannot prevent. So the wheel gets
+    opened, and this says what to look for.
+
+    Derived rather than listed, because a list of catalogue names is exactly
+    what went stale: this file, the release workflow and two scripts each had
+    one, and renaming the distributions left one of them behind. The release
+    then stopped at the guard with "0 wheels" for a distribution that no longer
+    existed. The module path under src/lefx/sets/ is fixed by the import name
+    and cannot drift; the distribution around it is whatever directory it is in.
+    """
+    found: dict[str, str] = {}
+    for module_dir in sorted((REPO_ROOT / "packages").glob("*/src/lefx/sets/*")):
+        if not module_dir.is_dir() or module_dir.name == "__pycache__":
+            continue
+        distribution = module_dir.parents[3].name
+        set_name = module_dir.name.replace("_", "-")
+        found[distribution] = f"lefx/sets/{module_dir.name}/{set_name}.lefxset"
+    return found
 
 IMPORT_NAMES = (
     "lefx.sdk",
@@ -193,7 +208,9 @@ def check_the_catalogue_wheels_carry_a_catalogue(wheels: list[Path]) -> None:
     """Look inside the built wheel, before anything installs it."""
     import zipfile
 
-    for distribution, member in EFFECT_SET_WHEELS.items():
+    expected = effect_set_wheels()
+    require(bool(expected), "there is at least one catalogue distribution to check")
+    for distribution, member in expected.items():
         prefix = distribution.replace("-", "_")
         matching = [path for path in wheels if path.name.startswith(f"{prefix}-")]
         require(len(matching) == 1, f"exactly one wheel for {distribution}")

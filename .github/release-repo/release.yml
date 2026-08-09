@@ -58,32 +58,16 @@ jobs:
       - name: Build
         run: uv build --all-packages --out-dir dist
 
-      # The same question scripts/check_release.py asks, asked again here
-      # because this is the tree that is actually published and it arrived by
-      # machine. A catalogue wheel with no catalogue in it installs perfectly.
-      - name: The catalogue wheels have to contain a catalogue
-        run: |
-          uv run --no-project python - <<'PY'
-          import sys, zipfile
-          from pathlib import Path
-
-          expected = {
-              "lefxset_core_set": "lefx/sets/core_set/core-set.lefxset",
-              "lefxset_smartspeaker_set": "lefx/sets/smartspeaker_set/smartspeaker-set.lefxset",
-          }
-          problems = []
-          for prefix, member in expected.items():
-              wheels = sorted(Path("dist").glob(f"{prefix}-*.whl"))
-              if len(wheels) != 1:
-                  problems.append(f"{prefix}: {len(wheels)} wheels")
-                  continue
-              with zipfile.ZipFile(wheels[0]) as archive:
-                  if member not in archive.namelist():
-                      problems.append(f"{wheels[0].name} is missing {member}")
-          print("\n".join(problems) or "every catalogue wheel carries its archive")
-          sys.exit(1 if problems else 0)
-          PY
-
+      # Build what will be published, then install it and use it. That step
+      # opens every catalogue wheel and looks for the archive inside, which
+      # is the question this tree most needs asked: it arrived by machine,
+      # and a catalogue wheel with no catalogue in it installs perfectly.
+      #
+      # Deliberately not repeated inline here. It was, with its own list of
+      # catalogue names, and that list is what went stale when the
+      # distributions were renamed — the release stopped at a guard looking
+      # for a package that no longer existed. One implementation, derived
+      # from the tree rather than written down twice.
       - name: Install what was built and use it
         run: uv run --no-project python scripts/check_release.py
 
