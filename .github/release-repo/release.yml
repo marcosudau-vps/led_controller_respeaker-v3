@@ -91,6 +91,12 @@ jobs:
     # named after the project it belongs to.
     strategy:
       fail-fast: false
+      # One at a time. Nine uploads at once is nine new projects at once the
+      # first time a generation is released, and PyPI answers most of them with
+      # "429 Too many new projects created" — it did, and four went up while
+      # five did not. Serialised they are far enough apart to get through, and
+      # a release takes a few minutes longer, which is not a cost.
+      max-parallel: 1
       matrix:
         # Wheel-filename form, so the glob below is exact. A wheel is named
         # {name}-{version}-..., so led_ctrl_v3-*.whl matches the metapackage
@@ -133,3 +139,7 @@ jobs:
         with:
           packages-dir: upload/
           password: ${{ secrets.PYPI_API_TOKEN }}
+          # Attestations need trusted publishing, and an explicit password
+          # turns that off. Saying so beats a warning per job about an input
+          # that is being ignored. Remove this line together with `password`.
+          attestations: false
