@@ -126,7 +126,12 @@ def ask_version(current: str) -> str:
     if not re.fullmatch(r"\d+\.\d+\.\d+", answer):
         raise Abort(f"{answer!r} is not a version of the form MAJOR.MINOR.PATCH")
     if answer == current:
-        raise Abort(f"{answer} is the current version; PyPI will not take it twice")
+        # Allowed, because the first release of a generation is exactly this:
+        # the tree already says 3.0.0 and nothing has been published under it.
+        # What stops a second attempt at an already-published version is the
+        # tag check, which is the honest test — PyPI will not take a version
+        # twice, and a tag is what says it went.
+        print(f"note: {answer} is what the tree already says; releasing it as-is")
     return answer
 
 
