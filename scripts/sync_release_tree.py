@@ -103,16 +103,18 @@ def distributions() -> list[str]:
 
 
 def catalogue_archives() -> list[Path]:
-    """Every ``.lefxset`` a catalogue distribution is supposed to be carrying."""
+    """Every ``.lefxset`` a catalogue distribution is supposed to be carrying.
+
+    Found by module directory rather than by distribution name, so that a
+    catalogue added or a distribution renamed is picked up without editing a
+    second list that could disagree with the first.
+    """
     expected = []
-    for distribution in distributions():
-        if not distribution.startswith("lefxset-"):
+    for module_dir in sorted(PACKAGES_ROOT.glob("*/src/lefx/sets/*")):
+        if not module_dir.is_dir() or module_dir.name == "__pycache__":
             continue
-        set_name = distribution.removeprefix("lefxset-")
-        module = set_name.replace("-", "_")
-        expected.append(
-            PACKAGES_ROOT / distribution / "src/lefx/sets" / module / f"{set_name}.lefxset"
-        )
+        set_name = module_dir.name.replace("_", "-")
+        expected.append(module_dir / f"{set_name}.lefxset")
     return expected
 
 

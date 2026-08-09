@@ -29,17 +29,24 @@ Alle tragen dieselbe Versionsnummer und werden gemeinsam veröffentlicht.
 [`tests/architecture/test_versions.py`](../tests/architecture/test_versions.py)
 erzwingt das, samt der `==`-Pins zwischen ihnen.
 
+Die PyPI-Namen tragen alle das Präfix `led-ctrl-v3-`, die Importpfade heißen
+weiterhin `lefx.*`. Das ist Absicht: `led-ctrl-v3` ist ein Arbeitsname für
+diesen Stand, und die `lefx-*`-Namen bleiben auf PyPI frei für die spätere
+eigenständige Veröffentlichung. Ein Auseinanderfallen von Distributions- und
+Importname ist auf PyPI üblich (`opencv-python` importiert sich als `cv2`) und
+kostet keine Zeile Anwendungscode.
+
 | PyPI-Projekt | Rolle |
 |---|---|
 | `led-ctrl-v3` | Der Name, unter dem installiert wird. Enthält keinen Code. |
-| `lefx-sdk` | Autorenvertrag |
-| `lefx-engine` | Laufzeit |
-| `lefx-interfaces` | API, CLI, Konfiguration |
-| `lefx-device-respeaker` | Hardware |
-| `lefx-device-simulated-respeaker` | Software-Geräteersatz |
-| `lefx-effect-creation` | `lefx-pack` und `lefx-studio` |
-| `lefxset-core-set` | Referenzkatalog |
-| `lefxset-smartspeaker-set` | Sprachassistenz-Katalog |
+| `led-ctrl-v3-sdk` | Autorenvertrag |
+| `led-ctrl-v3-engine` | Laufzeit |
+| `led-ctrl-v3-interfaces` | API, CLI, Konfiguration |
+| `led-ctrl-v3-device-respeaker` | Hardware |
+| `led-ctrl-v3-device-simulated-respeaker` | Software-Geräteersatz |
+| `led-ctrl-v3-effect-creation` | `lefx-pack` und `lefx-studio` |
+| `led-ctrl-v3-set-core` | Referenzkatalog |
+| `led-ctrl-v3-set-smartspeaker` | Sprachassistenz-Katalog |
 
 ---
 
@@ -185,7 +192,7 @@ einen *pending publisher* anlegen (das geht, bevor das Projekt existiert):
 
 | Feld | Wert |
 |---|---|
-| PyPI Project Name | `led-ctrl-v3`, `lefx-sdk`, … (je einmal) |
+| PyPI Project Name | `led-ctrl-v3`, `led-ctrl-v3-sdk`, … (je einmal) |
 | Owner | `marcosudau-vps` |
 | Repository name | `led-ctrl-v3` |
 | Workflow name | `release.yml` |

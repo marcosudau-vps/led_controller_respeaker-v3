@@ -5,8 +5,8 @@ version number. Nothing enforces that but this file: a package whose version
 drifted would still build, still install, and still resolve — and would quietly
 pair a new engine with an old SDK on somebody's machine.
 
-The pins between them are the same rule stated a second way. ``lefx-engine``
-depends on ``lefx-sdk==3.0.0``, not ``>=``, because these are not independently
+The pins between them are the same rule stated a second way. ``led-ctrl-v3-engine``
+depends on ``led-ctrl-v3-sdk==3.0.0``, not ``>=``, because these are not independently
 useful libraries; they are one thing cut into pieces that install separately.
 """
 

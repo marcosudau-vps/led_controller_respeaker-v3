@@ -4,14 +4,14 @@ version = "3.0.0"
 description = "Workspace root for the LEFX V3 effect system and the reSpeaker LED controller"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "lefx-sdk",
-    "lefx-engine",
-    "lefx-effect-creation",
-    "lefx-interfaces",
-    "lefx-device-respeaker",
-    "lefx-device-simulated-respeaker",
-    "lefxset-core-set",
-    "lefxset-smartspeaker-set",
+    "led-ctrl-v3-sdk",
+    "led-ctrl-v3-engine",
+    "led-ctrl-v3-effect-creation",
+    "led-ctrl-v3-interfaces",
+    "led-ctrl-v3-device-respeaker",
+    "led-ctrl-v3-device-simulated-respeaker",
+    "led-ctrl-v3-set-core",
+    "led-ctrl-v3-set-smartspeaker",
     "led-ctrl-v3",
 ]
 
@@ -27,14 +27,14 @@ members = ["packages/*"]
 # index. This is what makes the dependency direction in the architecture test
 # and the direction declared in each package's pyproject the same thing.
 [tool.uv.sources]
-lefx-sdk = { workspace = true }
-lefx-engine = { workspace = true }
-lefx-effect-creation = { workspace = true }
-lefx-interfaces = { workspace = true }
-lefx-device-respeaker = { workspace = true }
-lefx-device-simulated-respeaker = { workspace = true }
-lefxset-core-set = { workspace = true }
-lefxset-smartspeaker-set = { workspace = true }
+led-ctrl-v3-sdk = { workspace = true }
+led-ctrl-v3-engine = { workspace = true }
+led-ctrl-v3-effect-creation = { workspace = true }
+led-ctrl-v3-interfaces = { workspace = true }
+led-ctrl-v3-device-respeaker = { workspace = true }
+led-ctrl-v3-device-simulated-respeaker = { workspace = true }
+led-ctrl-v3-set-core = { workspace = true }
+led-ctrl-v3-set-smartspeaker = { workspace = true }
 led-ctrl-v3 = { workspace = true }
 
 [dependency-groups]

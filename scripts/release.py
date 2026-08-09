@@ -10,7 +10,7 @@ has gone to PyPI under it.
 What runs after that, in order, stopping at the first failure:
 
  1. the working tree is clean and on the release branch, up to date with origin
- 2. the version is written into all nine pyproject files at once
+ 2. the version is written into all ten pyproject files at once
  3. the effect catalogues are rebuilt, so the wheels carry the current sources
  4. the whole hardware-free test suite
  5. scripts/check_release.py — build every distribution, install them into an
@@ -97,7 +97,7 @@ def write_version(version: str) -> list[Path]:
     """Set the version everywhere it appears, including the internal pins.
 
     Both in one pass, because they are one fact. A bump that moved the versions
-    and left ``lefx-sdk==3.0.0`` behind would produce nine wheels that cannot be
+    and left ``led-ctrl-v3-sdk==3.0.0`` behind would produce nine wheels that cannot be
     installed together, and every one of them would build.
     """
     internal = {path.parent.name for path in PACKAGES_ROOT.glob("*/pyproject.toml")}

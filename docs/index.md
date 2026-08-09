@@ -24,31 +24,31 @@ flowchart TB
     end
 
     subgraph ANWENDUNG["Anwendungsschicht"]
-        IFACE["<b>lefx-interfaces</b><br/><i>lefx.interfaces</i><br/><br/>ControllerService · API v3 · CLI<br/>Client · Discovery · Hosting<br/><br/>Bindet alles zusammen und<br/>hält als Einziges den Renderloop"]
+        IFACE["<b>led-ctrl-v3-interfaces</b><br/><i>lefx.interfaces</i><br/><br/>ControllerService · API v3 · CLI<br/>Client · Discovery · Hosting<br/><br/>Bindet alles zusammen und<br/>hält als Einziges den Renderloop"]
     end
 
     subgraph WERKZEUG["Werkstatt — vor dem Betrieb"]
         direction LR
         GUI["<b>lefx-studio</b> <i>(Konsolenskript)</i><br/><i>lefx.effect_creation.studio</i><br/><br/>Effekte abspielen und regeln · DoA kalibrieren<br/>Presets kuratieren · neue Quellen entwerfen<br/><br/><i>startet keinen Dienst, sondern<br/>hält seine eigene Engine im Prozess</i>"]
-        AUTH["<b>lefx-effect-creation</b><br/><i>lefx.effect_creation</i><br/><br/>Scaffolding · Quellenprüfung<br/>Packen zu lefx/3 · lefx-pack<br/><br/>Eine Distribution mit beiden Hälften.<br/>Optional: gehört in keine Laufzeitinstallation"]
+        AUTH["<b>led-ctrl-v3-effect-creation</b><br/><i>lefx.effect_creation</i><br/><br/>Scaffolding · Quellenprüfung<br/>Packen zu lefx/3 · lefx-pack<br/><br/>Eine Distribution mit beiden Hälften.<br/>Optional: gehört in keine Laufzeitinstallation"]
     end
 
     subgraph KERN["Kern"]
-        ENGINE["<b>lefx-engine</b><br/><i>lefx.engine</i><br/><br/>Layer · Composer · Renderer · Runtime<br/>Registry · Paketlader · Input-Health<br/><br/>Kennt kein Gerät, keine Route, kein Qt"]
+        ENGINE["<b>led-ctrl-v3-engine</b><br/><i>lefx.engine</i><br/><br/>Layer · Composer · Renderer · Runtime<br/>Registry · Paketlader · Input-Health<br/><br/>Kennt kein Gerät, keine Route, kein Qt"]
     end
 
     subgraph VERTRAG["Vertrag"]
-        SDK["<b>lefx-sdk</b><br/><i>lefx.sdk</i><br/><br/>Definitionsschema · Wertnormalisierung<br/>Parameterprüfung · Farb- und Ringmathematik<br/><b>Ports:</b> FrameSink · InputProvider<br/>DoA-Kalibrierung · Kontexte<br/><br/>Hängt an nichts. Absichtlich."]
+        SDK["<b>led-ctrl-v3-sdk</b><br/><i>lefx.sdk</i><br/><br/>Definitionsschema · Wertnormalisierung<br/>Parameterprüfung · Farb- und Ringmathematik<br/><b>Ports:</b> FrameSink · InputProvider<br/>DoA-Kalibrierung · Kontexte<br/><br/>Hängt an nichts. Absichtlich."]
     end
 
     subgraph GERAETE["Geräte — beide erfüllen dieselben Ports"]
         direction LR
-        DEV["<b>lefx-device-respeaker</b><br/><i>lefx.device.respeaker</i><br/><br/>UsbTransport · xvf · Sink · DoA-Provider<br/>Reconnect · Heartbeat · Change-Detection"]
-        SIM["<b>lefx-device-simulated-respeaker</b><br/><i>lefx.device.simulated_respeaker</i><br/><br/>TCP-Link · Protokoll · Sink · DoA-Provider<br/>Ringfenster <i>(Qt nur im gui-Extra)</i>"]
+        DEV["<b>led-ctrl-v3-device-respeaker</b><br/><i>lefx.device.respeaker</i><br/><br/>UsbTransport · xvf · Sink · DoA-Provider<br/>Reconnect · Heartbeat · Change-Detection"]
+        SIM["<b>led-ctrl-v3-device-simulated-respeaker</b><br/><i>lefx.device.simulated_respeaker</i><br/><br/>TCP-Link · Protokoll · Sink · DoA-Provider<br/>Ringfenster <i>(Qt nur im gui-Extra)</i>"]
     end
 
     subgraph KATALOG["Kataloge — Daten, kein Code"]
-        SETS["<b>lefxset-core-set</b> · <b>lefxset-smartspeaker-set</b><br/><i>lefx.sets.core_set</i> · <i>lefx.sets.smartspeaker_set</i><br/><br/>Je ein gebautes .lefxset und die Zeile,<br/>die sagt, wo es liegt. Hängen an nichts."]
+        SETS["<b>led-ctrl-v3-set-core</b> · <b>led-ctrl-v3-set-smartspeaker</b><br/><i>lefx.sets.core_set</i> · <i>lefx.sets.smartspeaker_set</i><br/><br/>Je ein gebautes .lefxset und die Zeile,<br/>die sagt, wo es liegt. Hängen an nichts."]
     end
 
     CLI --> IFACE
@@ -83,7 +83,7 @@ importiert zu werden".
 
 Die Werkstatt steht bewusst neben der Bedienung, nicht darin. `lefx` und die
 HTTP-API steuern einen **laufenden Dienst** — das ist der Betrieb. Studio und
-`lefx-effect-creation` entstehen und arbeiten **davor**: sie entwerfen, prüfen und
+`led-ctrl-v3-effect-creation` entstehen und arbeiten **davor**: sie entwerfen, prüfen und
 bauen, was der Dienst später lädt, und keines von beidem gehört in eine
 Installation, die nur Effekte abspielen soll. Das Studio startet dafür auch
 keinen Dienst, sondern hält seine eigene Engine — deshalb kann es eine Quelle
@@ -106,29 +106,29 @@ zum Abspielen nicht gebraucht wird.
 | Paket | Import | Rolle | Hängt ab von | Teil von |
 |---|---|---|---|---|
 | **led-ctrl-v3** | — | Der Name, unter dem installiert wird. Enthält keinen Code; ein Architekturtest hält es dabei. | (nur Abhängigkeiten) | — |
-| **lefx-sdk** | `lefx.sdk` | Der Vertrag. Was ein Effekt deklarieren darf, wie Werte normalisiert werden, wie ein Gerät angesprochen wird. | — | Standard |
-| **lefx-engine** | `lefx.engine` | Die Laufzeit. Layer, Komposition, Lebenszyklen, Registry, Paketformat `lefx/3`. | sdk | Standard |
-| **lefx-interfaces** | `lefx.interfaces` | Die Steuerungsoberfläche: `ControllerService`, HTTP-API, CLI, Client, Discovery, Konfiguration. | sdk, engine | Standard |
-| **lefx-device-respeaker** | `lefx.device.respeaker` | Die echte Hardware: USB-Transport, LED-Senke, DoA-Provider. | sdk | Standard |
-| **lefx-device-simulated-respeaker** | `lefx.device.simulated_respeaker` | Das Software-Double: lokaler Transport, Ringfenster, simulierte DoA. | sdk | `[simulated-respeaker]` |
-| **lefx-effect-creation** | `lefx.effect_creation` | Alles zum Erstellen von Effekten: Gerüst, Prüfung, Bauen (`lefx-pack`) und die Desktop-Werkstatt (`lefx-studio`). | sdk, engine, interfaces | `[effect-creation]` |
-| **lefxset-core-set** | `lefx.sets.core_set` | Der Referenzkatalog als gebautes `.lefxset`. | — | `[core-set]` |
-| **lefxset-smartspeaker-set** | `lefx.sets.smartspeaker_set` | Der Sprachassistenz-Katalog. | — | `[smartspeaker-set]` |
+| **led-ctrl-v3-sdk** | `lefx.sdk` | Der Vertrag. Was ein Effekt deklarieren darf, wie Werte normalisiert werden, wie ein Gerät angesprochen wird. | — | Standard |
+| **led-ctrl-v3-engine** | `lefx.engine` | Die Laufzeit. Layer, Komposition, Lebenszyklen, Registry, Paketformat `lefx/3`. | sdk | Standard |
+| **led-ctrl-v3-interfaces** | `lefx.interfaces` | Die Steuerungsoberfläche: `ControllerService`, HTTP-API, CLI, Client, Discovery, Konfiguration. | sdk, engine | Standard |
+| **led-ctrl-v3-device-respeaker** | `lefx.device.respeaker` | Die echte Hardware: USB-Transport, LED-Senke, DoA-Provider. | sdk | Standard |
+| **led-ctrl-v3-device-simulated-respeaker** | `lefx.device.simulated_respeaker` | Das Software-Double: lokaler Transport, Ringfenster, simulierte DoA. | sdk | `[simulated-respeaker]` |
+| **led-ctrl-v3-effect-creation** | `lefx.effect_creation` | Alles zum Erstellen von Effekten: Gerüst, Prüfung, Bauen (`lefx-pack`) und die Desktop-Werkstatt (`lefx-studio`). | sdk, engine, interfaces | `[effect-creation]` |
+| **led-ctrl-v3-set-core** | `lefx.sets.core_set` | Der Referenzkatalog als gebautes `.lefxset`. | — | `[core-set]` |
+| **led-ctrl-v3-set-smartspeaker** | `lefx.sets.smartspeaker_set` | Der Sprachassistenz-Katalog. | — | `[smartspeaker-set]` |
 
 ### Die erlaubte Richtung
 
 ```text
-lefx-sdk                         → (nichts)
-lefx-engine                      → lefx-sdk
-lefx-interfaces                  → lefx-sdk, lefx-engine
-lefx-effect-creation             → lefx-sdk, lefx-engine, lefx-interfaces
-lefx-device-respeaker            → lefx-sdk
-lefx-device-simulated-respeaker  → lefx-sdk
-lefxset-core-set                 → (nichts)
-lefxset-smartspeaker-set         → (nichts)
+led-ctrl-v3-sdk                         → (nichts)
+led-ctrl-v3-engine                      → led-ctrl-v3-sdk
+led-ctrl-v3-interfaces                  → led-ctrl-v3-sdk, led-ctrl-v3-engine
+led-ctrl-v3-effect-creation             → led-ctrl-v3-sdk, led-ctrl-v3-engine, led-ctrl-v3-interfaces
+led-ctrl-v3-device-respeaker            → led-ctrl-v3-sdk
+led-ctrl-v3-device-simulated-respeaker  → led-ctrl-v3-sdk
+led-ctrl-v3-set-core                 → (nichts)
+led-ctrl-v3-set-smartspeaker         → (nichts)
 ```
 
-Innerhalb von `lefx-effect-creation` läuft eine zweite Grenze, weil Qt dort
+Innerhalb von `led-ctrl-v3-effect-creation` läuft eine zweite Grenze, weil Qt dort
 harte Abhängigkeit ist: nichts direkt unter `lefx/effect_creation/` importiert
 PySide6, und nichts dort importiert `studio/`. Eine Build-Strecke, die
 `lefx-pack` aufruft, fasst den Toolkit also nie an. Auch das sind zwei Tests.
@@ -339,14 +339,14 @@ zu rendern.
 respeaker-led-v3/
 ├── packages/
 │   ├── led-ctrl-v3/                     (nur Abhängigkeiten)
-│   ├── lefx-sdk/                        lefx.sdk
-│   ├── lefx-engine/                     lefx.engine
-│   ├── lefx-interfaces/                 lefx.interfaces
-│   ├── lefx-effect-creation/            lefx.effect_creation (+ .studio)
-│   ├── lefx-device-respeaker/           lefx.device.respeaker
-│   ├── lefx-device-simulated-respeaker/ lefx.device.simulated_respeaker
-│   ├── lefxset-core-set/                lefx.sets.core_set + gebautes .lefxset
-│   └── lefxset-smartspeaker-set/        lefx.sets.smartspeaker_set + .lefxset
+│   ├── led-ctrl-v3-sdk/                        lefx.sdk
+│   ├── led-ctrl-v3-engine/                     lefx.engine
+│   ├── led-ctrl-v3-interfaces/                 lefx.interfaces
+│   ├── led-ctrl-v3-effect-creation/            lefx.effect_creation (+ .studio)
+│   ├── led-ctrl-v3-device-respeaker/           lefx.device.respeaker
+│   ├── led-ctrl-v3-device-simulated-respeaker/ lefx.device.simulated_respeaker
+│   ├── led-ctrl-v3-set-core/                lefx.sets.core_set + gebautes .lefxset
+│   └── led-ctrl-v3-set-smartspeaker/        lefx.sets.smartspeaker_set + .lefxset
 ├── effects/
 │   ├── core-set/                Quellen der kuratierten Referenzdefinitionen
 │   └── smartspeaker-set/        Quellen des portierten Produktivsatzes
@@ -393,7 +393,7 @@ auf dem Gerät ansehen, als Quelle schreiben und zu `.lefx` bauen).
 
 Der Katalog muss einmal gebaut sein, bevor ein Dienst startet — gebaute
 Artefakte sind reproduzierbare Ausgabe und liegen nicht im Repository. Sie
-landen in der Distribution, die sie ausliefert (`packages/lefxset-<name>/`),
+landen in der Distribution, die sie ausliefert (`packages/led-ctrl-v3-set-<name>/`),
 was im Checkout derselbe Ort ist wie in einem installierten Wheel. Gefunden
 werden sie über den Entry-Point-Group `lefx.effect_sets`; `included_lefxset`
 schränkt ein, welche davon geladen werden, und `package_path` kommt hinzu.

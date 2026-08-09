@@ -35,38 +35,39 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DIST_DIR = REPO_ROOT / "build/dist-packages"
 
-# What a default installation of led-ctrl-v3 is, plus the simulator. No Qt in
-# it, which is what proves the simulator's service half needs none. Effect
-# creation is deliberately absent: it is an optional extra, it brings Qt with
-# it, and it is installed afterwards into the same environment — which is both
-# the real upgrade path and the proof that a runtime installation works without
-# any of the tooling that made the effects it plays.
-# What "pip install led-ctrl-v3" brings, named as a person would ask for it —
-# the metapackage and two of its extras, resolved through the built wheels
-# rather than listed here. That is the point: if the extras are wrong, this
-# installs the wrong thing and every check below is run against it.
+# What a default installation of led-ctrl-v3 is, plus the simulator, asked for
+# the way a person would ask — through the metapackage and its extras, resolved
+# from the built wheels rather than listed by distribution name. That is the
+# point: if an extra names the wrong package, this installs the wrong thing and
+# every check below runs against it.
+#
+# No Qt in the result, which is what proves the simulator's service half needs
+# none. Effect creation is deliberately absent: it is an optional extra, it
+# brings Qt with it, and it is installed afterwards into the same environment —
+# both the real upgrade path and the proof that a runtime installation works
+# without any of the tooling that made the effects it plays.
 RUNTIME_REQUESTS = (
     "led-ctrl-v3",
     "led-ctrl-v3[core-set]",
     "led-ctrl-v3[smartspeaker-set]",
     # Not the [simulated-respeaker] extra, which pulls the gui extra with it:
     # the distribution alone is what proves the service half needs no Qt.
-    "lefx-device-simulated-respeaker",
+    "led-ctrl-v3-device-simulated-respeaker",
 )
 
 # Every distribution the workspace publishes, which is what uv build produces.
 DISTRIBUTIONS = (
-    "lefx-sdk",
-    "lefx-engine",
-    "lefx-interfaces",
-    "lefx-device-respeaker",
-    "lefx-device-simulated-respeaker",
-    "lefxset-core-set",
-    "lefxset-smartspeaker-set",
+    "led-ctrl-v3-sdk",
+    "led-ctrl-v3-engine",
+    "led-ctrl-v3-interfaces",
+    "led-ctrl-v3-device-respeaker",
+    "led-ctrl-v3-device-simulated-respeaker",
+    "led-ctrl-v3-set-core",
+    "led-ctrl-v3-set-smartspeaker",
     "led-ctrl-v3",
 )
 
-GUI_DISTRIBUTION = "lefx-effect-creation"
+GUI_DISTRIBUTION = "led-ctrl-v3-effect-creation"
 
 ALL_DISTRIBUTIONS = (*DISTRIBUTIONS, GUI_DISTRIBUTION)
 
@@ -75,8 +76,8 @@ ALL_DISTRIBUTIONS = (*DISTRIBUTIONS, GUI_DISTRIBUTION)
 # entry point, and delivers nothing — the one failure the "artifacts" include in
 # their pyproject cannot prevent.
 EFFECT_SET_WHEELS = {
-    "lefxset-core-set": "lefx/sets/core_set/core-set.lefxset",
-    "lefxset-smartspeaker-set": "lefx/sets/smartspeaker_set/smartspeaker-set.lefxset",
+    "led-ctrl-v3-set-core": "lefx/sets/core_set/core-set.lefxset",
+    "led-ctrl-v3-set-smartspeaker": "lefx/sets/smartspeaker_set/smartspeaker-set.lefxset",
 }
 
 IMPORT_NAMES = (

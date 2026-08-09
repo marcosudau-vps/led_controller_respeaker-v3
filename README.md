@@ -41,28 +41,29 @@ Neun Distributionen, eine Versionsnummer, gemeinsam veröffentlicht.
 | Paket | Import | Aufgabe | Teil von |
 |---|---|---|---|
 | `led-ctrl-v3` | — | Der Name, unter dem installiert wird. Kein Code. | — |
-| `lefx-sdk` | `lefx.sdk` | Definitionsschema, Wertnormalisierung, Ports | Standard |
-| `lefx-engine` | `lefx.engine` | Layer, Komposition, Lebenszyklen, Registry, Paketladen | Standard |
-| `lefx-interfaces` | `lefx.interfaces` | HTTP-API, CLI, Client, Prozess-Hosting, Konfiguration | Standard |
-| `lefx-device-respeaker` | `lefx.device.respeaker` | USB-Transport, LED-Ausgabe, DoA-Eingabe | Standard |
-| `lefx-device-simulated-respeaker` | `lefx.device.simulated_respeaker` | Software-Geräteersatz mit Ringanzeige | `[simulated-respeaker]` |
-| `lefx-effect-creation` | `lefx.effect_creation` | Scaffolding, Quellenvalidierung, Paketbau, Studio | `[effect-creation]` |
-| `lefxset-core-set` | `lefx.sets.core_set` | Referenzkatalog als gebautes `.lefxset` | `[core-set]` |
-| `lefxset-smartspeaker-set` | `lefx.sets.smartspeaker_set` | Sprachassistenz-Katalog | `[smartspeaker-set]` |
+| `led-ctrl-v3-sdk` | `lefx.sdk` | Definitionsschema, Wertnormalisierung, Ports | Standard |
+| `led-ctrl-v3-engine` | `lefx.engine` | Layer, Komposition, Lebenszyklen, Registry, Paketladen | Standard |
+| `led-ctrl-v3-interfaces` | `lefx.interfaces` | HTTP-API, CLI, Client, Prozess-Hosting, Konfiguration | Standard |
+| `led-ctrl-v3-device-respeaker` | `lefx.device.respeaker` | USB-Transport, LED-Ausgabe, DoA-Eingabe | Standard |
+| `led-ctrl-v3-device-simulated-respeaker` | `lefx.device.simulated_respeaker` | Software-Geräteersatz mit Ringanzeige | `[simulated-respeaker]` |
+| `led-ctrl-v3-effect-creation` | `lefx.effect_creation` | Scaffolding, Quellenvalidierung, Paketbau, Studio | `[effect-creation]` |
+| `led-ctrl-v3-set-core` | `lefx.sets.core_set` | Referenzkatalog als gebautes `.lefxset` | `[core-set]` |
+| `led-ctrl-v3-set-smartspeaker` | `lefx.sets.smartspeaker_set` | Sprachassistenz-Katalog | `[smartspeaker-set]` |
 
 ## Abhängigkeitsrichtung
 
 ```
-lefx-sdk                         → (nichts)
-lefx-engine                      → lefx-sdk
-lefx-interfaces                  → lefx-sdk, lefx-engine
-lefx-effect-creation             → lefx-sdk, lefx-engine, lefx-interfaces
-lefx-device-respeaker            → lefx-sdk
-lefx-device-simulated-respeaker  → lefx-sdk
-lefxset-*                        → (nichts)
+led-ctrl-v3-sdk                         → (nichts)
+led-ctrl-v3-engine                      → led-ctrl-v3-sdk
+led-ctrl-v3-interfaces                  → led-ctrl-v3-sdk, led-ctrl-v3-engine
+led-ctrl-v3-effect-creation             → led-ctrl-v3-sdk, led-ctrl-v3-engine, led-ctrl-v3-interfaces
+led-ctrl-v3-device-respeaker            → led-ctrl-v3-sdk
+led-ctrl-v3-device-simulated-respeaker  → led-ctrl-v3-sdk
+led-ctrl-v3-set-core                    → (nichts)
+led-ctrl-v3-set-smartspeaker            → (nichts)
 ```
 
-`lefx-interfaces` importiert weder Hardware noch Simulator noch einen Katalog.
+`led-ctrl-v3-interfaces` importiert weder Hardware noch Simulator noch einen Katalog.
 Alle drei melden sich über Entry Points an (`lefx.frame_sinks`,
 `lefx.input_providers`, `lefx.effect_sets`); der Dienst liest ein, was
 installiert ist. Ein Architekturtest bricht bei jeder Verletzung dieser
@@ -102,7 +103,7 @@ uv run pytest -m "not hardware"
 ```
 
 Die Effektkataloge sind gebaute Ausgabe und liegen in der Distribution, die sie
-ausliefert — `packages/lefxset-<name>/`. Derselbe Ort im Checkout wie in einem
+ausliefert — `packages/led-ctrl-v3-set-<name>/`. Derselbe Ort im Checkout wie in einem
 installierten Wheel, weshalb `uv sync` plus `build_effects.py` genügt, um einen
 vollständigen Katalog zu haben.
 

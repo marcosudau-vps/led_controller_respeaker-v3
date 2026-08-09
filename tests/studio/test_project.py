@@ -31,7 +31,7 @@ def test_everything_is_derived_from_the_one_root(tmp_path):
     project = Project.at(tmp_path)
     assert project.catalogue_root == tmp_path / "effects"
     assert project.build_target("core-set") == (
-        tmp_path / "packages/lefxset-core-set/src/lefx/sets/core_set/core-set.lefxset"
+        tmp_path / "packages/led-ctrl-v3-set-core/src/lefx/sets/core_set/core-set.lefxset"
     )
     assert project.calibration_file == tmp_path / "doa_calibration.json"
     assert all(project.root in path.parents or path == project.root
@@ -206,7 +206,7 @@ def test_every_entry_point_distribution_travels_with_the_bundle():
     module = build_studio()
     registered = set(module.entry_point_distributions())
 
-    assert {"lefx-device-respeaker", "lefx-device-simulated-respeaker"} <= registered
+    assert {"led-ctrl-v3-device-respeaker", "led-ctrl-v3-device-simulated-respeaker"} <= registered
     assert registered <= set(module.metadata_to_copy())
 
 

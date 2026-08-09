@@ -30,14 +30,14 @@ from .scan import (
 # Which import prefix belongs to which distribution. Both namespaces are
 # PEP-420, so the distribution is not the top-level name but the one below it.
 OWNER_OF_MODULE = {
-    "lefx.sdk": "lefx-sdk",
-    "lefx.engine": "lefx-engine",
-    "lefx.effect_creation": "lefx-effect-creation",
-    "lefx.interfaces": "lefx-interfaces",
-    "lefx.device.respeaker": "lefx-device-respeaker",
-    "lefx.device.simulated_respeaker": "lefx-device-simulated-respeaker",
-    "lefx.sets.core_set": "lefxset-core-set",
-    "lefx.sets.smartspeaker_set": "lefxset-smartspeaker-set",
+    "lefx.sdk": "led-ctrl-v3-sdk",
+    "lefx.engine": "led-ctrl-v3-engine",
+    "lefx.effect_creation": "led-ctrl-v3-effect-creation",
+    "lefx.interfaces": "led-ctrl-v3-interfaces",
+    "lefx.device.respeaker": "led-ctrl-v3-device-respeaker",
+    "lefx.device.simulated_respeaker": "led-ctrl-v3-device-simulated-respeaker",
+    "lefx.sets.core_set": "led-ctrl-v3-set-core",
+    "lefx.sets.smartspeaker_set": "led-ctrl-v3-set-smartspeaker",
 }
 
 # Distributions whose whole content is their dependency list. The declared-
@@ -52,24 +52,24 @@ DEPENDENCY_ONLY = frozenset({"led-ctrl-v3"})
 # not reach either device package — those are found through entry points, which
 # is what makes leaving a package uninstalled leave it out of the system.
 MAY_IMPORT: dict[str, frozenset[str]] = {
-    "lefx-sdk": frozenset(),
-    "lefx-engine": frozenset({"lefx-sdk"}),
+    "led-ctrl-v3-sdk": frozenset(),
+    "led-ctrl-v3-engine": frozenset({"led-ctrl-v3-sdk"}),
     # The one package allowed to depend on three others, because the studio is
     # inside it: it reads the schema, renders with the engine and drives a
     # device through the control surface. Note what is still absent — neither
     # device package. The studio chooses its output from the same entry points
     # the service reads, so installing it does not decide which hardware you
     # have.
-    "lefx-effect-creation": frozenset({"lefx-sdk", "lefx-engine", "lefx-interfaces"}),
-    "lefx-interfaces": frozenset({"lefx-sdk", "lefx-engine"}),
-    "lefx-device-respeaker": frozenset({"lefx-sdk"}),
-    "lefx-device-simulated-respeaker": frozenset({"lefx-sdk"}),
+    "led-ctrl-v3-effect-creation": frozenset({"led-ctrl-v3-sdk", "led-ctrl-v3-engine", "led-ctrl-v3-interfaces"}),
+    "led-ctrl-v3-interfaces": frozenset({"led-ctrl-v3-sdk", "led-ctrl-v3-engine"}),
+    "led-ctrl-v3-device-respeaker": frozenset({"led-ctrl-v3-sdk"}),
+    "led-ctrl-v3-device-simulated-respeaker": frozenset({"led-ctrl-v3-sdk"}),
     # A catalogue is data. It ships one archive and a function that says where
     # the archive is, so it imports nothing at all — not even the SDK, because
     # a package format is not an import. That is what lets a set be installed
     # and uninstalled without touching anything that runs.
-    "lefxset-core-set": frozenset(),
-    "lefxset-smartspeaker-set": frozenset(),
+    "led-ctrl-v3-set-core": frozenset(),
+    "led-ctrl-v3-set-smartspeaker": frozenset(),
     "led-ctrl-v3": frozenset(),
 }
 
@@ -82,7 +82,7 @@ GUI_ONLY_SIMULATOR_MODULES = frozenset({"ring", "window", "app", "__main__"})
 # Effect creation is one distribution with two halves: the packer, which a
 # build pipeline runs headless, and the studio, which is a window. The split is
 # a directory, and these two roots are what the rules below are written against.
-CREATION_ROOT = PACKAGES_ROOT / "lefx-effect-creation/src/lefx/effect_creation"
+CREATION_ROOT = PACKAGES_ROOT / "led-ctrl-v3-effect-creation/src/lefx/effect_creation"
 STUDIO_ROOT = CREATION_ROOT / "studio"
 
 # The studio *is* a window, so Qt is a hard dependency there rather than an
@@ -170,14 +170,14 @@ def test_the_declared_dependencies_agree_with_the_matrix(distribution):
 
 def test_the_sdk_depends_on_nothing_at_all():
     """Every package depends on the SDK, so anything it pulls in reaches all of them."""
-    text = (PACKAGES_ROOT / "lefx-sdk" / "pyproject.toml").read_bytes()
+    text = (PACKAGES_ROOT / "led-ctrl-v3-sdk" / "pyproject.toml").read_bytes()
     assert tomllib.loads(text.decode("utf-8"))["project"]["dependencies"] == []
 
 
 # -- the specific rules the matrix exists for -------------------------------
 
 
-@pytest.mark.parametrize("distribution", ["lefx-device-respeaker", "lefx-device-simulated-respeaker"])
+@pytest.mark.parametrize("distribution", ["led-ctrl-v3-device-respeaker", "led-ctrl-v3-device-simulated-respeaker"])
 @pytest.mark.parametrize("forbidden", ["lefx.engine", "lefx.interfaces"])
 def test_a_device_package_never_reaches_the_engine_or_the_interfaces(distribution, forbidden):
     """The direction that makes a device replaceable.
@@ -197,7 +197,7 @@ def test_the_interfaces_never_import_a_device_package(forbidden):
     An import here would put the hardware package into every installation of the
     control surface, and uninstalling it would stop being how you leave it out.
     """
-    offenders = [line for line in violations("lefx-interfaces") if forbidden in line]
+    offenders = [line for line in violations("led-ctrl-v3-interfaces") if forbidden in line]
     assert offenders == []
 
 
@@ -214,7 +214,7 @@ def test_the_engine_carries_no_offline_state():
     this is the part a dependency check cannot see, because the V1 version of it
     was a bare string.
     """
-    for path in source_files("lefx-engine"):
+    for path in source_files("led-ctrl-v3-engine"):
         used = {item.casefold() for item in code_strings_and_names(parse(path))}
         assert "offline" not in used, f"{path.relative_to(REPO_ROOT).as_posix()} names 'offline'"
 
@@ -230,14 +230,14 @@ def test_the_service_half_of_the_simulator_carries_no_qt(module):
     installed in this workspace — an import that succeeded here would prove
     nothing about the machine where it is not.
     """
-    path = PACKAGES_ROOT / "lefx-device-simulated-respeaker/src/lefx/device/simulated_respeaker" / f"{module}.py"
+    path = PACKAGES_ROOT / "led-ctrl-v3-device-simulated-respeaker/src/lefx/device/simulated_respeaker" / f"{module}.py"
     qt = sorted(name for name in imported_modules(parse(path)) if name.split(".")[0] == "PySide6")
     assert qt == []
 
 
 def test_every_simulator_module_is_either_gui_free_or_declared_gui_only():
     """So a new module cannot quietly become the one that pulls Qt in."""
-    directory = PACKAGES_ROOT / "lefx-device-simulated-respeaker/src/lefx/device/simulated_respeaker"
+    directory = PACKAGES_ROOT / "led-ctrl-v3-device-simulated-respeaker/src/lefx/device/simulated_respeaker"
     modules = {path.stem for path in directory.glob("*.py")} - {"__init__"}
     assert modules == set(GUI_FREE_SIMULATOR_MODULES) | GUI_ONLY_SIMULATOR_MODULES
 
@@ -245,7 +245,7 @@ def test_every_simulator_module_is_either_gui_free_or_declared_gui_only():
 def test_importing_the_simulator_package_does_not_import_qt():
     """The package's own ``__init__`` is the trap: it is what a factory reaches
     through, and one convenience re-export of the window would undo the extra."""
-    path = PACKAGES_ROOT / "lefx-device-simulated-respeaker/src/lefx/device/simulated_respeaker/__init__.py"
+    path = PACKAGES_ROOT / "led-ctrl-v3-device-simulated-respeaker/src/lefx/device/simulated_respeaker/__init__.py"
     reached = imported_modules(parse(path))
     assert not any(name.split(".")[0] == "PySide6" for name in reached)
     assert not any(name.rsplit(".", 1)[-1] in GUI_ONLY_SIMULATOR_MODULES for name in reached)

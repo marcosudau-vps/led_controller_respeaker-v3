@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "led-ctrl-v3-interfaces"
+version = "3.0.0"
+description = "LEFX V3 control surface: HTTP API, CLI, client and service hosting"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12,<3.13"
+keywords = ["lefx", "led", "effects", "api", "cli"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+
+# Frame sinks and input providers are discovered through entry points, never
+# imported. That is why no hardware or simulator package appears here.
+dependencies = [
+    "led-ctrl-v3-sdk==3.0.0",
+    "led-ctrl-v3-engine==3.0.0",
+    "fastapi>=0.135.3,<0.136",
+    "pydantic>=2.12.5,<2.13",
+    "uvicorn>=0.44.0,<0.45",
+    # config.yaml. The settings layer lives here because this is the package
+    # that turns settings into locations, ports and a running process.
+    "PyYAML>=6.0.2,<7",
+    "tzdata>=2025.2; platform_system == 'Windows'",
+]
+
+[project.scripts]
+lefx = "lefx.interfaces.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lefx"]

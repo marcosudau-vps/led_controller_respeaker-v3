@@ -35,7 +35,7 @@ nebenbei mit ab.
 
 ## Teil II — Effekte schreiben
 
-*Der Autorenpfad und der meistgelesene Teil. Dokumentiert `lefx-sdk` und `lefx-effect-creation`.*
+*Der Autorenpfad und der meistgelesene Teil. Dokumentiert `led-ctrl-v3-sdk` und `led-ctrl-v3-effect-creation`.*
 
 | # | Kapitel | Inhalt | Herkunft |
 |---|---|---|---|
@@ -50,7 +50,7 @@ nebenbei mit ab.
 
 ## Teil III — Betreiben
 
-*Den Dienst laufen lassen und steuern. Dokumentiert `lefx-interfaces` und die beiden Gerätepakete.*
+*Den Dienst laufen lassen und steuern. Dokumentiert `led-ctrl-v3-interfaces` und die beiden Gerätepakete.*
 
 | # | Kapitel | Inhalt | Herkunft |
 |---|---|---|---|

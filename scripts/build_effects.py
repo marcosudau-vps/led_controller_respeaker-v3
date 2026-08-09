@@ -1,7 +1,7 @@
 """Build every effect set in ``effects/`` into the distribution that ships it.
 
 Each set directory holds editable sources under ``sources/``. The archive built
-from them lands inside ``packages/lefxset-<name>/``, which is the one place a
+from them lands inside the distribution that ships it, which is the one place a
 built set ever lives: the same directory in a checkout, in the editable
 workspace and in an installed wheel. That is what makes ``uv sync`` enough to
 have a catalogue and ``uv build`` enough to ship one.
@@ -27,14 +27,18 @@ CATALOGUE_ROOT = REPO_ROOT / "effects"
 PACKAGES_ROOT = REPO_ROOT / "packages"
 
 
-def distribution_root(set_name: str) -> Path:
-    return PACKAGES_ROOT / f"lefxset-{set_name}"
+def distribution_dir(set_name: str) -> Path | None:
+    """The ``src/lefx/sets/<module>`` directory shipping this set, if one exists.
 
-
-def distribution_dir(set_name: str) -> Path:
-    """Where ``<set_name>.lefxset`` belongs, whether or not it is there yet."""
+    Looked up by module path rather than assembled from a distribution name.
+    The module path is fixed by the import name; the distribution name is a
+    packaging decision that has already changed once.
+    """
     module = set_name.replace("-", "_")
-    return distribution_root(set_name) / "src" / "lefx" / "sets" / module
+    for candidate in sorted(PACKAGES_ROOT.glob(f"*/src/lefx/sets/{module}")):
+        if candidate.is_dir():
+            return candidate
+    return None
 
 
 def source_dirs(set_root: Path) -> list[Path]:
@@ -47,13 +51,14 @@ def source_dirs(set_root: Path) -> list[Path]:
 def build_set(set_root: Path, *, output_root: Path | None = None) -> dict:
     """Validate, pack and assemble one set. ``output_root`` overrides the target."""
     if output_root is None:
-        if not distribution_root(set_root.name).is_dir():
-            raise SourceError(
-                f"{set_root.name} has no distribution at "
-                f"{distribution_root(set_root.name).relative_to(REPO_ROOT).as_posix()}. "
-                "Add the package, or pass --output to build somewhere else."
-            )
         target_dir = distribution_dir(set_root.name)
+        if target_dir is None:
+            module = set_root.name.replace("-", "_")
+            raise SourceError(
+                f"no distribution ships {set_root.name}: nothing under packages/ has a "
+                f"src/lefx/sets/{module}/ directory. Add the package, or pass --output "
+                "to build somewhere else."
+            )
     else:
         target_dir = Path(output_root)
 

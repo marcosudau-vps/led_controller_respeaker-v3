@@ -19,10 +19,10 @@ installiert wird, damit „welche Pakete brauche ich" eine Antwort hat statt vie
 
 | Distribution | Import | Rolle |
 |---|---|---|
-| `lefx-sdk` | `lefx.sdk` | Der Autorenvertrag: Definitionsschema, Wertnormalisierung, Ports |
-| `lefx-engine` | `lefx.engine` | Layer, Komposition, Lebenszyklen, Registry, `lefx/3`-Loader |
-| `lefx-interfaces` | `lefx.interfaces` | HTTP-API v3, CLI, Client, Prozess-Hosting, Konfiguration |
-| `lefx-device-respeaker` | `lefx.device.respeaker` | USB-Transport, LED-Senke, DoA-Provider |
+| `led-ctrl-v3-sdk` | `lefx.sdk` | Der Autorenvertrag: Definitionsschema, Wertnormalisierung, Ports |
+| `led-ctrl-v3-engine` | `lefx.engine` | Layer, Komposition, Lebenszyklen, Registry, `lefx/3`-Loader |
+| `led-ctrl-v3-interfaces` | `lefx.interfaces` | HTTP-API v3, CLI, Client, Prozess-Hosting, Konfiguration |
+| `led-ctrl-v3-device-respeaker` | `lefx.device.respeaker` | USB-Transport, LED-Senke, DoA-Provider |
 
 ## Optionen
 

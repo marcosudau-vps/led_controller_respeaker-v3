@@ -106,16 +106,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Wheel-filename form, so the glob below is exact. A wheel is named
+        # {name}-{version}-..., so led_ctrl_v3-*.whl matches the metapackage
+        # alone and never led_ctrl_v3_sdk-*.whl.
         distribution:
-          - lefx_sdk
-          - lefx_engine
-          - lefx_interfaces
-          - lefx_effect_creation
-          - lefx_device_respeaker
-          - lefx_device_simulated_respeaker
-          - lefxset_core_set
-          - lefxset_smartspeaker_set
           - led_ctrl_v3
+          - led_ctrl_v3_sdk
+          - led_ctrl_v3_engine
+          - led_ctrl_v3_interfaces
+          - led_ctrl_v3_effect_creation
+          - led_ctrl_v3_device_respeaker
+          - led_ctrl_v3_device_simulated_respeaker
+          - led_ctrl_v3_set_core
+          - led_ctrl_v3_set_smartspeaker
     permissions:
       # What trusted publishing needs, and the only reason this job has any
       # permissions at all. No token, no password, nothing stored.
