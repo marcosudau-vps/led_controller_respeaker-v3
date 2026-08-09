@@ -44,6 +44,20 @@ def as_bool(value: Any) -> bool:
     return str(value).strip().casefold() in {"1", "true", "yes", "on", "ja", "an"}
 
 
+def as_int(value: Any) -> int:
+    """Coerce a sink option to a whole number, accepting ``0x2886`` as written.
+
+    Base zero rather than ten, because the two options that use this are a USB
+    vendor and product id, and every datasheet, every device manager entry and
+    every line of documentation writes those in hex.
+    """
+    if isinstance(value, bool):
+        raise ValueError("expected a number, got a flag")
+    if isinstance(value, int):
+        return value
+    return int(str(value).strip(), 0)
+
+
 def shared_transport(**options: Any) -> UsbTransport:
     """The one managed USB connection, created on first use and kept running.
 
@@ -71,17 +85,38 @@ def reset_shared_transport() -> None:
         transport.close()
 
 
-def _transport_options(force_claim: Any, claim_unrelated: Any) -> dict[str, Any]:
+def _transport_options(
+    force_claim: Any,
+    claim_unrelated: Any,
+    vendor_id: Any = None,
+    product_id: Any = None,
+    usb_timeout_ms: Any = None,
+) -> dict[str, Any]:
     """Only what the caller actually asked for.
 
     Force-claiming terminates another program, so it is never inferred from a
     default. It has to be spelled out, every time, by whoever is running this.
+
+    Device identity and transfer timeout travel as a prepared ``finder`` rather
+    than as three more transport parameters. The transport's job is keeping a
+    connection alive, not knowing which device it is or how patient to be with
+    it; both of those belong to whoever opens the handle, and that is the finder.
+    Left unspecified, no finder is passed at all and the transport keeps its own
+    default — so an ordinary installation is unaffected by any of this.
     """
     options: dict[str, Any] = {}
     if force_claim is not None:
         options["force_claim"] = as_bool(force_claim)
     if claim_unrelated is not None:
         options["claim_unrelated"] = as_bool(claim_unrelated)
+
+    if vendor_id is None and product_id is None and usb_timeout_ms is None:
+        return options
+
+    vid = xvf.VENDOR_ID if vendor_id is None else as_int(vendor_id)
+    pid = xvf.PRODUCT_ID if product_id is None else as_int(product_id)
+    timeout = None if usb_timeout_ms is None else as_int(usb_timeout_ms)
+    options["finder"] = lambda: xvf.find(vid, pid, timeout_ms=timeout)
     return options
 
 
@@ -90,10 +125,17 @@ def create_frame_sink(
     led_count: int = xvf.RING_LED_COUNT,
     force_claim: Any = None,
     claim_unrelated: Any = None,
+    vendor_id: Any = None,
+    product_id: Any = None,
+    usb_timeout_ms: Any = None,
     **options: Any,
 ) -> FrameSink:
     del options
-    transport = shared_transport(**_transport_options(force_claim, claim_unrelated))
+    transport = shared_transport(
+        **_transport_options(
+            force_claim, claim_unrelated, vendor_id, product_id, usb_timeout_ms
+        )
+    )
     return ReSpeakerFrameSink(transport, led_count=led_count)
 
 
@@ -102,13 +144,20 @@ def create_doa_provider(
     max_hz: float = DEFAULT_MAX_HZ,
     force_claim: Any = None,
     claim_unrelated: Any = None,
+    vendor_id: Any = None,
+    product_id: Any = None,
+    usb_timeout_ms: Any = None,
     angle_offset_deg: Any = None,
     reverse: Any = None,
     calibration_file: Any = None,
     **options: Any,
 ) -> InputProvider:
     del options
-    transport = shared_transport(**_transport_options(force_claim, claim_unrelated))
+    transport = shared_transport(
+        **_transport_options(
+            force_claim, claim_unrelated, vendor_id, product_id, usb_timeout_ms
+        )
+    )
     return ReSpeakerDoaProvider(
         transport,
         max_hz=max_hz,
@@ -123,6 +172,8 @@ def create_doa_provider(
 
 __all__ = [
     "DEVICE_NAME",
+    "as_bool",
+    "as_int",
     "create_doa_provider",
     "create_frame_sink",
     "reset_shared_transport",

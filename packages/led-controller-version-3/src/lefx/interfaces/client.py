@@ -13,7 +13,7 @@ import urllib.request
 from dataclasses import dataclass
 from typing import Any, Mapping
 
-from .api import API_PREFIX
+from .contract import API_PREFIX
 
 
 @dataclass(slots=True, frozen=True)

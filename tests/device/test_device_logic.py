@@ -732,3 +732,77 @@ def test_a_null_direction_is_a_legitimate_reading():
     provider = SimulatorDoaProvider(NullLink())
     provider.refresh(1.0)
     assert provider.sample(context()) == {"direction_deg": None, "detection_state": "none"}
+
+
+# -- transfer timeout and device identity -----------------------------------
+
+
+class RecordingDev:
+    """A raw USB handle that records what it was asked to transfer."""
+
+    def __init__(self) -> None:
+        self.transfers: list[tuple] = []
+
+    def ctrl_transfer(self, *args):
+        self.transfers.append(args)
+        return b""
+
+
+def test_the_default_transfer_timeout_is_actually_a_timeout():
+    """100 seconds is the absence of one: nothing can react while it runs."""
+    assert xvf.DEFAULT_TIMEOUT_MS <= 5000
+    assert xvf.ReSpeaker(RecordingDev()).TIMEOUT == xvf.DEFAULT_TIMEOUT_MS
+
+
+def test_a_device_carries_the_timeout_it_was_given_into_every_transfer():
+    dev = RecordingDev()
+    device = xvf.ReSpeaker(dev, timeout_ms=250)
+
+    assert device.TIMEOUT == 250
+    device.write("LED_EFFECT", [xvf.LED_EFFECT_RING_MODE])
+    assert dev.transfers[-1][-1] == 250
+
+
+def test_device_identity_and_timeout_reach_the_finder(monkeypatch):
+    """A caller that names a device must get that device, at its own patience."""
+    from lefx.device.respeaker import registration
+
+    seen: dict = {}
+
+    def fake_find(vid, pid, *, timeout_ms=None):
+        seen.update(vid=vid, pid=pid, timeout_ms=timeout_ms)
+        return None
+
+    monkeypatch.setattr(xvf, "find", fake_find)
+
+    options = registration._transport_options(
+        None, None, vendor_id="0x2886", product_id=26, usb_timeout_ms="400"
+    )
+    assert options["finder"]() is None
+    assert seen == {"vid": 0x2886, "pid": 26, "timeout_ms": 400}
+
+
+def test_naming_only_a_timeout_keeps_the_documented_device():
+    from lefx.device.respeaker import registration
+
+    seen: dict = {}
+
+    def fake_find(vid, pid, *, timeout_ms=None):
+        seen.update(vid=vid, pid=pid, timeout_ms=timeout_ms)
+        return None
+
+    original, xvf.find = xvf.find, fake_find
+    try:
+        registration._transport_options(None, None, usb_timeout_ms=300)["finder"]()
+    finally:
+        xvf.find = original
+
+    assert seen == {"vid": xvf.VENDOR_ID, "pid": xvf.PRODUCT_ID, "timeout_ms": 300}
+
+
+def test_an_ordinary_installation_is_handed_no_finder_at_all():
+    """Saying nothing must leave the transport exactly as it was."""
+    from lefx.device.respeaker import registration
+
+    assert registration._transport_options(None, None) == {}
+    assert "finder" not in registration._transport_options(True, None)

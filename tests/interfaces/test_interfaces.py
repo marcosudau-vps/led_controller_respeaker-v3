@@ -538,3 +538,44 @@ def test_another_process_instance_file_is_left_alone(tmp_path):
     write_instance(path, create_instance(host="127.0.0.1", port=8765, requested_port=8765))
     clear_instance(path, pid=999999)
     assert path.exists()
+
+
+# -- embedding without the HTTP stack ---------------------------------------
+
+
+def test_embedding_the_service_does_not_import_the_http_stack():
+    """The control surface is importable without paying for a server nobody starts.
+
+    A subprocess rather than an assertion about ``sys.modules`` here, because
+    this test module imports FastAPI itself two lines from the top. The question
+    is what a *fresh* interpreter loads, which is the situation an embedding
+    application and a frozen build are both in.
+    """
+    import subprocess
+    import sys
+
+    program = (
+        "import sys\n"
+        "from lefx.interfaces import ControllerService\n"
+        "assert ControllerService is not None\n"
+        "loaded = [name for name in ('fastapi', 'starlette', 'pydantic', 'uvicorn')\n"
+        "          if name in sys.modules]\n"
+        "print(','.join(loaded))\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", program], capture_output=True, text=True, check=True
+    )
+    assert result.stdout.strip() == "", f"embedding pulled in: {result.stdout.strip()}"
+
+
+def test_the_deferred_names_still_resolve():
+    """Deferring an import must not remove anything from the public surface."""
+    import lefx.interfaces as interfaces
+
+    assert interfaces.API_PREFIX == API_PREFIX
+    assert interfaces.create_app is create_app
+    assert "create_app" in dir(interfaces)
+    assert "API_PREFIX" in dir(interfaces)
+
+    with pytest.raises(AttributeError):
+        interfaces.no_such_name

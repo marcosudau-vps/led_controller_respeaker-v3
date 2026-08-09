@@ -35,6 +35,22 @@ PRODUCT_ID = 0x001A
 MAX_READ_ATTEMPTS = 100
 """How often a busy servicer may answer ``retry`` before the read gives up."""
 
+DEFAULT_TIMEOUT_MS = 1000
+"""How long one control transfer may take before libusb gives up, in ms.
+
+The vendor's tool used 100 seconds. That is not a timeout, it is the absence of
+one: a healthy control transfer answers in microseconds, so the only thing the
+value ever decides is how long a caller waits for a device that has stopped
+answering while its handle still exists — a suspended hub, a driver hiccup, a
+sleep/wake cycle. Waiting 100 seconds for that hangs whoever asked, and the
+managed transport's reconnect loop cannot begin until the call returns, so the
+self-healing that exists on paper never gets a turn.
+
+A second is already generous by two orders of magnitude for this device, and it
+sits far below the transport's heartbeat and retry cadence, which is what makes
+a dead link visible while it can still be acted on.
+"""
+
 # name, resid, cmdid, length, access, type, description
 PARAMETERS = {
     # APPLICATION_SERVICER_RESID commands
@@ -183,10 +199,13 @@ class ReSpeaker:
     Not thread-safe on its own — serialising access is the transport's job.
     """
 
-    TIMEOUT = 100000
+    TIMEOUT = DEFAULT_TIMEOUT_MS
+    """Class-level default. ``timeout_ms`` overrides it for one device."""
 
-    def __init__(self, dev: object) -> None:
+    def __init__(self, dev: object, *, timeout_ms: int | None = None) -> None:
         self.dev = dev
+        if timeout_ms is not None:
+            self.TIMEOUT = int(timeout_ms)
 
     def write(self, name: str, data_list: list) -> None:
         try:
@@ -284,12 +303,19 @@ class ReSpeaker:
         usb.util.dispose_resources(self.dev)
 
 
-def find(vid: int = VENDOR_ID, pid: int = PRODUCT_ID) -> ReSpeaker | None:
+def find(
+    vid: int = VENDOR_ID, pid: int = PRODUCT_ID, *, timeout_ms: int | None = None
+) -> ReSpeaker | None:
     """Return the connected device, or ``None`` when there is none.
 
     Windows needs the backend that ``libusb-package`` ships; elsewhere the
     system backend is already there. The import is local so that a machine
     without the wheel can still import this module.
+
+    ``timeout_ms`` is carried to the device rather than set on it afterwards,
+    because a caller that wanted a short timeout wants it to hold for the very
+    first transfer too — and the first transfer is the connection probe, which
+    is exactly where an unresponsive device shows up.
     """
     if sys.platform.startswith("win"):
         import libusb_package
@@ -297,11 +323,12 @@ def find(vid: int = VENDOR_ID, pid: int = PRODUCT_ID) -> ReSpeaker | None:
         dev = libusb_package.find(idVendor=vid, idProduct=pid)
     else:
         dev = usb.core.find(idVendor=vid, idProduct=pid)
-    return None if dev is None else ReSpeaker(dev)
+    return None if dev is None else ReSpeaker(dev, timeout_ms=timeout_ms)
 
 
 __all__ = [
     "CONTROL_SUCCESS",
+    "DEFAULT_TIMEOUT_MS",
     "LED_EFFECT_RING_MODE",
     "PARAMETERS",
     "PRODUCT_ID",

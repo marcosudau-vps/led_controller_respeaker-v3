@@ -27,9 +27,8 @@ from lefx.engine import (
 )
 from lefx.sdk import DefinitionType, ParameterValidationError
 
+from .contract import API_PREFIX
 from .service import ControllerService
-
-API_PREFIX = "/api/v3"
 
 
 class SetStateRequest(BaseModel):
