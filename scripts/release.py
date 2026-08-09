@@ -252,8 +252,15 @@ def main(argv: list[str] | None = None) -> int:
 
         step("committing and pushing")
         run(["git", "add", "-A"])
-        run(["git", "commit", "-m", f"release: v{version}"])
-        run(["git", "push", "origin", RELEASE_BRANCH], capture=False)
+        if run(["git", "diff", "--cached", "--name-only"]).strip():
+            run(["git", "commit", "-m", f"release: v{version}"])
+            run(["git", "push", "origin", RELEASE_BRANCH], capture=False)
+        else:
+            # The first release of a generation: the tree already carries the
+            # version, so writing it changed nothing and there is nothing to
+            # commit. Tag what is there. Committing an empty change to have
+            # something to tag would be a commit that says nothing.
+            print("  nothing changed; tagging the commit that is already here")
         sha = run(["git", "rev-parse", "HEAD"]).strip()
 
         if args.skip_ci:
