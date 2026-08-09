@@ -25,7 +25,7 @@ from lefx.sdk import FrameSink, OutputFrame, SinkStatus
 
 from .project import Project
 
-logger = logging.getLogger("lefx.studio.session")
+logger = logging.getLogger("lefx.effect_creation.studio.session")
 
 FrameListener = Callable[[tuple[int, ...]], None]
 

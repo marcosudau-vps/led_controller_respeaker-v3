@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from lefx.authoring import import_effect_class, load_effect_source, validate_effect_source
+from lefx.effect_creation import import_effect_class, load_effect_source, validate_effect_source
 from lefx.engine import check_frame
 from lefx.sdk import (
     CompositionMode,

@@ -32,9 +32,8 @@ from .scan import (
 OWNER_OF_MODULE = {
     "lefx.sdk": "lefx-sdk",
     "lefx.engine": "lefx-engine",
-    "lefx.authoring": "lefx-authoring",
+    "lefx.effect_creation": "lefx-effect-creation",
     "lefx.interfaces": "lefx-interfaces",
-    "lefx.studio": "lefx-studio",
     "lefx.device.respeaker": "lefx-device-respeaker",
     "lefx.device.simulated_respeaker": "lefx-device-simulated-respeaker",
 }
@@ -46,15 +45,14 @@ OWNER_OF_MODULE = {
 MAY_IMPORT: dict[str, frozenset[str]] = {
     "lefx-sdk": frozenset(),
     "lefx-engine": frozenset({"lefx-sdk"}),
-    "lefx-authoring": frozenset({"lefx-sdk", "lefx-engine"}),
+    # The one package allowed to depend on three others, because the studio is
+    # inside it: it reads the schema, renders with the engine and drives a
+    # device through the control surface. Note what is still absent — neither
+    # device package. The studio chooses its output from the same entry points
+    # the service reads, so installing it does not decide which hardware you
+    # have.
+    "lefx-effect-creation": frozenset({"lefx-sdk", "lefx-engine", "lefx-interfaces"}),
     "lefx-interfaces": frozenset({"lefx-sdk", "lefx-engine"}),
-    # An application, and the only package allowed to depend on four others: it
-    # reads the schema, renders with the engine, drives a device through the
-    # control surface and writes a source back with the authoring tools. Note
-    # what is still absent — neither device package. The studio chooses its
-    # output from the same entry points the service reads, so installing it
-    # does not decide which hardware you have.
-    "lefx-studio": frozenset({"lefx-sdk", "lefx-engine", "lefx-authoring", "lefx-interfaces"}),
     "lefx-device-respeaker": frozenset({"lefx-sdk"}),
     "lefx-device-simulated-respeaker": frozenset({"lefx-sdk"}),
 }
@@ -64,6 +62,12 @@ MAY_IMPORT: dict[str, frozenset[str]] = {
 # to import the sink, the provider and the factories they are reached through.
 GUI_FREE_SIMULATOR_MODULES = ("registration", "link", "protocol", "sink", "provider", "client")
 GUI_ONLY_SIMULATOR_MODULES = frozenset({"ring", "window", "app", "__main__"})
+
+# Effect creation is one distribution with two halves: the packer, which a
+# build pipeline runs headless, and the studio, which is a window. The split is
+# a directory, and these two roots are what the rules below are written against.
+CREATION_ROOT = PACKAGES_ROOT / "lefx-effect-creation/src/lefx/effect_creation"
+STUDIO_ROOT = CREATION_ROOT / "studio"
 
 # The studio *is* a window, so Qt is a hard dependency there rather than an
 # extra. What still has to hold is that the half describing what the studio
@@ -226,20 +230,55 @@ def test_the_controller_half_of_the_studio_carries_no_qt(module):
     the part with decisions in it. Behind Qt they would only ever be exercised
     by a person clicking, which is the kind of testing that stops happening.
     """
-    path = PACKAGES_ROOT / "lefx-studio/src/lefx/studio" / f"{module}.py"
+    path = STUDIO_ROOT / f"{module}.py"
     qt = sorted(name for name in imported_modules(parse(path)) if name.split(".")[0] == "PySide6")
     assert qt == []
 
 
 def test_every_studio_module_is_either_gui_free_or_declared_gui_only():
-    directory = PACKAGES_ROOT / "lefx-studio/src/lefx/studio"
-    modules = {path.stem for path in directory.glob("*.py")} - {"__init__"}
+    modules = {path.stem for path in STUDIO_ROOT.glob("*.py")} - {"__init__"}
     assert modules == set(GUI_FREE_STUDIO_MODULES) | GUI_ONLY_STUDIO_MODULES
 
 
 def test_importing_the_studio_package_does_not_import_qt():
     """So a test run without a display can still reach the half worth testing."""
-    path = PACKAGES_ROOT / "lefx-studio/src/lefx/studio/__init__.py"
-    reached = imported_modules(parse(path))
+    reached = imported_modules(parse(STUDIO_ROOT / "__init__.py"))
     assert not any(name.split(".")[0] == "PySide6" for name in reached)
     assert not any(name.rsplit(".", 1)[-1] in GUI_ONLY_STUDIO_MODULES for name in reached)
+
+
+def test_the_authoring_half_of_effect_creation_carries_no_qt():
+    """The line that makes Qt a hard dependency bearable.
+
+    Merging the studio into the authoring package put a 150 MB toolkit into
+    every installation that wanted ``lefx-pack``. That is acceptable only while
+    the toolkit stays unreached: a build pipeline runs the packer, and the
+    packer must not import a window to do it. Everything directly under
+    lefx/effect_creation/ is that half; only studio/ is allowed to draw.
+    """
+    offenders = []
+    for path in sorted(CREATION_ROOT.glob("*.py")):
+        qt = [name for name in imported_modules(parse(path)) if name.split(".")[0] == "PySide6"]
+        if qt:
+            offenders.append(f"{path.name} imports {', '.join(sorted(qt))}")
+    assert offenders == []
+
+
+def test_the_authoring_half_never_imports_the_studio():
+    """One direction, and it is the one that keeps the packer headless.
+
+    The studio reaches down into the authoring functions; nothing reaches up.
+    A single convenience import here — a scaffolder that offers to open the
+    window it just wrote — would pull Qt into ``lefx-pack`` through the back
+    door and undo the rule above without tripping it.
+    """
+    offenders = []
+    for path in sorted(CREATION_ROOT.glob("*.py")):
+        reached = sorted(
+            name for name in imported_modules(parse(path))
+            if name == "lefx.effect_creation.studio"
+            or name.startswith("lefx.effect_creation.studio.")
+        )
+        if reached:
+            offenders.append(f"{path.name} imports {', '.join(reached)}")
+    assert offenders == []

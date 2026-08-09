@@ -7,7 +7,7 @@ import zipfile
 
 import pytest
 
-from lefx.authoring import (
+from lefx.effect_creation import (
     SourceError,
     check_imports,
     init_effect_set_source,
@@ -18,7 +18,7 @@ from lefx.authoring import (
     validate_effect_set_source,
     validate_effect_source,
 )
-from lefx.authoring.cli import main as cli_main
+from lefx.effect_creation.cli import main as cli_main
 from lefx.engine import PackageError, load_source
 
 KINDS = ("state", "controlled_overlay", "timed_overlay", "event")

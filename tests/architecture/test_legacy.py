@@ -146,7 +146,7 @@ def test_countdown_ring_is_an_ordinary_timed_overlay_not_a_state():
     handling. This is a definition like any other: finite, declared duration, no
     standing anywhere in the engine.
     """
-    from lefx.authoring import import_effect_class, load_effect_source
+    from lefx.effect_creation import import_effect_class, load_effect_source
     from lefx.sdk import TimedOverlayDefinition
 
     source = REPO_ROOT / "effects/smartspeaker-set/sources/overlays/countdown_ring"

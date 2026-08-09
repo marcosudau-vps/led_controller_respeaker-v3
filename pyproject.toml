@@ -6,9 +6,8 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "lefx-sdk",
     "lefx-engine",
-    "lefx-authoring",
+    "lefx-effect-creation",
     "lefx-interfaces",
-    "lefx-studio",
     "lefx-device-respeaker",
     "lefx-device-simulated-respeaker",
 ]
@@ -27,9 +26,8 @@ members = ["packages/*"]
 [tool.uv.sources]
 lefx-sdk = { workspace = true }
 lefx-engine = { workspace = true }
-lefx-authoring = { workspace = true }
+lefx-effect-creation = { workspace = true }
 lefx-interfaces = { workspace = true }
-lefx-studio = { workspace = true }
 lefx-device-respeaker = { workspace = true }
 lefx-device-simulated-respeaker = { workspace = true }
 

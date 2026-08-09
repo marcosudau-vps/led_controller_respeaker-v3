@@ -25,7 +25,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
-logger = logging.getLogger("lefx.studio.project")
+logger = logging.getLogger("lefx.effect_creation.studio.project")
 
 CATALOGUE_DIR = "effects"
 BUILD_DIR = "build/effects"
@@ -151,7 +151,7 @@ class Project:
         """
         import shutil
 
-        from lefx.authoring import build_effect_set
+        from lefx.effect_creation import build_effect_set
 
         results: list[dict[str, Any]] = []
         self.build_root.mkdir(parents=True, exist_ok=True)

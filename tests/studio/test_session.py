@@ -13,8 +13,8 @@ import time
 import pytest
 
 from lefx.sdk import OutputFrame, SinkStatus
-from lefx.studio import catalogue, session as studio_session
-from lefx.studio.session import StudioSession, TappedSink, available_outputs, device_in_use
+from lefx.effect_creation.studio import catalogue, session as studio_session
+from lefx.effect_creation.studio.session import StudioSession, TappedSink, available_outputs, device_in_use
 
 
 class RecordingSink:

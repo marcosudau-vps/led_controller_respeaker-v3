@@ -45,7 +45,7 @@ NAME = "lefx-studio"
 
 LAUNCHER = '''"""Generated entry point. Absolute imports only — see build_studio.py."""
 
-from lefx.studio.app import main
+from lefx.effect_creation.studio.app import main
 
 raise SystemExit(main())
 '''
@@ -53,15 +53,14 @@ raise SystemExit(main())
 ENTRY_POINT_GROUPS = ("lefx.frame_sinks", "lefx.input_providers")
 
 # Distributions whose metadata has to travel even though nothing imports them
-# by name. The four lefx ones are here because ``importlib.metadata.version``
+# by name. The lefx ones are here because ``importlib.metadata.version``
 # is asked for them, and the device packages because they *are* the entry
 # points — see check_recipe.
 ALWAYS_COPY_METADATA = (
     "lefx-sdk",
     "lefx-engine",
-    "lefx-authoring",
+    "lefx-effect-creation",
     "lefx-interfaces",
-    "lefx-studio",
 )
 
 EXCLUDES = (
@@ -100,7 +99,7 @@ def entry_point_distributions() -> list[str]:
 
 def author_stdlib() -> list[str]:
     """What an effect package is allowed to import, and therefore might."""
-    from lefx.authoring import ALLOWED_STDLIB
+    from lefx.effect_creation import ALLOWED_STDLIB
 
     return sorted(name for name in ALLOWED_STDLIB if name != "__future__")
 
@@ -112,10 +111,10 @@ def hidden_imports() -> list[str]:
         "lefx.device.respeaker.registration",
         "lefx.device.simulated_respeaker.registration",
         # The studio's own Qt pages are imported inside main().
-        "lefx.studio.window",
-        "lefx.studio.calibration_page",
-        "lefx.studio.source_editor",
-        "lefx.studio.preset_dialog",
+        "lefx.effect_creation.studio.window",
+        "lefx.effect_creation.studio.calibration_page",
+        "lefx.effect_creation.studio.source_editor",
+        "lefx.effect_creation.studio.preset_dialog",
         # What a loaded effect may import. See the module docstring.
         *author_stdlib(),
     ]
@@ -163,9 +162,9 @@ def check_requirements() -> list[str]:
     except ImportError:
         missing.append('PySide6 is not installed:\n    uv pip install "PySide6>=6.0.0"')
     try:
-        import lefx.studio  # noqa: F401
+        import lefx.effect_creation.studio  # noqa: F401
     except ImportError:
-        missing.append("lefx.studio is not importable:\n    uv sync")
+        missing.append("lefx.effect_creation.studio is not importable:\n    uv sync")
     return missing
 
 

@@ -129,7 +129,7 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     project = resolve(args.project)
-    logging.getLogger("lefx.studio").info("project: %s", project.root)
+    logging.getLogger("lefx.effect_creation.studio").info("project: %s", project.root)
     if args.self_check:
         return self_check(project)
 
@@ -140,7 +140,7 @@ def main(argv: list[str] | None = None) -> int:
         # A bundle started by double-clicking has no meaningful working
         # directory, so guessing one would silently point the tool at the
         # desktop. Say so instead; the window offers a picker.
-        logging.getLogger("lefx.studio").warning(
+        logging.getLogger("lefx.effect_creation.studio").warning(
             "no catalogue at %s — choose one with Projekt / Projekt öffnen", project.root
         )
 

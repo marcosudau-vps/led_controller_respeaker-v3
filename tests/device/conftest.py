@@ -286,6 +286,6 @@ def direction_effect():
     the one definition that consumes what these devices produce, so the
     end-to-end test runs the real thing rather than a stand-in.
     """
-    from lefx.authoring import import_effect_class, load_effect_source
+    from lefx.effect_creation import import_effect_class, load_effect_source
 
     return import_effect_class(load_effect_source(DIRECTION_INDICATOR))

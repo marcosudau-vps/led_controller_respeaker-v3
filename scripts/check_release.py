@@ -35,27 +35,27 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DIST_DIR = REPO_ROOT / "build/dist-packages"
 
-# Installed into an environment with no Qt in it, which is what proves the
-# simulator's service half needs none. The studio is deliberately not here: it
-# *is* a window and brings Qt with it, so it is installed afterwards, into the
-# same environment, which is also the real upgrade path.
+# What a default installation of led-ctrl-v3 is, plus the simulator. No Qt in
+# it, which is what proves the simulator's service half needs none. Effect
+# creation is deliberately absent: it is an optional extra, it brings Qt with
+# it, and it is installed afterwards into the same environment — which is both
+# the real upgrade path and the proof that a runtime installation works without
+# any of the tooling that made the effects it plays.
 DISTRIBUTIONS = (
     "lefx-sdk",
     "lefx-engine",
-    "lefx-authoring",
     "lefx-interfaces",
     "lefx-device-respeaker",
     "lefx-device-simulated-respeaker",
 )
 
-GUI_DISTRIBUTION = "lefx-studio"
+GUI_DISTRIBUTION = "lefx-effect-creation"
 
 ALL_DISTRIBUTIONS = (*DISTRIBUTIONS, GUI_DISTRIBUTION)
 
 IMPORT_NAMES = (
     "lefx.sdk",
     "lefx.engine",
-    "lefx.authoring",
     "lefx.interfaces",
     "lefx.device.respeaker",
     "lefx.device.simulated_respeaker",
@@ -175,11 +175,23 @@ def check_simulator_without_qt(python: Path) -> None:
 
 
 def check_console_scripts(python: Path) -> None:
-    for name in ("lefx", "lefx-pack", "lefx-respeaker", "lefx-simulator"):
+    """The commands a runtime installation has. lefx-pack is not among them.
+
+    It arrives with effect creation, and that it is *missing* here is the
+    check: a default installation that could still build packages would mean
+    the tooling had leaked into the runtime set.
+    """
+    for name in ("lefx", "lefx-respeaker", "lefx-simulator"):
         require(script(python, name).exists(), f"console script {name} is installed")
-    for name in ("lefx", "lefx-pack", "lefx-respeaker"):
+    for name in ("lefx", "lefx-respeaker"):
         result = run([str(script(python, name)), "--help"])
         require(result.returncode == 0, f"{name} --help runs")
+    require(
+        not script(python, "lefx-pack").exists(),
+        "lefx-pack is absent until effect creation is installed",
+    )
+    absent = run([str(python), "-c", "import lefx.effect_creation"])
+    require(absent.returncode != 0, "lefx.effect_creation is not importable either")
 
 
 def check_entry_points(python: Path) -> None:
@@ -228,12 +240,12 @@ def check_the_service_starts(python: Path) -> None:
     )
 
 
-def check_the_studio_installs_on_top(python: Path) -> None:
-    """The GUI application, added to an environment that already works.
+def check_effect_creation_installs_on_top(python: Path) -> None:
+    """The optional tooling, added to an environment that already works.
 
     Deliberately last and deliberately into the same environment: this is the
-    order a person would do it in, and it is the order that shows the studio
-    brings its own Qt rather than needing one to have been there.
+    order a person adds an extra in, and it is the order that shows effect
+    creation brings its own Qt rather than needing one to have been there.
     """
     result = run(
         [
@@ -248,20 +260,21 @@ def check_the_studio_installs_on_top(python: Path) -> None:
 
     check_versions(python, ALL_DISTRIBUTIONS)
 
-    imports = run([str(python), "-c", "import lefx.studio; print(lefx.studio.STUDIO_VERSION)"])
-    require(imports.returncode == 0, f"import lefx.studio\n{imports.stderr}")
+    imports = run([str(python), "-c", "import lefx.effect_creation.studio; print(lefx.effect_creation.studio.STUDIO_VERSION)"])
+    require(imports.returncode == 0, f"import lefx.effect_creation.studio\n{imports.stderr}")
 
     headless = run(
-        [str(python), "-c", "import lefx.studio; print(sorted(lefx.studio.available_outputs()))"]
+        [str(python), "-c", "import lefx.effect_creation.studio; print(sorted(lefx.effect_creation.studio.available_outputs()))"]
     )
     require(
         headless.returncode == 0 and "simulator" in headless.stdout,
         f"the studio finds the installed outputs without a display\n{headless.stderr}",
     )
 
-    require(script(python, "lefx-studio").exists(), "console script lefx-studio is installed")
-    helped = run([str(script(python, "lefx-studio")), "--help"])
-    require(helped.returncode == 0, f"lefx-studio --help runs\n{helped.stderr}")
+    for name in ("lefx-pack", "lefx-studio"):
+        require(script(python, name).exists(), f"console script {name} is installed")
+        helped = run([str(script(python, name)), "--help"])
+        require(helped.returncode == 0, f"{name} --help runs\n{helped.stderr}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -283,7 +296,7 @@ def main(argv: list[str] | None = None) -> int:
             check_entry_points(python)
             check_simulator_without_qt(python)
             check_the_service_starts(python)
-            check_the_studio_installs_on_top(python)
+            check_effect_creation_installs_on_top(python)
         finally:
             if not args.keep:
                 shutil.rmtree(root, ignore_errors=True)

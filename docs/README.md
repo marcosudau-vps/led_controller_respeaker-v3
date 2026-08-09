@@ -35,7 +35,7 @@ nebenbei mit ab.
 
 ## Teil II — Effekte schreiben
 
-*Der Autorenpfad und der meistgelesene Teil. Dokumentiert `lefx-sdk` und `lefx-authoring`.*
+*Der Autorenpfad und der meistgelesene Teil. Dokumentiert `lefx-sdk` und `lefx-effect-creation`.*
 
 | # | Kapitel | Inhalt | Herkunft |
 |---|---|---|---|

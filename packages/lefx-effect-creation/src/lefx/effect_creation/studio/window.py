@@ -60,7 +60,7 @@ from .ring import RingMonitor
 from .source_editor import SourceEditorPage
 from .session import NULL_OUTPUT, STUDIO_CHANNEL, StudioSession, available_outputs, device_in_use
 
-logger = logging.getLogger("lefx.studio.window")
+logger = logging.getLogger("lefx.effect_creation.studio.window")
 
 KIND_FILTERS: list[tuple[str, DefinitionKind | None]] = [
     ("Alle", None),

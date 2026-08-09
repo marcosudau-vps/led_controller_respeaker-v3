@@ -25,7 +25,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Mapping
 
-from lefx.authoring import SourceError, pack_effect, smoke_render, validate_effect_source
+from lefx.effect_creation import SourceError, pack_effect, smoke_render, validate_effect_source
 from lefx.sdk import (
     MISSING,
     RESERVED_PARAMETERS,

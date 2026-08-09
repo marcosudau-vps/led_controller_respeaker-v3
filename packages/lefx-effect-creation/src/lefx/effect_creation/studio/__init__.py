@@ -1,7 +1,7 @@
 """LEFX V3 studio: a window for playing, tuning, calibrating and authoring effects.
 
 Only the Qt-free half is re-exported here. ``window``, ``ring``, ``parameters``
-and ``app`` import PySide6 and are reached through :func:`lefx.studio.app.main`
+and ``app`` import PySide6 and are reached through :func:`lefx.effect_creation.studio.app.main`
 or imported directly — so that the pieces worth testing can be imported by a
 test run that has no display, and so that importing this package does not build
 a toolkit's worth of objects to answer a question about a catalogue.

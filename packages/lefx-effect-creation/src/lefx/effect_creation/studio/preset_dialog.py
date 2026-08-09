@@ -30,7 +30,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from lefx.authoring import SourceError
+from lefx.effect_creation import SourceError
 from lefx.sdk import DefinitionBase
 
 from .authoring import (

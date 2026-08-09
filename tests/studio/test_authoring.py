@@ -15,8 +15,8 @@ import shutil
 import pytest
 import yaml
 
-from lefx.authoring import SourceError, import_effect_class, load_effect_source, validate_effect_source
-from lefx.studio.authoring import (
+from lefx.effect_creation import SourceError, import_effect_class, load_effect_source, validate_effect_source
+from lefx.effect_creation.studio.authoring import (
     PresetDraft,
     check_draft,
     find_source_dir,
@@ -178,7 +178,7 @@ def test_overwriting_is_possible_when_it_is_asked_for(source, definition):
 
 def test_a_write_that_would_break_the_source_is_rolled_back(source, definition, monkeypatch):
     """A source that stops validating is worse than a preset never written."""
-    from lefx.studio import authoring
+    from lefx.effect_creation.studio import authoring
 
     original = (source / "presets.yaml").read_text(encoding="utf-8")
 

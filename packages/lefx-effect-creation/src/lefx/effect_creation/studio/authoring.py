@@ -23,7 +23,7 @@ from typing import Any, Iterable, Mapping
 
 import yaml
 
-from lefx.authoring import SourceError, load_effect_source, validate_effect_source
+from lefx.effect_creation import SourceError, load_effect_source, validate_effect_source
 from lefx.sdk import DefinitionBase, resolve_configuration
 
 DEFAULT_SOURCE_ROOTS = ("effects",)

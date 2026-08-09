@@ -29,11 +29,11 @@ from lefx.sdk import (  # noqa: E402
     ParamType,
     normalize_parameter_value,
 )
-from lefx.studio import catalogue  # noqa: E402
-from lefx.studio.parameters import EDITORS, SchemaForm, editor_for  # noqa: E402
-from lefx.studio.ring import RingMonitor  # noqa: E402
-from lefx.studio.session import StudioSession  # noqa: E402
-from lefx.studio.window import KIND_FILTERS, StudioWindow  # noqa: E402
+from lefx.effect_creation.studio import catalogue  # noqa: E402
+from lefx.effect_creation.studio.parameters import EDITORS, SchemaForm, editor_for  # noqa: E402
+from lefx.effect_creation.studio.ring import RingMonitor  # noqa: E402
+from lefx.effect_creation.studio.session import StudioSession  # noqa: E402
+from lefx.effect_creation.studio.window import KIND_FILTERS, StudioWindow  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -355,7 +355,7 @@ def test_closing_the_window_lets_go_of_the_device(window):
 def test_the_preset_dialog_opens_on_the_values_being_edited(window, tmp_path, monkeypatch):
     """What it offers to save is what the form currently holds — not the
     definition's defaults, and not the preset that was loaded before."""
-    from lefx.studio.preset_dialog import PresetDialog
+    from lefx.effect_creation.studio.preset_dialog import PresetDialog
 
     window.search.setText("solid_fill")
     window.list.setCurrentRow(0)
@@ -374,7 +374,7 @@ def test_the_preset_dialog_opens_on_the_values_being_edited(window, tmp_path, mo
 
 
 def test_the_dialog_will_not_save_something_the_schema_refuses(window):
-    from lefx.studio.preset_dialog import PresetDialog
+    from lefx.effect_creation.studio.preset_dialog import PresetDialog
     from PySide6.QtWidgets import QDialogButtonBox
 
     window.search.setText("solid_fill")
@@ -390,7 +390,7 @@ def test_the_dialog_will_not_save_something_the_schema_refuses(window):
 
 
 def test_the_dialog_says_when_it_would_replace_one(window):
-    from lefx.studio.preset_dialog import PresetDialog
+    from lefx.effect_creation.studio.preset_dialog import PresetDialog
 
     window.search.setText("solid_fill")
     window.list.setCurrentRow(0)

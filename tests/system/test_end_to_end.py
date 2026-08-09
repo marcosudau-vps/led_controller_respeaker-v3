@@ -67,7 +67,7 @@ def core_effects():
     Loaded from ``effects/`` rather than restated: a test that agreed with a
     copy of the catalogue would keep agreeing after the catalogue changed.
     """
-    from lefx.authoring import import_effect_class, load_effect_source
+    from lefx.effect_creation import import_effect_class, load_effect_source
 
     from tests.architecture.scan import REPO_ROOT
 

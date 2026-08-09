@@ -16,7 +16,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from lefx.authoring import SourceError, pack_effect, pack_effect_set, validate_effect_source
+from lefx.effect_creation import SourceError, pack_effect, pack_effect_set, validate_effect_source
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CATALOGUE_ROOT = REPO_ROOT / "effects"

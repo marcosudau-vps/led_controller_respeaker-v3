@@ -18,7 +18,7 @@ Pakete.
 | `lefx-sdk` | `lefx.sdk` | Definitionsschema, Wertnormalisierung, Ports |
 | `lefx-engine` | `lefx.engine` | Layer, Komposition, Lebenszyklen, Registry, Paketladen |
 | `lefx-interfaces` | `lefx.interfaces` | HTTP-API, CLI, Client, Prozess-Hosting |
-| `lefx-authoring` | `lefx.authoring` | Scaffolding, Quellenvalidierung, Paketbau |
+| `lefx-effect-creation` | `lefx.effect_creation` | Scaffolding, Quellenvalidierung, Paketbau |
 | `lefx-device-respeaker` | `lefx.device.respeaker` | USB-Transport, LED-Ausgabe, DoA-Eingabe |
 | `lefx-device-simulated-respeaker` | `lefx.device.simulated_respeaker` | Software-Geräteersatz mit Ringanzeige |
 
@@ -27,7 +27,7 @@ Pakete.
 ```
 lefx-sdk                 → (nichts)
 lefx-engine              → lefx-sdk
-lefx-authoring           → lefx-sdk, lefx-engine
+lefx-effect-creation           → lefx-sdk, lefx-engine
 lefx-interfaces          → lefx-sdk, lefx-engine
 lefx-device-respeaker     → lefx-sdk
 lefx-device-simulated-respeaker  → lefx-sdk

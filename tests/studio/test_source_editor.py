@@ -18,7 +18,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
-from lefx.authoring import import_effect_class, load_effect_source  # noqa: E402
+from lefx.effect_creation import import_effect_class, load_effect_source  # noqa: E402
 from lefx.sdk import (  # noqa: E402
     ColorModel,
     DefinitionKind,
@@ -27,9 +27,9 @@ from lefx.sdk import (  # noqa: E402
     ParamType,
     StateSlot,
 )
-from lefx.studio.blueprint import ParameterBlueprint, build_package  # noqa: E402
-from lefx.studio.session import StudioSession  # noqa: E402
-from lefx.studio.source_editor import ParameterEditorRow, SourceEditorPage  # noqa: E402
+from lefx.effect_creation.studio.blueprint import ParameterBlueprint, build_package  # noqa: E402
+from lefx.effect_creation.studio.session import StudioSession  # noqa: E402
+from lefx.effect_creation.studio.source_editor import ParameterEditorRow, SourceEditorPage  # noqa: E402
 
 
 @pytest.fixture(scope="module")

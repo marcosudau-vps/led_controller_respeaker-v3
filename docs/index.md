@@ -29,8 +29,8 @@ flowchart TB
 
     subgraph WERKZEUG["Werkstatt — vor dem Betrieb"]
         direction LR
-        GUI["<b>lefx-studio</b><br/><i>lefx.studio</i><br/><br/>Effekte abspielen und regeln · DoA kalibrieren<br/>Presets kuratieren · neue Quellen entwerfen<br/><br/><i>startet keinen Dienst, sondern<br/>hält seine eigene Engine im Prozess</i>"]
-        AUTH["<b>lefx-authoring</b><br/><i>lefx.authoring</i><br/><br/>Scaffolding · Quellenprüfung<br/>Packen zu lefx/3 · lefx-pack<br/><br/>Werkzeug, keine Laufzeit —<br/>gehört in keine Installation"]
+        GUI["<b>lefx-studio</b><br/><i>lefx.effect_creation.studio</i><br/><br/>Effekte abspielen und regeln · DoA kalibrieren<br/>Presets kuratieren · neue Quellen entwerfen<br/><br/><i>startet keinen Dienst, sondern<br/>hält seine eigene Engine im Prozess</i>"]
+        AUTH["<b>lefx-effect-creation</b><br/><i>lefx.effect_creation</i><br/><br/>Scaffolding · Quellenprüfung<br/>Packen zu lefx/3 · lefx-pack<br/><br/>Werkzeug, keine Laufzeit —<br/>gehört in keine Installation"]
     end
 
     subgraph KERN["Kern"]
@@ -79,7 +79,7 @@ importiert zu werden".
 
 Die Werkstatt steht bewusst neben der Bedienung, nicht darin. `lefx` und die
 HTTP-API steuern einen **laufenden Dienst** — das ist der Betrieb. Studio und
-`lefx-authoring` entstehen und arbeiten **davor**: sie entwerfen, prüfen und
+`lefx-effect-creation` entstehen und arbeiten **davor**: sie entwerfen, prüfen und
 bauen, was der Dienst später lädt, und keines von beidem gehört in eine
 Installation, die nur Effekte abspielen soll. Das Studio startet dafür auch
 keinen Dienst, sondern hält seine eigene Engine — deshalb kann es eine Quelle
@@ -99,9 +99,9 @@ nicht, und es gibt keine Codezeile, die man dafür vergessen könnte.
 |---|---|---|---|
 | **lefx-sdk** | `lefx.sdk` | Der Vertrag. Was ein Effekt deklarieren darf, wie Werte normalisiert werden, wie ein Gerät angesprochen wird. | — |
 | **lefx-engine** | `lefx.engine` | Die Laufzeit. Layer, Komposition, Lebenszyklen, Registry, Paketformat `lefx/3`. | sdk |
-| **lefx-authoring** | `lefx.authoring` | Die Werkbank für Effektquellen: Gerüst, Prüfung, Bauen. Nicht Teil einer Laufzeitinstallation. | sdk, engine |
+| **lefx-effect-creation** | `lefx.effect_creation` | Die Werkbank für Effektquellen: Gerüst, Prüfung, Bauen. Nicht Teil einer Laufzeitinstallation. | sdk, engine |
 | **lefx-interfaces** | `lefx.interfaces` | Die Steuerungsoberfläche: `ControllerService`, HTTP-API, CLI, Client, Geräte-Discovery. | sdk, engine |
-| **lefx-studio** | `lefx.studio` | Die Desktop-Werkstatt: abspielen, Parameter regeln, DoA kalibrieren, Presets kuratieren, neue Quellen entwerfen und bauen. | sdk, engine, authoring, interfaces |
+| **lefx-studio** | `lefx.effect_creation.studio` | Die Desktop-Werkstatt: abspielen, Parameter regeln, DoA kalibrieren, Presets kuratieren, neue Quellen entwerfen und bauen. | sdk, engine, authoring, interfaces |
 | **lefx-device-respeaker** | `lefx.device.respeaker` | Die echte Hardware: USB-Transport, LED-Senke, DoA-Provider. | sdk |
 | **lefx-device-simulated-respeaker** | `lefx.device.simulated_respeaker` | Das Software-Double: lokaler Transport, Ringfenster, simulierte DoA. | sdk |
 
@@ -110,9 +110,9 @@ nicht, und es gibt keine Codezeile, die man dafür vergessen könnte.
 ```text
 lefx-sdk                 → (nichts)
 lefx-engine              → lefx-sdk
-lefx-authoring           → lefx-sdk, lefx-engine
+lefx-effect-creation           → lefx-sdk, lefx-engine
 lefx-interfaces          → lefx-sdk, lefx-engine
-lefx-studio              → lefx-sdk, lefx-engine, lefx-authoring, lefx-interfaces
+lefx-studio              → lefx-sdk, lefx-engine, lefx-effect-creation, lefx-interfaces
 lefx-device-respeaker     → lefx-sdk
 lefx-device-simulated-respeaker  → lefx-sdk
 ```
@@ -324,9 +324,9 @@ respeaker-led-v3/
 ├── packages/
 │   ├── lefx-sdk/                lefx.sdk
 │   ├── lefx-engine/             lefx.engine
-│   ├── lefx-authoring/          lefx.authoring
+│   ├── lefx-effect-creation/          lefx.effect_creation
 │   ├── lefx-interfaces/         lefx.interfaces
-│   ├── lefx-studio/             lefx.studio
+│   ├── lefx-studio/             lefx.effect_creation.studio
 │   ├── lefx-device-respeaker/    lefx.device.respeaker
 │   └── lefx-device-simulated-respeaker/ lefx.device.simulated_respeaker
 ├── effects/

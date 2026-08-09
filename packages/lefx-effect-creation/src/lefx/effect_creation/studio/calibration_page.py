@@ -40,7 +40,7 @@ from .calibrate import Fit, Sample, fit_calibration, sector_angle, suggested_sec
 from .ring import RingMonitor
 from .session import NULL_OUTPUT, StudioSession
 
-logger = logging.getLogger("lefx.studio.calibration")
+logger = logging.getLogger("lefx.effect_creation.studio.calibration")
 
 PROBE_EFFECT = "ring_probe"
 SAMPLE_INTERVAL_MS = 100

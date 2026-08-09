@@ -48,7 +48,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from lefx.authoring import SourceError
+from lefx.effect_creation import SourceError
 from lefx.sdk import (
     ColorModel,
     CompositionMode,
@@ -79,7 +79,7 @@ from .parameters import editor_for
 from .ring import RingMonitor
 from .session import STUDIO_CHANNEL, StudioSession
 
-logger = logging.getLogger("lefx.studio.source_editor")
+logger = logging.getLogger("lefx.effect_creation.studio.source_editor")
 
 PREVIEW_ID_PREFIX = "studio_preview"
 

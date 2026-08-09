@@ -12,7 +12,7 @@ import json
 
 import pytest
 
-from lefx.studio.project import (
+from lefx.effect_creation.studio.project import (
     Project,
     iter_paths,
     recalled,
@@ -205,7 +205,7 @@ def test_every_entry_point_distribution_travels_with_the_bundle():
 def test_the_whole_author_whitelist_is_a_hidden_import():
     """PyInstaller cannot see inside a ``.lefx`` that does not exist yet."""
     module = build_studio()
-    from lefx.authoring import ALLOWED_STDLIB
+    from lefx.effect_creation import ALLOWED_STDLIB
 
     hidden = set(module.hidden_imports())
     assert {name for name in ALLOWED_STDLIB if name != "__future__"} <= hidden
@@ -221,4 +221,4 @@ def test_the_studios_own_qt_pages_are_named():
     """They are imported inside ``main`` so a headless self-check needs no Qt;
     that also hides them from the analysis."""
     hidden = set(build_studio().hidden_imports())
-    assert {"lefx.studio.window", "lefx.studio.source_editor"} <= hidden
+    assert {"lefx.effect_creation.studio.window", "lefx.effect_creation.studio.source_editor"} <= hidden

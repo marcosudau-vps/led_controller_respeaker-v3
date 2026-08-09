@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import pytest
 
-from lefx.authoring import (
+from lefx.effect_creation import (
     SourceError,
     import_effect_class,
     load_effect_source,
@@ -36,7 +36,7 @@ from lefx.sdk import (
     SchemaError,
     StateSlot,
 )
-from lefx.studio.blueprint import (
+from lefx.effect_creation.studio.blueprint import (
     DEFINITION_CLASSES,
     DURATION_LIMIT_MS,
     TYPE_SUPPORT,

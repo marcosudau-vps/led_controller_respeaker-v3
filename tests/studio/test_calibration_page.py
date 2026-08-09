@@ -25,9 +25,9 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
 from lefx.sdk import DoaCalibration, InputContext, load_calibration  # noqa: E402
-from lefx.studio.calibrate import sector_angle  # noqa: E402
-from lefx.studio.calibration_page import PROBE_EFFECT, CalibrationPage  # noqa: E402
-from lefx.studio.session import StudioSession  # noqa: E402
+from lefx.effect_creation.studio.calibrate import sector_angle  # noqa: E402
+from lefx.effect_creation.studio.calibration_page import PROBE_EFFECT, CalibrationPage  # noqa: E402
+from lefx.effect_creation.studio.session import StudioSession  # noqa: E402
 
 from tests.device.conftest import FakeWindow, until  # noqa: E402
 

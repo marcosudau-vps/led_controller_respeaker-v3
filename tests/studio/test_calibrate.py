@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 
 from lefx.sdk import DoaCalibration
-from lefx.studio.calibrate import (
+from lefx.effect_creation.studio.calibrate import (
     MIN_SAMPLES,
     Sample,
     circular_mean,
