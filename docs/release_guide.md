@@ -145,7 +145,18 @@ Verlangt eine Begründung und schreibt sie in die Ausgabe. Nur dafür gedacht.
 
 ## Einrichtung (einmalig)
 
-Zwei Dinge, beide nicht automatisierbar, weil sie Zugangsdaten betreffen.
+Drei Dinge. Nur das letzte lässt sich nicht mit einem GitHub-Token erledigen.
+
+### 0. Das Release-Repo braucht einen ersten Commit
+
+Ein frisch angelegtes Repository hat keinen Default-Branch, und
+`actions/checkout` kann dann nichts auschecken — der Sync scheitert mit
+`git ls-remote ... failed with exit code 2`. Einmal irgendetwas hineinlegen
+genügt; der erste Sync überschreibt es ohnehin:
+
+```bash
+gh api -X PUT repos/marcosudau-vps/led-ctrl-v3/contents/README.md -f message="chore: seed" -f content="$(base64 -w0 .github/release-repo/README.md)" -f branch=main
+```
 
 ### 1. Deploy-Key für den Sync
 
@@ -166,7 +177,7 @@ ssh-keygen -t ed25519 -C "led-ctrl-v3-sync" -f led-ctrl-v3-sync -N ""
 
 Der Schlüssel gilt nur für dieses eine Repository und läuft nicht ab.
 
-### 2. Trusted Publisher auf PyPI — neunmal
+### 2. Trusted Publisher auf PyPI — neunmal (nur von Hand)
 
 Für **jedes** der neun Projekte aus der Tabelle oben, unter
 [pypi.org/manage/account/publishing](https://pypi.org/manage/account/publishing/)
