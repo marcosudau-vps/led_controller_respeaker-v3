@@ -139,6 +139,37 @@ Publishing davon abhinge, wie PyPI ein frisch geprägtes Token über Projekte
 hinweg skopiert. Neun Uploads hängen davon gar nicht ab, und ein Fehlschlag
 nennt das Projekt, zu dem er gehört.
 
+### Wenn ein Upload mit 429 scheitert
+
+```
+429 Too many new projects created
+```
+
+Betrifft nur das **Anlegen neuer Projekte**, nicht das Hochladen in bestehende.
+Beim ersten Release einer Generation entstehen neun Projekte auf einmal, und
+PyPI lässt in kurzer Folge nur wenige davon durch — beim ersten Versuch gingen
+vier durch und fünf nicht. Deshalb lädt `release.yml` mit `max-parallel: 1`
+nacheinander hoch.
+
+Passiert es trotzdem, ist nichts kaputt: die Artefakte liegen am Workflow-Lauf,
+und die Projekte, die durchkamen, bleiben. Das Fenster abwarten — eher eine
+Stunde als eine Minute — und dann **nur die fehlgeschlagenen Jobs** erneut
+laufen lassen:
+
+```bash
+gh run rerun --repo marcosudau-vps/led-ctrl-v3 --job <job-id>
+```
+
+Einzeln, nicht `--failed`: das startet sie wieder alle zugleich. Welche fehlen,
+beantwortet der Index direkt:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" https://pypi.org/simple/led-ctrl-v3-sdk/
+```
+
+Nicht neu taggen und nicht die Version erhöhen. Ein erfolgreicher Upload lässt
+sich nicht wiederholen, ein fehlender fehlt einfach noch.
+
 ### Wenn CI ausfällt
 
 ```bash
