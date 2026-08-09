@@ -23,30 +23,31 @@ einzige Unterschied zwischen den Bäumen, der nicht bloßes Weglassen ist.
 
 ---
 
-## Die neun Distributionen
+## Die drei Distributionen
 
 Alle tragen dieselbe Versionsnummer und werden gemeinsam veröffentlicht.
 [`tests/architecture/test_versions.py`](../tests/architecture/test_versions.py)
 erzwingt das, samt der `==`-Pins zwischen ihnen.
 
-Die PyPI-Namen tragen alle das Präfix `led-ctrl-v3-`, die Importpfade heißen
+| PyPI-Projekt | Rolle | Installiert durch |
+|---|---|---|
+| `led-ctrl-v3` | Schema, Laufzeit, API/CLI, reSpeaker **und beide Effektkataloge** | Standard |
+| `led-ctrl-v3-device-simulated-respeaker` | Software-Geräteersatz mit Ringfenster | `[simulated-respeaker]` |
+| `led-ctrl-v3-effect-creation` | `lefx-pack` und `lefx-studio`, bringt Qt | `[effect-creation]` |
+
+Drei und nicht neun, weil nur Optionales ein eigenes Projekt braucht. Schema,
+Engine, Steuerungsoberfläche und Hardware werden immer zusammen installiert —
+kein Extra wählt je zwischen ihnen —, und die Kataloge werden zur Laufzeit über
+`included_lefxset` gewählt statt beim Installieren. Die Schichtgrenzen bleiben
+davon unberührt: `tests/architecture/test_architecture.py` prüft sie jetzt über
+Modulverzeichnisse statt über Paketnamen, mit denselben Regeln.
+
+Die PyPI-Namen tragen das Präfix `led-ctrl-v3-`, die Importpfade heißen
 weiterhin `lefx.*`. Das ist Absicht: `led-ctrl-v3` ist ein Arbeitsname für
 diesen Stand, und die `lefx-*`-Namen bleiben auf PyPI frei für die spätere
 eigenständige Veröffentlichung. Ein Auseinanderfallen von Distributions- und
 Importname ist auf PyPI üblich (`opencv-python` importiert sich als `cv2`) und
 kostet keine Zeile Anwendungscode.
-
-| PyPI-Projekt | Rolle |
-|---|---|
-| `led-ctrl-v3` | Der Name, unter dem installiert wird. Enthält keinen Code. |
-| `led-ctrl-v3-sdk` | Autorenvertrag |
-| `led-ctrl-v3-engine` | Laufzeit |
-| `led-ctrl-v3-interfaces` | API, CLI, Konfiguration |
-| `led-ctrl-v3-device-respeaker` | Hardware |
-| `led-ctrl-v3-device-simulated-respeaker` | Software-Geräteersatz |
-| `led-ctrl-v3-effect-creation` | `lefx-pack` und `lefx-studio` |
-| `led-ctrl-v3-set-core` | Referenzkatalog |
-| `led-ctrl-v3-set-smartspeaker` | Sprachassistenz-Katalog |
 
 ---
 
@@ -87,7 +88,7 @@ Danach läuft es allein durch, und bricht beim ersten Fehler ab:
 | # | Schritt |
 |---|---|
 | 1 | Arbeitsbaum sauber, auf `main`, aktuell zu `origin`, Tag noch frei |
-| 2 | Version in alle 10 `pyproject.toml` schreiben — **inklusive der `==`-Pins** |
+| 2 | Version in alle 4 `pyproject.toml` schreiben — **inklusive der `==`-Pins** |
 | 3 | Effektkataloge neu bauen, damit die Wheels die aktuellen Quellen tragen |
 | 4 | Gesamte hardwarefreie Testsuite |
 | 5 | `check_release.py`: alles bauen, in eine leere Umgebung installieren, benutzen |
@@ -134,10 +135,10 @@ Das Feld `tag` dabei leer lassen.
 3. Unter [pypi.org/project/led-ctrl-v3](https://pypi.org/project/led-ctrl-v3/)
    steht die Version bereit: `pip install --upgrade led-ctrl-v3`.
 
-Ein Job pro Projekt, weil ein einzelner Upload aller neun bei Trusted
+Ein Job pro Projekt, weil ein einzelner Upload aller drei bei Trusted
 Publishing davon abhinge, wie PyPI ein frisch geprägtes Token über Projekte
-hinweg skopiert. Neun Uploads hängen davon gar nicht ab, und ein Fehlschlag
-nennt das Projekt, zu dem er gehört.
+hinweg skopiert. Drei getrennte Uploads hängen davon gar nicht ab, und ein
+Fehlschlag nennt das Projekt, zu dem er gehört.
 
 ### Wenn ein Upload mit 429 scheitert
 
@@ -146,10 +147,11 @@ nennt das Projekt, zu dem er gehört.
 ```
 
 Betrifft nur das **Anlegen neuer Projekte**, nicht das Hochladen in bestehende.
-Beim ersten Release einer Generation entstehen neun Projekte auf einmal, und
-PyPI lässt in kurzer Folge nur wenige davon durch — beim ersten Versuch gingen
-vier durch und fünf nicht. Deshalb lädt `release.yml` mit `max-parallel: 1`
-nacheinander hoch.
+Beim ersten Release einer Generation entstehen alle Projekte auf einmal, und
+PyPI lässt in kurzer Folge nur wenige davon durch — beim ersten Versuch, damals
+noch mit neun Projekten, gingen vier durch und fünf nicht. Deshalb lädt
+`release.yml` mit `max-parallel: 1` nacheinander hoch und mit `skip-existing`
+wiederholbar.
 
 Passiert es trotzdem, ist nichts kaputt: die Artefakte liegen am Workflow-Lauf,
 und die Projekte, die durchkamen, bleiben. Das Fenster abwarten — eher eine
@@ -164,7 +166,7 @@ Einzeln, nicht `--failed`: das startet sie wieder alle zugleich. Welche fehlen,
 beantwortet der Index direkt:
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://pypi.org/simple/led-ctrl-v3-sdk/
+curl -s -o /dev/null -w "%{http_code}\n" https://pypi.org/simple/led-ctrl-v3-effect-creation/
 ```
 
 Nicht neu taggen und nicht die Version erhöhen. Ein erfolgreicher Upload lässt
@@ -226,15 +228,15 @@ optional und eine gute Idee: dann verlangt jeder Upload eine Bestätigung.
 und Absicht: Trusted Publisher lassen sich **ausschließlich** über die
 PyPI-Weboberfläche anlegen — es gibt keine API dafür —, und ein Projekt, das
 noch nicht existiert, kann keinen haben. Ein kontoweites Token ist deshalb auch
-das Einzige, was die neun Projekte überhaupt erst anlegen kann.
+das Einzige, was die Projekte überhaupt erst anlegen kann.
 
-**Ziel: Trusted Publishing.** Sobald die neun Projekte existieren, unter
+**Ziel: Trusted Publishing.** Sobald die drei Projekte existieren, unter
 [pypi.org/manage/account/publishing](https://pypi.org/manage/account/publishing/)
 für **jedes** einen Publisher eintragen:
 
 | Feld | Wert |
 |---|---|
-| PyPI Project Name | `led-ctrl-v3`, `led-ctrl-v3-sdk`, … (je einmal) |
+| PyPI Project Name | `led-ctrl-v3`, `led-ctrl-v3-device-simulated-respeaker`, `led-ctrl-v3-effect-creation` |
 | Owner | `marcosudau-vps` |
 | Repository name | `led-ctrl-v3` |
 | Workflow name | `release.yml` |

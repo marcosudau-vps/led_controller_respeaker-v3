@@ -1,13 +1,14 @@
 """One version across the workspace, and the pins that keep it that way.
 
-Nine distributions are released together as one system, so they carry one
+Three distributions are released together as one system, so they carry one
 version number. Nothing enforces that but this file: a package whose version
 drifted would still build, still install, and still resolve — and would quietly
 pair a new engine with an old SDK on somebody's machine.
 
-The pins between them are the same rule stated a second way. ``led-ctrl-v3-engine``
-depends on ``led-ctrl-v3-sdk==3.0.0``, not ``>=``, because these are not independently
-useful libraries; they are one thing cut into pieces that install separately.
+The pins between them are the same rule stated a second way. The optional
+packages depend on ``led-ctrl-v3==<this version>``, not ``>=``, because they are
+not independently useful libraries; they are one thing cut where it has to be
+cut so that some of it can be left uninstalled.
 """
 
 from __future__ import annotations
@@ -74,29 +75,37 @@ def test_every_internal_dependency_is_pinned_to_that_exact_version(distribution)
     assert wrong == []
 
 
-def test_the_metapackage_names_every_other_distribution_exactly_once():
+def test_every_optional_distribution_is_reachable_through_an_extra():
     """Nothing publishable may be unreachable through led-ctrl-v3.
 
     A distribution that is built and uploaded but that no extra installs is a
-    package nobody can get to except by knowing it exists.
+    package nobody can get to except by knowing it exists. led-ctrl-v3 is not a
+    metapackage any more — it carries the runtime itself — so what has to hold
+    is about the extras, not about its dependencies.
     """
-    project = manifest("led-ctrl-v3")["project"]
+    extras = manifest("led-ctrl-v3")["project"]["optional-dependencies"]
     named = {
-        PIN.match(requirement.strip())["name"]
-        for requirement in requirements("led-ctrl-v3")
+        PIN.match(item.strip())["name"]
+        for name, group in extras.items() if name != "all"
+        for item in group
     }
     assert named == INTERNAL - {"led-ctrl-v3"}
 
     # And "all" really is all of them, so that one extra is enough to get
     # everything rather than most of it.
-    extras = project["optional-dependencies"]
-    every = {
-        PIN.match(item.strip())["name"]
-        for name, group in extras.items() if name != "all"
-        for item in group
-    }
     inside_all = {PIN.match(item.strip())["name"] for item in extras["all"]}
-    assert inside_all == every
+    assert inside_all == named
+
+
+def test_the_runtime_distribution_declares_no_internal_dependency():
+    """It is the bottom of the stack; there is nothing under it to depend on.
+
+    An internal dependency here would be a cycle — the two optional packages
+    already depend on this one — and pip would be entitled to complain.
+    """
+    declared = manifest("led-ctrl-v3")["project"]["dependencies"]
+    internal = [item for item in declared if PIN.match(item.strip())["name"] in INTERNAL]
+    assert internal == []
 
 
 def test_the_example_config_and_the_readme_do_not_pin_a_stale_version():

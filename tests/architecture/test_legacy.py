@@ -100,8 +100,8 @@ def label(path: Path) -> str:
 def test_the_scan_actually_covers_the_running_code():
     """A rule over an empty file list passes forever. Establish it is not."""
     covered = {label(path) for path in PYTHON_FILES}
-    assert "packages/led-ctrl-v3-engine/src/lefx/engine/runtime.py" in covered
-    assert "packages/led-ctrl-v3-interfaces/src/lefx/interfaces/service.py" in covered
+    assert "packages/led-ctrl-v3/src/lefx/engine/runtime.py" in covered
+    assert "packages/led-ctrl-v3/src/lefx/interfaces/service.py" in covered
     assert "effects/core-set/sources/overlays/direction_indicator/effect.py" in covered
     assert len(METADATA_FILES) > 30
 

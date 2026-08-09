@@ -17,7 +17,7 @@ nebenbei mit ab.
 
 | | Seite | Inhalt |
 |---|---|---|
-| — | [index.md](index.md) | Das System auf einen Blick: neun Distributionen, ihre Rollen, die Pfade eines Frames und einer Richtung. **Fertig.** |
+| — | [index.md](index.md) | Das System auf einen Blick: acht Schichten in drei Distributionen, ihre Rollen, die Pfade eines Frames und einer Richtung. **Fertig.** |
 
 ---
 
@@ -35,7 +35,7 @@ nebenbei mit ab.
 
 ## Teil II — Effekte schreiben
 
-*Der Autorenpfad und der meistgelesene Teil. Dokumentiert `led-ctrl-v3-sdk` und `led-ctrl-v3-effect-creation`.*
+*Der Autorenpfad und der meistgelesene Teil. Dokumentiert `lefx.sdk` und `lefx.effect_creation`.*
 
 | # | Kapitel | Inhalt | Herkunft |
 |---|---|---|---|
@@ -50,7 +50,7 @@ nebenbei mit ab.
 
 ## Teil III — Betreiben
 
-*Den Dienst laufen lassen und steuern. Dokumentiert `led-ctrl-v3-interfaces` und die beiden Gerätepakete.*
+*Den Dienst laufen lassen und steuern. Dokumentiert `lefx.interfaces` und die beiden Geräteschichten.*
 
 | # | Kapitel | Inhalt | Herkunft |
 |---|---|---|---|

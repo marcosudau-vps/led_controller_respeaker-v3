@@ -81,7 +81,7 @@ jobs:
       - name: Check for returning V1 concepts
         run: uv run pytest -q tests/architecture/test_legacy.py
 
-      # 6. Build all nine distributions, install them into an empty environment
+      # 6. Build all three distributions, install them into an empty environment
       #    and exercise what only an installation can show: entry points,
       #    console scripts, the catalogue wheels actually carrying a catalogue,
       #    INCLUDED_LEFXSET selecting on installed metadata, and the simulator's

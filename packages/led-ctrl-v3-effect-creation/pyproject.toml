@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "led-ctrl-v3-effect-creation"
-version = "3.0.0"
+version = "3.0.1"
 description = "LEFX V3 effect creation: scaffolding, source validation, package building and the desktop studio"
 readme = "README.md"
 license = "MIT"
@@ -37,10 +37,13 @@ classifiers = [
 # nothing under lefx/effect_creation/ imports Qt except lefx/effect_creation/studio/,
 # so lefx-pack in a build pipeline never touches it.
 dependencies = [
-    "led-ctrl-v3-sdk==3.0.0",
-    "led-ctrl-v3-engine==3.0.0",
-    "led-ctrl-v3-interfaces==3.0.0",
+    # The runtime, which carries the schema to write against, the loader to
+    # verify what was just built, and the control surface the studio drives a
+    # device through. One name now, because those four layers ship together.
+    "led-ctrl-v3==3.0.1",
     "PySide6>=6.0.0",
+    # Imported directly to read and write a source tree. It arrives with the
+    # runtime anyway, but a package that imports a thing declares it.
     "PyYAML>=6.0.2,<7",
 ]
 

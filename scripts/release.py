@@ -10,7 +10,7 @@ has gone to PyPI under it.
 What runs after that, in order, stopping at the first failure:
 
  1. the working tree is clean and on the release branch, up to date with origin
- 2. the version is written into all ten pyproject files at once
+ 2. the version is written into every pyproject file at once
  3. the effect catalogues are rebuilt, so the wheels carry the current sources
  4. the whole hardware-free test suite
  5. scripts/check_release.py — build every distribution, install them into an
@@ -97,13 +97,15 @@ def write_version(version: str) -> list[Path]:
     """Set the version everywhere it appears, including the internal pins.
 
     Both in one pass, because they are one fact. A bump that moved the versions
-    and left ``led-ctrl-v3-sdk==3.0.0`` behind would produce nine wheels that cannot be
-    installed together, and every one of them would build.
+    and left ``led-ctrl-v3==3.0.0`` behind in the optional packages would
+    produce wheels that cannot be installed together, and every one of them
+    would build.
     """
     internal = {path.parent.name for path in PACKAGES_ROOT.glob("*/pyproject.toml")}
-    pin = re.compile(
-        r'"(' + "|".join(sorted(map(re.escape, internal))) + r')(\[[^\]]*\])?==\d+\.\d+\.\d+"'
-    )
+    # Longest name first, so that "led-ctrl-v3" does not shadow
+    # "led-ctrl-v3-effect-creation" in the alternation.
+    ordered = sorted(map(re.escape, internal), key=len, reverse=True)
+    pin = re.compile(r'"(' + "|".join(ordered) + r')(\[[^\]]*\])?==\d+\.\d+\.\d+"')
 
     touched = []
     for path in pyprojects():

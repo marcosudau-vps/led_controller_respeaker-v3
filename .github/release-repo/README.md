@@ -23,18 +23,13 @@ pip install led-ctrl-v3
 
 | Distribution | Rolle |
 |---|---|
-| `led-ctrl-v3` | Der Name, unter dem installiert wird. Enthält selbst keinen Code. |
-| `led-ctrl-v3-sdk` | Der Autorenvertrag: Definitionsschema, Wertnormalisierung, Ports |
-| `led-ctrl-v3-engine` | Layer, Komposition, Lebenszyklen, Registry, `lefx/3`-Loader |
-| `led-ctrl-v3-interfaces` | HTTP-API v3, CLI, Client, Prozess-Hosting, Konfiguration |
-| `led-ctrl-v3-device-respeaker` | reSpeaker XVF3800: USB-Transport, LED-Senke, DoA-Provider |
-| `led-ctrl-v3-device-simulated-respeaker` | Software-Geräteersatz mit Ringfenster |
-| `led-ctrl-v3-effect-creation` | Effekte erstellen: `lefx-pack` und `lefx-studio` |
-| `led-ctrl-v3-set-core` | Referenzkatalog |
-| `led-ctrl-v3-set-smartspeaker` | Sprachassistenz-Katalog |
+| `led-ctrl-v3` | Die Normalversion: Autorenvertrag (`lefx.sdk`), Laufzeit (`lefx.engine`), Steuerungsoberfläche (`lefx.interfaces`), reSpeaker-Anbindung und beide Effektkataloge. |
+| `led-ctrl-v3-device-simulated-respeaker` | Software-Geräteersatz mit Ringfenster. |
+| `led-ctrl-v3-effect-creation` | Effekte erstellen: `lefx-pack` und `lefx-studio`. |
 
-Die vier ersten sind die Normalversion; der Rest sind Extras von
-`led-ctrl-v3` — siehe die README dieses Pakets.
+Die erste ist die Normalversion; die anderen beiden sind Extras von
+`led-ctrl-v3` (`[simulated-respeaker]`, `[effect-creation]`, `[all]`) — siehe
+die README dieses Pakets.
 
 ## Wie ein Release hierher kommt
 

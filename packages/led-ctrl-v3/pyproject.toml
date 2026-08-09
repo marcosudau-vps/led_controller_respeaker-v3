@@ -4,12 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "led-ctrl-v3"
-version = "3.0.0"
-description = "LED ring control for the reSpeaker XVF3800 — the LEFX V3 system, installed as one thing"
+version = "3.0.1"
+description = "LED ring control for the reSpeaker XVF3800 — the LEFX V3 effect system"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12,<3.13"
-keywords = ["respeaker", "xvf3800", "led", "effects", "lefx"]
+keywords = ["respeaker", "xvf3800", "led", "effects", "lefx", "usb", "doa"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop",
@@ -19,56 +19,89 @@ classifiers = [
     "Topic :: System :: Hardware :: Hardware Drivers",
 ]
 
-# The default installation, and the whole of it: the schema, the runtime, the
-# control surface and the hardware. It plays finished .lefx and .lefxset files
-# on a reSpeaker and does nothing else — no catalogue, no simulator, no
-# authoring tools. Every one of those is a real thing to install rather than a
-# feature to switch on, and each is one line below.
+# Everything needed to play finished effects on a reSpeaker, and nothing that
+# makes one. Four module layers and both catalogues, in one distribution
+# because nothing ever installs a subset of them: no extra selects between the
+# schema, the engine, the control surface and the hardware, so splitting them
+# across four PyPI projects would be bookkeeping from the source tree leaking
+# into the index.
 #
-#     pip install led-ctrl-v3
-#
-# This distribution contains no code. It is the name the system is installed
-# under, so that "which packages do I need" has one answer instead of four.
+# The layers are still layers. lefx.engine may not reach lefx.interfaces and
+# neither may reach a device; that rule now lives in the architecture test over
+# directories rather than in four dependency lists, and it is the same rule.
 dependencies = [
-    "led-ctrl-v3-sdk==3.0.0",
-    "led-ctrl-v3-engine==3.0.0",
-    "led-ctrl-v3-interfaces==3.0.0",
-    "led-ctrl-v3-device-respeaker==3.0.0",
+    # The control surface.
+    "fastapi>=0.135.3,<0.136",
+    "pydantic>=2.12.5,<2.13",
+    "uvicorn>=0.44.0,<0.45",
+    # config.yaml.
+    "PyYAML>=6.0.2,<7",
+    # The reSpeaker over USB.
+    "libusb-package>=1.0.26.3,<1.1",
+    "pyusb>=1.3.1,<2",
+    "tzdata>=2025.2; platform_system == 'Windows'",
 ]
 
+# Each of these is a distribution of its own, not a switch. What is not
+# installed is not in the running system: devices arrive through entry points
+# and are never imported, so uninstalling one removes it with no list to edit.
+#
+# The catalogues are deliberately not here. They ship with this package and are
+# selected at runtime by included_lefxset, because choosing which effects to
+# load is a configuration question, not an installation question.
 [project.optional-dependencies]
-# The software device double, with its ring window. The window is included
-# because someone asking for a simulator is asking to see one; a service host
-# that wants the sink without a GUI toolkit installs
-# led-ctrl-v3-device-simulated-respeaker directly, which is what the extra on *that*
-# package is for.
-simulated-respeaker = ["led-ctrl-v3-device-simulated-respeaker[gui]==3.0.0"]
-
-# Everything to do with making effects: scaffolding, validation, the packer and
-# the studio. Brings Qt. Not needed to run anything.
-effect-creation = ["led-ctrl-v3-effect-creation==3.0.0"]
-
-# The catalogues. Which of the installed ones actually load is a separate
-# question, answered by included_lefxset in config.yaml.
-core-set = ["led-ctrl-v3-set-core==3.0.0"]
-smartspeaker-set = ["led-ctrl-v3-set-smartspeaker==3.0.0"]
-
+simulated-respeaker = ["led-ctrl-v3-device-simulated-respeaker[gui]==3.0.1"]
+effect-creation = ["led-ctrl-v3-effect-creation==3.0.1"]
 all = [
-    "led-ctrl-v3-device-simulated-respeaker[gui]==3.0.0",
-    "led-ctrl-v3-effect-creation==3.0.0",
-    "led-ctrl-v3-set-core==3.0.0",
-    "led-ctrl-v3-set-smartspeaker==3.0.0",
+    "led-ctrl-v3-device-simulated-respeaker[gui]==3.0.1",
+    "led-ctrl-v3-effect-creation==3.0.1",
 ]
+
+[project.scripts]
+lefx = "lefx.interfaces.cli:main"
+# Inspecting the device, and taking it back from another process that holds it.
+# A separate command rather than only a service flag: force-claiming stops
+# somebody's program, and that should be visible before it is triggered.
+lefx-respeaker = "lefx.device.respeaker.cli:main"
+
+# Output and input are registered separately so that a failing DoA read cannot
+# take the LED output with it, and vice versa.
+#
+# A provider is named "<device>.<capability>". The device half keeps it distinct
+# from the simulator's when both are installed; the capability half is the only
+# part an effect names, so the same definition runs against either.
+[project.entry-points."lefx.frame_sinks"]
+respeaker = "lefx.device.respeaker.registration:create_frame_sink"
+
+[project.entry-points."lefx.input_providers"]
+"respeaker.doa" = "lefx.device.respeaker.registration:create_doa_provider"
+
+# The catalogues, found the same way a device is. They happen to ship in this
+# same distribution, but the service does not know that: it reads the group and
+# uses what is registered, which is what leaves room for a set from anywhere.
+[project.entry-points."lefx.effect_sets"]
+core-set = "lefx.sets.core_set:package_file"
+smartspeaker-set = "lefx.sets.smartspeaker_set:package_file"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lefx"]
+
+# The archives are built output, so they are gitignored, and hatchling excludes
+# ignored files by default — a wheel with the modules in it and no catalogue.
+# "artifacts" is the exception list for exactly that case: include them if they
+# are there. Deliberately not force-include, which fails the build when they
+# are absent and would make a fresh checkout unsyncable, since the tool that
+# builds them is itself part of this workspace.
+#
+# That leaves one hole — a wheel built before the sets were — and it is closed
+# where it belongs, in scripts/check_release.py, which opens the built wheel
+# and looks for the archives inside.
+[tool.hatch.build]
+artifacts = ["src/lefx/sets/*/*.lefxset"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/lefx", "README.md"]
 
 [project.urls]
 Homepage = "https://github.com/marcosudau-vps/led_controller_respeaker-v3"
 Source = "https://github.com/marcosudau-vps/led_controller_respeaker-v3"
-
-# No modules, no packages — the dependency list is the content. Without this,
-# hatchling looks for something to include and fails rather than building an
-# empty wheel, because an empty wheel is usually a mistake. Here it is the point.
-[tool.hatch.build.targets.wheel]
-bypass-selection = true
-
-[tool.hatch.build.targets.sdist]
-include = ["README.md"]

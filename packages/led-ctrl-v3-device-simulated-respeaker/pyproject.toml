@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "led-ctrl-v3-device-simulated-respeaker"
-version = "3.0.0"
+version = "3.0.1"
 description = "Software device double for the LED ring: frame sink, simulated DoA input and a visual ring window"
 readme = "README.md"
 license = "MIT"
@@ -21,7 +21,11 @@ classifiers = [
 # dependency. Only the person who opens the ring window needs Qt, so PySide6 is
 # an extra rather than a hard requirement.
 dependencies = [
-    "led-ctrl-v3-sdk==3.0.0",
+    # Only for the ports in lefx.sdk. That the schema now ships inside the
+    # runtime distribution does not license reaching into the rest of it: the
+    # architecture test holds this package to lefx.sdk and nothing else, which
+    # is what keeps it swappable with the hardware.
+    "led-ctrl-v3==3.0.1",
 ]
 
 [project.optional-dependencies]

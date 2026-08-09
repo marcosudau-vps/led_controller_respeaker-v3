@@ -206,7 +206,10 @@ def test_every_entry_point_distribution_travels_with_the_bundle():
     module = build_studio()
     registered = set(module.entry_point_distributions())
 
-    assert {"led-ctrl-v3-device-respeaker", "led-ctrl-v3-device-simulated-respeaker"} <= registered
+    # The hardware's entry points now live in led-ctrl-v3 itself, together with
+    # the two catalogues; the simulator still has a distribution of its own.
+    # Both names have to reach the bundle, or the executable offers no device.
+    assert {"led-ctrl-v3", "led-ctrl-v3-device-simulated-respeaker"} <= registered
     assert registered <= set(module.metadata_to_copy())
 
 

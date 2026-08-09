@@ -1,18 +1,12 @@
 [project]
 name = "respeaker-led-v3-workspace"
-version = "3.0.0"
+version = "3.0.1"
 description = "Workspace root for the LEFX V3 effect system and the reSpeaker LED controller"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "led-ctrl-v3-sdk",
-    "led-ctrl-v3-engine",
-    "led-ctrl-v3-effect-creation",
-    "led-ctrl-v3-interfaces",
-    "led-ctrl-v3-device-respeaker",
-    "led-ctrl-v3-device-simulated-respeaker",
-    "led-ctrl-v3-set-core",
-    "led-ctrl-v3-set-smartspeaker",
     "led-ctrl-v3",
+    "led-ctrl-v3-effect-creation",
+    "led-ctrl-v3-device-simulated-respeaker",
 ]
 
 # The root is a workspace container, not a distributable. Nothing here is ever
@@ -24,18 +18,16 @@ package = false
 members = ["packages/*"]
 
 # Workspace members resolve to each other from the checkout rather than from an
-# index. This is what makes the dependency direction in the architecture test
-# and the direction declared in each package's pyproject the same thing.
+# index, so a change in one is visible to the others without a reinstall.
+#
+# Three distributions, not nine. The four layers of the runtime — schema,
+# engine, control surface, hardware — and both catalogues ship together in
+# led-ctrl-v3, because no extra ever selects between them and nothing installs
+# a subset. Only what is genuinely optional has a project of its own.
 [tool.uv.sources]
-led-ctrl-v3-sdk = { workspace = true }
-led-ctrl-v3-engine = { workspace = true }
-led-ctrl-v3-effect-creation = { workspace = true }
-led-ctrl-v3-interfaces = { workspace = true }
-led-ctrl-v3-device-respeaker = { workspace = true }
-led-ctrl-v3-device-simulated-respeaker = { workspace = true }
-led-ctrl-v3-set-core = { workspace = true }
-led-ctrl-v3-set-smartspeaker = { workspace = true }
 led-ctrl-v3 = { workspace = true }
+led-ctrl-v3-effect-creation = { workspace = true }
+led-ctrl-v3-device-simulated-respeaker = { workspace = true }
 
 [dependency-groups]
 dev = [

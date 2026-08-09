@@ -31,6 +31,47 @@ def source_files(distribution: str) -> list[Path]:
     return sorted((PACKAGES_ROOT / distribution / "src").rglob("*.py"))
 
 
+def layers() -> dict[str, Path]:
+    """Every module layer in the workspace, by import name.
+
+    A layer is the unit the dependency rules are written about — ``lefx.sdk``,
+    ``lefx.engine``, ``lefx.device.respeaker``. It used to be the same thing as
+    a distribution, and the rules could be stated in terms of package names.
+    They no longer are: four layers and both catalogues ship in one
+    distribution now, so a rule phrased as "led-ctrl-v3 may import
+    led-ctrl-v3" would permit everything and forbid nothing.
+
+    Found by walking, not listed: a directory under ``src/lefx`` with an
+    ``__init__.py`` is a layer, and one without is a PEP 420 namespace to
+    descend into — which is exactly how the import system reads the same tree.
+    """
+    found: dict[str, Path] = {}
+    for distribution in distributions():
+        root = PACKAGES_ROOT / distribution / "src" / "lefx"
+        if not root.is_dir():
+            continue
+        for child in sorted(root.iterdir()):
+            if not child.is_dir() or child.name == "__pycache__":
+                continue
+            if (child / "__init__.py").is_file():
+                found[f"lefx.{child.name}"] = child
+                continue
+            for grandchild in sorted(child.iterdir()):
+                if grandchild.is_dir() and (grandchild / "__init__.py").is_file():
+                    found[f"lefx.{child.name}.{grandchild.name}"] = grandchild
+    return found
+
+
+def distribution_of(layer: str) -> str:
+    """Which distribution ships a layer: packages/<here>/src/lefx/..."""
+    path = layers()[layer]
+    return path.relative_to(PACKAGES_ROOT).parts[0]
+
+
+def layer_files(layer: str) -> list[Path]:
+    return sorted(layers()[layer].rglob("*.py"))
+
+
 def parse(path: Path) -> ast.AST:
     return ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
 
@@ -103,8 +144,11 @@ __all__ = [
     "PACKAGES_ROOT",
     "REPO_ROOT",
     "code_strings_and_names",
+    "distribution_of",
     "distributions",
     "imported_modules",
+    "layer_files",
+    "layers",
     "parse",
     "source_files",
 ]

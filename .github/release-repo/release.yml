@@ -59,9 +59,9 @@ jobs:
         run: uv build --all-packages --out-dir dist
 
       # Build what will be published, then install it and use it. That step
-      # opens every catalogue wheel and looks for the archive inside, which
-      # is the question this tree most needs asked: it arrived by machine,
-      # and a catalogue wheel with no catalogue in it installs perfectly.
+      # opens the runtime wheel and looks for both catalogue archives inside,
+      # which is the question this tree most needs asked: it arrived by
+      # machine, and a wheel with no catalogue in it installs perfectly.
       #
       # Deliberately not repeated inline here. It was, with its own list of
       # catalogue names, and that list is what went stale when the
@@ -86,38 +86,32 @@ jobs:
     # only a job that names the environment can read it.
     environment: pypi
     # One job per project. That shape is here for trusted publishing, where a
-    # single upload of all nine would depend on how PyPI scopes a minted token
+    # single upload of all three would depend on how PyPI scopes a minted token
     # across projects; with an API token it costs nothing and keeps a failure
     # named after the project it belongs to.
     strategy:
       fail-fast: false
-      # One at a time. Nine uploads at once is nine new projects at once the
-      # first time a generation is released, and PyPI answers most of them with
-      # "429 Too many new projects created" — it did, and four went up while
-      # five did not. Serialised they are far enough apart to get through, and
-      # a release takes a few minutes longer, which is not a cost.
+      # One at a time. Parallel uploads are parallel *new projects* the first
+      # time a generation is released, and PyPI answers most of them with "429
+      # Too many new projects created" — it did, when there were nine of them.
+      # Serialised they are far enough apart to get through, and a release
+      # takes a couple of minutes longer, which is not a cost.
       max-parallel: 1
       matrix:
         # Wheel-filename form, so the glob below is exact. A wheel is named
-        # {name}-{version}-..., so led_ctrl_v3-*.whl matches the metapackage
-        # alone and never led_ctrl_v3_sdk-*.whl.
+        # {name}-{version}-..., so led_ctrl_v3-*.whl matches the runtime alone
+        # and never led_ctrl_v3_effect_creation-*.whl.
         distribution:
           - led_ctrl_v3
-          - led_ctrl_v3_sdk
-          - led_ctrl_v3_engine
-          - led_ctrl_v3_interfaces
-          - led_ctrl_v3_effect_creation
-          - led_ctrl_v3_device_respeaker
           - led_ctrl_v3_device_simulated_respeaker
-          - led_ctrl_v3_set_core
-          - led_ctrl_v3_set_smartspeaker
+          - led_ctrl_v3_effect_creation
     # Uploading with an API token, because trusted publishing needs a publisher
     # registered per project through the PyPI web interface — there is no API
     # for it — and a project that does not exist yet cannot have one. An
     # account-scoped token is therefore also the only thing that can create
-    # these nine projects in the first place.
+    # these projects in the first place.
     #
-    # It is meant to be temporary. Once the projects exist, register the nine
+    # It is meant to be temporary. Once the projects exist, register the three
     # publishers (owner marcosudau-vps, repo led-ctrl-v3, workflow release.yml,
     # environment pypi), then switch back by deleting the `password:` line
     # below, restoring `permissions: id-token: write` here, and revoking the
@@ -147,6 +141,6 @@ jobs:
           # already has, so without this, re-running after a partial failure
           # fails again on everything that did work — and the only way forward
           # would be a version nobody needed. With it, the run can simply be
-          # repeated until all nine are up. It cannot mask a mistake: the
+          # repeated until all three are up. It cannot mask a mistake: the
           # version is new on every release, so there is nothing to skip.
           skip-existing: true

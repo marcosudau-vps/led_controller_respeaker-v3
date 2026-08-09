@@ -35,65 +35,61 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DIST_DIR = REPO_ROOT / "build/dist-packages"
 
-# What a default installation of led-ctrl-v3 is, plus the simulator, asked for
-# the way a person would ask — through the metapackage and its extras, resolved
-# from the built wheels rather than listed by distribution name. That is the
-# point: if an extra names the wrong package, this installs the wrong thing and
-# every check below runs against it.
+# What a default installation is, plus the simulator. Named as a person would
+# type them, so that the extras are exercised rather than bypassed: if an extra
+# names the wrong package, this installs the wrong thing and every check below
+# runs against it.
 #
 # No Qt in the result, which is what proves the simulator's service half needs
-# none. Effect creation is deliberately absent: it is an optional extra, it
-# brings Qt with it, and it is installed afterwards into the same environment —
-# both the real upgrade path and the proof that a runtime installation works
-# without any of the tooling that made the effects it plays.
+# none. Effect creation is deliberately absent: it is an optional distribution,
+# it brings Qt with it, and it is installed afterwards into the same
+# environment — both the real upgrade path and the proof that a runtime
+# installation works without any of the tooling that made the effects it plays.
 RUNTIME_REQUESTS = (
     "led-ctrl-v3",
-    "led-ctrl-v3[core-set]",
-    "led-ctrl-v3[smartspeaker-set]",
     # Not the [simulated-respeaker] extra, which pulls the gui extra with it:
     # the distribution alone is what proves the service half needs no Qt.
     "led-ctrl-v3-device-simulated-respeaker",
 )
 
 # Every distribution the workspace publishes, which is what uv build produces.
+# Three: the runtime with both catalogues in it, and the two optional packages.
 DISTRIBUTIONS = (
-    "led-ctrl-v3-sdk",
-    "led-ctrl-v3-engine",
-    "led-ctrl-v3-interfaces",
-    "led-ctrl-v3-device-respeaker",
-    "led-ctrl-v3-device-simulated-respeaker",
-    "led-ctrl-v3-set-core",
-    "led-ctrl-v3-set-smartspeaker",
     "led-ctrl-v3",
+    "led-ctrl-v3-device-simulated-respeaker",
 )
 
 GUI_DISTRIBUTION = "led-ctrl-v3-effect-creation"
 
 ALL_DISTRIBUTIONS = (*DISTRIBUTIONS, GUI_DISTRIBUTION)
 
-def effect_set_wheels() -> dict[str, str]:
-    """Which distribution has to contain which archive, read off the tree.
+
+def effect_set_wheels() -> dict[str, list[str]]:
+    """Which distribution has to contain which archives, read off the tree.
 
     A wheel built before scripts/build_effects.py ran installs cleanly, offers
-    its entry point, and delivers nothing — the one failure the "artifacts"
-    include in each catalogue's pyproject cannot prevent. So the wheel gets
-    opened, and this says what to look for.
+    its entry points, and delivers nothing — the one failure the "artifacts"
+    include in the pyproject cannot prevent. So the wheel gets opened, and this
+    says what to look for.
 
     Derived rather than listed, because a list of catalogue names is exactly
-    what went stale: this file, the release workflow and two scripts each had
-    one, and renaming the distributions left one of them behind. The release
-    then stopped at the guard with "0 wheels" for a distribution that no longer
-    existed. The module path under src/lefx/sets/ is fixed by the import name
-    and cannot drift; the distribution around it is whatever directory it is in.
+    what went stale once: four places knew which catalogues exist, and renaming
+    the distributions left one of them behind. The release then stopped at a
+    guard reporting "0 wheels" for a package that no longer existed. The module
+    path under src/lefx/sets/ is fixed by the import name and cannot drift; the
+    distribution around it is whatever directory it happens to be in.
     """
-    found: dict[str, str] = {}
+    found: dict[str, list[str]] = {}
     for module_dir in sorted((REPO_ROOT / "packages").glob("*/src/lefx/sets/*")):
         if not module_dir.is_dir() or module_dir.name == "__pycache__":
             continue
         distribution = module_dir.parents[3].name
         set_name = module_dir.name.replace("_", "-")
-        found[distribution] = f"lefx/sets/{module_dir.name}/{set_name}.lefxset"
+        found.setdefault(distribution, []).append(
+            f"lefx/sets/{module_dir.name}/{set_name}.lefxset"
+        )
     return found
+
 
 IMPORT_NAMES = (
     "lefx.sdk",
@@ -209,18 +205,19 @@ def check_the_catalogue_wheels_carry_a_catalogue(wheels: list[Path]) -> None:
     import zipfile
 
     expected = effect_set_wheels()
-    require(bool(expected), "there is at least one catalogue distribution to check")
-    for distribution, member in expected.items():
+    require(bool(expected), "there is at least one catalogue to check for")
+    for distribution, members in expected.items():
         prefix = distribution.replace("-", "_")
         matching = [path for path in wheels if path.name.startswith(f"{prefix}-")]
         require(len(matching) == 1, f"exactly one wheel for {distribution}")
         with zipfile.ZipFile(matching[0]) as archive:
             names = set(archive.namelist())
-        require(
-            member in names,
-            f"{matching[0].name} contains {member} "
-            "(run scripts/build_effects.py before building)",
-        )
+        for member in members:
+            require(
+                member in names,
+                f"{matching[0].name} contains {member} "
+                "(run scripts/build_effects.py before building)",
+            )
 
 
 def check_versions(python: Path, distributions=DISTRIBUTIONS) -> None:
