@@ -146,24 +146,27 @@ Fehlschlag nennt das Projekt, zu dem er gehört.
 429 Too many new projects created
 ```
 
-Betrifft nur das **Anlegen neuer Projekte**, nicht das Hochladen in bestehende.
-Beim ersten Release einer Generation entstehen alle Projekte auf einmal, und
-PyPI lässt in kurzer Folge nur wenige davon durch — beim ersten Versuch, damals
-noch mit neun Projekten, gingen vier durch und fünf nicht. Deshalb lädt
-`release.yml` mit `max-parallel: 1` nacheinander hoch und mit `skip-existing`
-wiederholbar.
+**Die Regel: PyPI erlaubt vier neue Projekte pro Tag und Konto.** Nicht vier pro
+Stunde, nicht vier Versuche — vier tatsächlich angelegte Projekte in 24
+Stunden. Das Hochladen einer neuen Version in ein **bestehendes** Projekt ist
+davon nicht betroffen und geht jederzeit.
 
-Passiert es trotzdem, ist nichts kaputt: die Artefakte liegen am Workflow-Lauf,
-und die Projekte, die durchkamen, bleiben. Das Fenster abwarten — eher eine
-Stunde als eine Minute — und dann **nur die fehlgeschlagenen Jobs** erneut
-laufen lassen:
+Das trifft ausschließlich den allerersten Release einer Namensgebung, und dann
+hart: mehr als vier neue Projektnamen sind an einem Tag nicht zu haben, egal
+wie langsam man es versucht. `max-parallel: 1` und `skip-existing` in
+`release.yml` machen den Lauf wiederholbar, aber sie erzeugen kein Kontingent.
+
+Ein Ausweichen über eine andere IP funktioniert nicht — die Zählung hängt am
+Konto. Lokal mit `uv publish` hochladen scheitert genauso.
+
+Kaputt ist dabei nichts: die Artefakte liegen am Workflow-Lauf, und was
+durchkam, bleibt. Am Folgetag die fehlgeschlagenen Jobs erneut laufen lassen:
 
 ```bash
-gh run rerun --repo marcosudau-vps/led-ctrl-v3 --job <job-id>
+gh run rerun --repo marcosudau-vps/led-ctrl-v3 <run-id> --failed
 ```
 
-Einzeln, nicht `--failed`: das startet sie wieder alle zugleich. Welche fehlen,
-beantwortet der Index direkt:
+Welche Projekte fehlen, beantwortet der Index direkt:
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" https://pypi.org/simple/led-ctrl-v3-effect-creation/
@@ -171,6 +174,12 @@ curl -s -o /dev/null -w "%{http_code}\n" https://pypi.org/simple/led-ctrl-v3-eff
 
 Nicht neu taggen und nicht die Version erhöhen. Ein erfolgreicher Upload lässt
 sich nicht wiederholen, ein fehlender fehlt einfach noch.
+
+> Praktische Folge für den Zuschnitt: **jedes zusätzliche PyPI-Projekt ist
+> beim ersten Release ein Viertel eines Tageskontingents.** Beim Erstversuch
+> dieses Systems standen neun Projekte an; vier entstanden, drei davon für
+> Pakete, die es einen Tag später schon nicht mehr gab. Ein Projekt anzulegen
+> ist billig, bis man vier davon braucht.
 
 ### Wenn CI ausfällt
 
