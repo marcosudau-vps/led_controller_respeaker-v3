@@ -1,9 +1,9 @@
-# ledctrl-v3
+# led-controller-version-3
 
 LED-Ring-Steuerung für den reSpeaker XVF3800 — das LEFX-V3-System.
 
 ```bash
-pip install ledctrl-v3
+pip install led-controller-version-3
 ```
 
 Das ist die Normalversion und für sich vollständig: Schema, Laufzeit,
@@ -21,9 +21,9 @@ lefx emit event notification
 ## Optionen
 
 ```bash
-pip install "ledctrl-v3[simulated-respeaker]"   # Software-Geräteersatz mit Ringfenster
-pip install "ledctrl-v3[effect-creation]"       # Effekte erstellen: lefx-pack und lefx-studio
-pip install "ledctrl-v3[all]"                   # beides
+pip install "led-controller-version-3[simulated-respeaker]"   # Software-Geräteersatz mit Ringfenster
+pip install "led-controller-version-3[effect-creation]"       # Effekte erstellen: lefx-pack und lefx-studio
+pip install "led-controller-version-3[all]"                   # beides
 ```
 
 Beide sind eigene Distributionen, keine Schalter. Was nicht installiert ist,
@@ -33,7 +33,7 @@ nicht importiert.
 Ohne Hardware:
 
 ```bash
-pip install "ledctrl-v3[simulated-respeaker]"
+pip install "led-controller-version-3[simulated-respeaker]"
 lefx-simulator
 lefx serve --sink simulator
 ```

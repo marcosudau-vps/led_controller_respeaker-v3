@@ -269,7 +269,7 @@ def describe() -> dict[str, Any]:
             for item in sorted(available_effect_sets().values(), key=lambda item: item.name)
         ],
         "sinks": [
-            {"name": NullSink.name, "distribution": "ledctrl-v3", "builtin": True},
+            {"name": NullSink.name, "distribution": "led-controller-version-3", "builtin": True},
             *(
                 {"name": item.name, "distribution": item.distribution, "builtin": False}
                 for item in sorted(available_sinks().values(), key=lambda item: item.name)

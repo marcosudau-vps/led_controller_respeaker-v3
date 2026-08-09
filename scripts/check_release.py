@@ -46,20 +46,20 @@ DIST_DIR = REPO_ROOT / "build/dist-packages"
 # environment — both the real upgrade path and the proof that a runtime
 # installation works without any of the tooling that made the effects it plays.
 RUNTIME_REQUESTS = (
-    "ledctrl-v3",
+    "led-controller-version-3",
     # Not the [simulated-respeaker] extra, which pulls the gui extra with it:
     # the distribution alone is what proves the service half needs no Qt.
-    "ledctrl-v3-device-simulated-respeaker",
+    "led-controller-version-3-device-simulated-respeaker",
 )
 
 # Every distribution the workspace publishes, which is what uv build produces.
 # Three: the runtime with both catalogues in it, and the two optional packages.
 DISTRIBUTIONS = (
-    "ledctrl-v3",
-    "ledctrl-v3-device-simulated-respeaker",
+    "led-controller-version-3",
+    "led-controller-version-3-device-simulated-respeaker",
 )
 
-GUI_DISTRIBUTION = "ledctrl-v3-effect-creation"
+GUI_DISTRIBUTION = "led-controller-version-3-effect-creation"
 
 ALL_DISTRIBUTIONS = (*DISTRIBUTIONS, GUI_DISTRIBUTION)
 
@@ -386,12 +386,12 @@ def check_effect_creation_installs_on_top(python: Path) -> None:
     order a person adds an extra in, and it is the order that shows effect
     creation brings its own Qt rather than needing one to have been there.
 
-    Asked for as ``ledctrl-v3[all]`` rather than by distribution name, so that
+    Asked for as ``led-controller-version-3[all]`` rather than by distribution name, so that
     the extra is what is exercised. An extra that named the wrong package would
     otherwise be invisible here and visible only to whoever typed it.
     """
-    result = install(python, "ledctrl-v3[all]")
-    require(result.returncode == 0, f"ledctrl-v3[all] installs on top\n{result.stderr}")
+    result = install(python, "led-controller-version-3[all]")
+    require(result.returncode == 0, f"led-controller-version-3[all] installs on top\n{result.stderr}")
 
     installed = run(
         [str(python), "-c", "import json;from importlib.metadata import version;"

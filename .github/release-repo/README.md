@@ -18,17 +18,17 @@ werden auch Issues und Pull Requests aufgemacht.
 ## Was hier veröffentlicht wird
 
 ```bash
-pip install ledctrl-v3
+pip install led-controller-version-3
 ```
 
 | Distribution | Rolle |
 |---|---|
-| `ledctrl-v3` | Die Normalversion: Autorenvertrag (`lefx.sdk`), Laufzeit (`lefx.engine`), Steuerungsoberfläche (`lefx.interfaces`), reSpeaker-Anbindung und beide Effektkataloge. |
-| `ledctrl-v3-device-simulated-respeaker` | Software-Geräteersatz mit Ringfenster. |
-| `ledctrl-v3-effect-creation` | Effekte erstellen: `lefx-pack` und `lefx-studio`. |
+| `led-controller-version-3` | Die Normalversion: Autorenvertrag (`lefx.sdk`), Laufzeit (`lefx.engine`), Steuerungsoberfläche (`lefx.interfaces`), reSpeaker-Anbindung und beide Effektkataloge. |
+| `led-controller-version-3-device-simulated-respeaker` | Software-Geräteersatz mit Ringfenster. |
+| `led-controller-version-3-effect-creation` | Effekte erstellen: `lefx-pack` und `lefx-studio`. |
 
 Die erste ist die Normalversion; die anderen beiden sind Extras von
-`ledctrl-v3` (`[simulated-respeaker]`, `[effect-creation]`, `[all]`) — siehe
+`led-controller-version-3` (`[simulated-respeaker]`, `[effect-creation]`, `[all]`) — siehe
 die README dieses Pakets.
 
 ## Wie ein Release hierher kommt

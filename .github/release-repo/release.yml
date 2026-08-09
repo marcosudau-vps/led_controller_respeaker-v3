@@ -82,10 +82,16 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    # Part of what a trusted publisher matches on, so this name is not
-    # decoration: each project's publisher on PyPI names the environment "pypi",
-    # and a job that ran without it would be refused.
-    environment: pypi
+    # One environment per project, and each project's trusted publisher on PyPI
+    # names its own. That is not tidiness: PyPI refuses a second *pending*
+    # publisher with the same owner, repository, workflow and environment, so
+    # three projects registered ahead of their first upload need three
+    # configurations, and the environment is the only field free to differ.
+    #
+    # It buys something too. An approval rule can now be put on one project
+    # without stopping the others, and a publisher is scoped to the one job
+    # that may use it rather than to every job in the workflow.
+    environment: ${{ matrix.environment }}
     # One job per project, each minting its own short-lived token from its own
     # trusted publisher. A single upload of all three would depend on how PyPI
     # scopes a minted token across projects; three uploads do not depend on it
@@ -99,13 +105,22 @@ jobs:
       # takes a couple of minutes longer, which is not a cost.
       max-parallel: 1
       matrix:
-        # Wheel-filename form, so the glob below is exact. A wheel is named
-        # {name}-{version}-..., so ledctrl_v3-*.whl matches the runtime alone
-        # and never ledctrl_v3_effect_creation-*.whl.
-        distribution:
-          - ledctrl_v3
-          - ledctrl_v3_device_simulated_respeaker
-          - ledctrl_v3_effect_creation
+        # The distribution is in wheel-filename form, so the glob below is
+        # exact: a wheel is named {name}-{version}-..., and
+        # led_controller_version_3-*.whl therefore matches the runtime alone and
+        # never led_controller_version_3_effect_creation-*.whl.
+        #
+        # The environment must match the publisher registered for that project.
+        # Getting these two out of step is the one mistake here that produces a
+        # confusing failure — PyPI answers a mismatched claim with a 403 that
+        # says nothing about environments.
+        include:
+          - distribution: led_controller_version_3
+            environment: pypi
+          - distribution: led_controller_version_3_effect_creation
+            environment: pypi-effect-creation
+          - distribution: led_controller_version_3_device_simulated_respeaker
+            environment: pypi-simulator
     permissions:
       # What trusted publishing needs, and the only reason this job has any
       # permissions at all. GitHub mints a short-lived OIDC token, PyPI checks
@@ -114,10 +129,10 @@ jobs:
       #
       # For this to resolve, each of the three projects must carry a publisher
       # naming owner marcosudau-vps, repository led-ctrl-v3, workflow
-      # release.yml and environment pypi. A project that does not exist yet
-      # takes a *pending* publisher on the account that should own it; a
-      # project that already exists takes one under its own publishing
-      # settings, which only an owner of that project can add.
+      # release.yml and the environment from the matrix above. A project that
+      # does not exist yet takes a *pending* publisher on the account that
+      # should own it; a project that already exists takes one under its own
+      # publishing settings, which only an owner of that project can add.
       id-token: write
     steps:
       - uses: actions/download-artifact@v4

@@ -38,8 +38,8 @@ def layers() -> dict[str, Path]:
     ``lefx.engine``, ``lefx.device.respeaker``. It used to be the same thing as
     a distribution, and the rules could be stated in terms of package names.
     They no longer are: four layers and both catalogues ship in one
-    distribution now, so a rule phrased as "ledctrl-v3 may import
-    ledctrl-v3" would permit everything and forbid nothing.
+    distribution now, so a rule phrased as "led-controller-version-3 may import
+    led-controller-version-3" would permit everything and forbid nothing.
 
     Found by walking, not listed: a directory under ``src/lefx`` with an
     ``__init__.py`` is a layer, and one without is a PEP 420 namespace to

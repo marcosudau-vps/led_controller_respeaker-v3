@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ledctrl-v3-device-simulated-respeaker"
+name = "led-controller-version-3-device-simulated-respeaker"
 version = "3.0.2"
 description = "Software device double for the LED ring: frame sink, simulated DoA input and a visual ring window"
 readme = "README.md"
@@ -25,7 +25,7 @@ dependencies = [
     # runtime distribution does not license reaching into the rest of it: the
     # architecture test holds this package to lefx.sdk and nothing else, which
     # is what keeps it swappable with the hardware.
-    "ledctrl-v3==3.0.2",
+    "led-controller-version-3==3.0.2",
 ]
 
 [project.optional-dependencies]

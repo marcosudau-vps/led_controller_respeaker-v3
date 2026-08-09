@@ -1,4 +1,4 @@
-# ledctrl-v3-device-simulated-respeaker
+# led-controller-version-3-device-simulated-respeaker
 
 Ein vollständiger Software-Ersatz für die Hardware — dieselben Ports, dieselbe
 Rolle. Der Dienst merkt nicht, dass die Gegenstelle kein Gerät ist.
@@ -14,7 +14,7 @@ Die dienstseitige Hälfte braucht kein Qt. PySide6 ist ein Extra und wird nur
 gebraucht, wenn das Fenster geöffnet wird:
 
 ```bash
-uv pip install "ledctrl-v3-device-simulated-respeaker[gui]"
+uv pip install "led-controller-version-3-device-simulated-respeaker[gui]"
 lefx-simulator
 ```
 

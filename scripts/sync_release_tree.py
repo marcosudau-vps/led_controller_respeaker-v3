@@ -70,7 +70,7 @@ ROOT_PYPROJECT = '''\
 # There is nothing to develop in this tree: no test suite, no effect sources,
 # no tooling. What is here is what gets published, and nothing else.
 [project]
-name = "ledctrl-v3-release"
+name = "led-controller-version-3-release"
 version = "{version}"
 description = "Release tree for the LEFX V3 distributions"
 requires-python = ">=3.12,<3.13"

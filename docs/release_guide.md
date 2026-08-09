@@ -31,9 +31,9 @@ erzwingt das, samt der `==`-Pins zwischen ihnen.
 
 | PyPI-Projekt | Rolle | Installiert durch |
 |---|---|---|
-| `ledctrl-v3` | Schema, Laufzeit, API/CLI, reSpeaker **und beide Effektkataloge** | Standard |
-| `ledctrl-v3-device-simulated-respeaker` | Software-Geräteersatz mit Ringfenster | `[simulated-respeaker]` |
-| `ledctrl-v3-effect-creation` | `lefx-pack` und `lefx-studio`, bringt Qt | `[effect-creation]` |
+| `led-controller-version-3` | Schema, Laufzeit, API/CLI, reSpeaker **und beide Effektkataloge** | Standard |
+| `led-controller-version-3-device-simulated-respeaker` | Software-Geräteersatz mit Ringfenster | `[simulated-respeaker]` |
+| `led-controller-version-3-effect-creation` | `lefx-pack` und `lefx-studio`, bringt Qt | `[effect-creation]` |
 
 Drei und nicht neun, weil nur Optionales ein eigenes Projekt braucht. Schema,
 Engine, Steuerungsoberfläche und Hardware werden immer zusammen installiert —
@@ -42,8 +42,8 @@ kein Extra wählt je zwischen ihnen —, und die Kataloge werden zur Laufzeit ü
 davon unberührt: `tests/architecture/test_architecture.py` prüft sie jetzt über
 Modulverzeichnisse statt über Paketnamen, mit denselben Regeln.
 
-Die PyPI-Namen tragen das Präfix `ledctrl-v3-`, die Importpfade heißen
-weiterhin `lefx.*`. Das ist Absicht: `ledctrl-v3` ist ein Arbeitsname für
+Die PyPI-Namen tragen das Präfix `led-controller-version-3-`, die Importpfade heißen
+weiterhin `lefx.*`. Das ist Absicht: `led-controller-version-3` ist ein Arbeitsname für
 diesen Stand, und die `lefx-*`-Namen bleiben auf PyPI frei für die spätere
 eigenständige Veröffentlichung. Ein Auseinanderfallen von Distributions- und
 Importname ist auf PyPI üblich (`opencv-python` importiert sich als `cv2`) und
@@ -132,8 +132,8 @@ Das Feld `tag` dabei leer lassen.
    `github.repository == 'marcosudau-vps/led-ctrl-v3'` greift, `uv build
    --all-packages` läuft, `check_release.py` prüft das Gebaute — und dann lädt
    ein Job **pro Projekt** hoch.
-3. Unter [pypi.org/project/ledctrl-v3](https://pypi.org/project/ledctrl-v3/)
-   steht die Version bereit: `pip install --upgrade ledctrl-v3`.
+3. Unter [pypi.org/project/led-controller-version-3](https://pypi.org/project/led-controller-version-3/)
+   steht die Version bereit: `pip install --upgrade led-controller-version-3`.
 
 Ein Job pro Projekt, weil ein einzelner Upload aller drei bei Trusted
 Publishing davon abhinge, wie PyPI ein frisch geprägtes Token über Projekte
@@ -169,7 +169,7 @@ gh run rerun --repo marcosudau-vps/led-ctrl-v3 <run-id> --failed
 Welche Projekte fehlen, beantwortet der Index direkt:
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://pypi.org/simple/ledctrl-v3-effect-creation/
+curl -s -o /dev/null -w "%{http_code}\n" https://pypi.org/simple/led-controller-version-3-effect-creation/
 ```
 
 Nicht neu taggen und nicht die Version erhöhen. Ein erfolgreicher Upload lässt
@@ -232,19 +232,35 @@ Kein Token, kein Passwort, nichts gespeichert: GitHub prägt pro Lauf ein
 kurzlebiges OIDC-Token, PyPI prüft es gegen den für das Projekt hinterlegten
 Publisher und gibt ein Upload-Token zurück, das Minuten gilt.
 
-Voraussetzung ist die Umgebung `pypi` im Release-Repo unter
-*Settings → Environments*. Sie ist nicht bloß Ordnung: der Publisher prüft den
-Umgebungsnamen mit. Ein Reviewer darauf ist optional und eine gute Idee — dann
-verlangt jeder Upload eine Bestätigung.
+Jedes der drei Projekte hat seinen **eigenen** GitHub-Environment-Namen im
+Release-Repo (*Settings → Environments*):
 
-Für **jedes** der drei Projekte ist ein Publisher mit denselben Angaben nötig:
+| PyPI-Projekt | Environment name |
+|---|---|
+| `led-controller-version-3` | `pypi` |
+| `led-controller-version-3-effect-creation` | `pypi-effect-creation` |
+| `led-controller-version-3-device-simulated-respeaker` | `pypi-simulator` |
+
+Das ist keine Ordnungsliebe, sondern Notwendigkeit: **PyPI lässt pro
+Konfiguration nur einen offenen Pending Publisher zu.** Owner, Repository,
+Workflow und Environment bilden zusammen den Schlüssel, und drei Projekte, die
+vor ihrem ersten Upload registriert werden, brauchen deshalb drei
+unterschiedliche Konfigurationen. Das Environment ist das einzige Feld, das
+frei wählbar ist.
+
+Es bringt zusätzlich etwas: eine Freigaberegel lässt sich auf ein Projekt legen,
+ohne die anderen anzuhalten, und ein Publisher gilt nur für den Job, der ihn
+benutzen darf. In `release.yml` kommt der Name aus der Matrix
+(`environment: ${{ matrix.environment }}`) — stehen Matrix und Publisher nicht
+im Einklang, antwortet PyPI mit einem 403, das nichts über Environments sagt.
+
+Die gemeinsamen Felder für alle drei:
 
 | Feld | Wert |
 |---|---|
 | Owner | `marcosudau-vps` |
 | Repository name | `led-ctrl-v3` |
 | Workflow name | `release.yml` |
-| Environment name | `pypi` |
 
 **Achtung:** Owner und Repository sind die des **Release**-Repos, nicht des
 Entwicklungs-Repos — dort läuft `release.yml`.
@@ -258,6 +274,9 @@ Wo der Eintrag hingehört, hängt davon ab, ob das Projekt schon existiert:
   publisher*. Ein Pending Publisher ist hier wirkungslos: er greift nur für
   Namen, die noch frei sind. Anlegen kann ihn nur, wer auf dem Projekt Owner
   ist.
+
+Ein Pending Publisher lässt sich nicht bearbeiten — falscher Name oder falsches
+Environment heißt löschen und neu anlegen.
 
 Beides geht ausschließlich über die Weboberfläche; eine API dafür gibt es
 nicht.

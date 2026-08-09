@@ -97,13 +97,13 @@ def write_version(version: str) -> list[Path]:
     """Set the version everywhere it appears, including the internal pins.
 
     Both in one pass, because they are one fact. A bump that moved the versions
-    and left ``ledctrl-v3==3.0.0`` behind in the optional packages would
+    and left ``led-controller-version-3==3.0.0`` behind in the optional packages would
     produce wheels that cannot be installed together, and every one of them
     would build.
     """
     internal = {path.parent.name for path in PACKAGES_ROOT.glob("*/pyproject.toml")}
-    # Longest name first, so that "ledctrl-v3" does not shadow
-    # "ledctrl-v3-effect-creation" in the alternation.
+    # Longest name first, so that "led-controller-version-3" does not shadow
+    # "led-controller-version-3-effect-creation" in the alternation.
     ordered = sorted(map(re.escape, internal), key=len, reverse=True)
     pin = re.compile(r'"(' + "|".join(ordered) + r')(\[[^\]]*\])?==\d+\.\d+\.\d+"')
 

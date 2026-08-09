@@ -4,9 +4,9 @@ version = "3.0.2"
 description = "Workspace root for the LEFX V3 effect system and the reSpeaker LED controller"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "ledctrl-v3",
-    "ledctrl-v3-effect-creation",
-    "ledctrl-v3-device-simulated-respeaker",
+    "led-controller-version-3",
+    "led-controller-version-3-effect-creation",
+    "led-controller-version-3-device-simulated-respeaker",
 ]
 
 # The root is a workspace container, not a distributable. Nothing here is ever
@@ -22,12 +22,12 @@ members = ["packages/*"]
 #
 # Three distributions, not nine. The four layers of the runtime — schema,
 # engine, control surface, hardware — and both catalogues ship together in
-# ledctrl-v3, because no extra ever selects between them and nothing installs
+# led-controller-version-3, because no extra ever selects between them and nothing installs
 # a subset. Only what is genuinely optional has a project of its own.
 [tool.uv.sources]
-ledctrl-v3 = { workspace = true }
-ledctrl-v3-effect-creation = { workspace = true }
-ledctrl-v3-device-simulated-respeaker = { workspace = true }
+led-controller-version-3 = { workspace = true }
+led-controller-version-3-effect-creation = { workspace = true }
+led-controller-version-3-device-simulated-respeaker = { workspace = true }
 
 [dependency-groups]
 dev = [

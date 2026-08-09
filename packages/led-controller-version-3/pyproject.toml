@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ledctrl-v3"
+name = "led-controller-version-3"
 version = "3.0.2"
 description = "LED ring control for the reSpeaker XVF3800 — the LEFX V3 effect system"
 readme = "README.md"
@@ -50,11 +50,11 @@ dependencies = [
 # selected at runtime by included_lefxset, because choosing which effects to
 # load is a configuration question, not an installation question.
 [project.optional-dependencies]
-simulated-respeaker = ["ledctrl-v3-device-simulated-respeaker[gui]==3.0.2"]
-effect-creation = ["ledctrl-v3-effect-creation==3.0.2"]
+simulated-respeaker = ["led-controller-version-3-device-simulated-respeaker[gui]==3.0.2"]
+effect-creation = ["led-controller-version-3-effect-creation==3.0.2"]
 all = [
-    "ledctrl-v3-device-simulated-respeaker[gui]==3.0.2",
-    "ledctrl-v3-effect-creation==3.0.2",
+    "led-controller-version-3-device-simulated-respeaker[gui]==3.0.2",
+    "led-controller-version-3-effect-creation==3.0.2",
 ]
 
 [project.scripts]

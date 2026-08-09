@@ -57,8 +57,8 @@ ENTRY_POINT_GROUPS = ("lefx.frame_sinks", "lefx.input_providers")
 # is asked for them, and the device packages because they *are* the entry
 # points — see check_recipe.
 ALWAYS_COPY_METADATA = (
-    "ledctrl-v3",
-    "ledctrl-v3-effect-creation",
+    "led-controller-version-3",
+    "led-controller-version-3-effect-creation",
 )
 
 EXCLUDES = (

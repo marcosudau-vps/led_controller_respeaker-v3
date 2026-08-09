@@ -50,7 +50,7 @@ def main(argv: list[str] | None = None) -> int:
     except ImportError:
         print(
             "The ring window needs PySide6, which is an optional extra:\n"
-            '    uv pip install "ledctrl-v3-device-simulated-respeaker[gui]"\n'
+            '    uv pip install "led-controller-version-3-device-simulated-respeaker[gui]"\n'
             "The service half of the simulator works without it.",
             file=sys.stderr,
         )
