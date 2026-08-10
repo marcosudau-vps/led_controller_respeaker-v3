@@ -14,6 +14,7 @@ pip install led-controller-version-3
 ```
 
 Falls der GUI-Simulator für lokale Tests ohne Hardware benötigt wird:
+
 ```bash
 pip install led-controller-version-3[simulated-respeaker]
 ```
@@ -25,7 +26,7 @@ pip install led-controller-version-3[simulated-respeaker]
 LEFX V3 bietet drei Hauptwege zur Einbindung:
 
 | Integrationsform | Klasse / Schnittstelle | Anwendungsfall |
-|---|---|---|
+| --- | --- | --- |
 | **1. Direct In-Process Service** | `ControllerService` | **Empfohlen**: Volle Kontrolle im selben Python-Prozess, extrem performant, kein HTTP-Overhead. |
 | **2. HTTP REST Client** | `ControllerClient` | Für verteilte Architekturen, Microservices oder wenn `lefx serve` als separater Daemon läuft. |
 | **3. Low-Level SDK Ports** | `FrameSink` / `InputProvider` | Für benutzerdefinierte LED-Hardware oder eigene Eingabe-Sensoren. |
@@ -36,7 +37,7 @@ LEFX V3 bietet drei Hauptwege zur Einbindung:
 
 Der `ControllerService` verwaltet die Renderschleife (Render-Thread), die Ebenen-Komposition, die Hardware-Senke (`FrameSink`) und die Input-Provider.
 
-### A) Manuelle Lebenszyklus-Steuerung (`start` / `stop`):
+### A) Manuelle Lebenszyklus-Steuerung (`start` / `stop`)
 
 ```python
 from lefx.interfaces import ControllerService
@@ -61,7 +62,7 @@ finally:
     service.stop()
 ```
 
-### B) Context Manager Pattern (garantiertes Beenden):
+### B) Context Manager Pattern (garantiertes Beenden)
 
 ```python
 from lefx.interfaces import ControllerService
@@ -187,6 +188,7 @@ Ein vollständiges, lauffähiges Beispiel einer Sprachassistenten-Anwendung find
 📄 **[`examples/app_integration_example.py`](examples/app_integration_example.py)**
 
 Führe das Beispiel direkt im Terminal aus:
+
 ```bash
 python docs/guides/examples/app_integration_example.py
 ```

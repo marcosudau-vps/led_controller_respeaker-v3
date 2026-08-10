@@ -158,7 +158,7 @@ Runtime auch tatsächlich auswertet.
 `type` wird ein Enum (`ParamType`). Erlaubte Zusatzfelder pro Typ:
 
 | Typ | minimum/maximum | enum_values | unit | nullable |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | `BOOL` | – | – | – | nur Runtime-Input |
 | `INT`, `FLOAT` | ja | – | ja | nur Runtime-Input |
 | `DURATION_MS` | ja | – | ja (`ms`) | nur Runtime-Input |

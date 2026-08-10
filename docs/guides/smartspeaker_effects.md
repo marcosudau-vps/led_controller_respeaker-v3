@@ -31,7 +31,7 @@ Dezenter Hintergrundzustand, wenn der Sprachassistent betriebsbereit ist und auf
 
 #### Parameter:
 | Name | Typ | Standardwert | Grenzen | Beschreibung |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | `color` | COLOR | `#003366` | Hex / Farbname | Dezente Standby-Farbe |
 | `brightness` | FLOAT | `0.3` | `0.0` bis `1.0` | Gedimmte Helligkeit |
 
@@ -46,7 +46,7 @@ Signalisiert dem Nutzer, dass das Mikrofon offen ist und Sprache aufzeichnet.
 
 #### Parameter:
 | Name | Typ | Standardwert | Grenzen | Beschreibung |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | `color` | COLOR | `#00AAFF` | Hex / Farbname | Hauptfarbe für Zuhören |
 | `brightness` | FLOAT | `0.85` | `0.0` bis `1.0` | Helligkeit |
 | `speed` | FLOAT | `1.0` | `> 0.0` | Pulsiergeschwindigkeit |
@@ -65,7 +65,7 @@ Animiertes Rotations- oder Wellenmuster, während die Sprache analysiert oder ei
 
 #### Parameter:
 | Name | Typ | Standardwert | Grenzen | Beschreibung |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | `color_a` | COLOR | `#00FFCC` | Hex / Farbname | Erste Verlaufsfarbe |
 | `color_b` | COLOR | `#9900FF` | Hex / Farbname | Zweite Verlaufsfarbe |
 | `speed` | FLOAT | `1.5` | `> 0.0` | Rotationsgeschwindigkeit |
@@ -81,7 +81,7 @@ Dynamisches Muster während der Sprachausgabe des Assistenten.
 
 #### Parameter:
 | Name | Typ | Standardwert | Grenzen | Beschreibung |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | `color` | COLOR | `#00E5FF` | Hex / Farbname | Hauptfarbe bei Sprachausgabe |
 | `brightness` | FLOAT | `0.85` | `0.0` bis `1.0` | Helligkeit |
 | `speed` | FLOAT | `1.0` | `> 0.0` | Bewegungstempo |
@@ -96,7 +96,7 @@ Dauerhafte rote/orange Warnfarbe, wenn das Mikrofon per Hardware- oder Software-
 
 #### Parameter:
 | Name | Typ | Standardwert | Grenzen | Beschreibung |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | `color` | COLOR | `#FF0033` | Hex / Farbname | Warnfarbe (Standard: Rot) |
 | `brightness` | FLOAT | `0.7` | `0.0` bis `1.0` | Helligkeit |
 
@@ -109,7 +109,7 @@ Kurze Phase der Befehlsauswertung vor der Antwort.
 
 #### Parameter:
 | Name | Typ | Standardwert | Grenzen | Beschreibung |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | `color` | COLOR | `#00FFCC` | Hex / Farbname | Verarbeitungsfarbe |
 | `speed` | FLOAT | `1.2` | `> 0.0` | Tempo |
 
@@ -154,7 +154,7 @@ Visualisiert einen ablaufenden Timer um den Ring (z. B. "Noch 5 Sekunden zum Ant
 
 #### Parameter:
 | Name | Typ | Standardwert | Grenzen | Beschreibung |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | `color` | COLOR | `#FF9900` | Hex / Farbname | Farbe des ablaufenden Rings |
 | `duration_ms` | DURATION_MS | `5000` | `>= 1` ms | Countdown-Dauer in ms |
 | `brightness` | FLOAT | `0.85` | `0.0` bis `1.0` | Helligkeit |
@@ -200,7 +200,7 @@ Kurzer, heller Cyan/Blau-Blitz beim Erkennen des Aktivierungsworts (z. B. "Hey A
 
 #### Parameter:
 | Name | Typ | Standardwert | Grenzen | Beschreibung |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | `color` | COLOR | `#00E5FF` | Hex / Farbname | Blitzfarbe |
 | `duration_ms` | DURATION_MS | `500` | `>= 1` ms | Aufblitz-Dauer |
 
@@ -213,7 +213,7 @@ Kurzer grüner Doppelblitz für erfolgreich verstandene Befehle.
 
 #### Parameter:
 | Name | Typ | Standardwert | Grenzen | Beschreibung |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | `color` | COLOR | `#00FF66` | Hex / Farbname | Bestätigungsfarbe |
 | `duration_ms` | DURATION_MS | `600` | `>= 1` ms | Dauer |
 
@@ -233,7 +233,7 @@ Roter Fehlerblitz (z. B. "Befehl nicht verstanden" oder "Server nicht erreichbar
 
 #### Parameter:
 | Name | Typ | Standardwert | Grenzen | Beschreibung |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | `color` | COLOR | `#FF0033` | Hex / Farbname | Fehlerfarbe |
 | `duration_ms` | DURATION_MS | `1000` | `>= 1` ms | Fehlerdauer |
 
