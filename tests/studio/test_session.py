@@ -84,8 +84,8 @@ def test_the_outputs_offered_are_the_ones_installed():
     """Read from the entry points, like the service does. A machine without the
     hardware package is not offered hardware."""
     outputs = available_outputs()
-    assert "null" in outputs
-    assert "simulator" in outputs
+    assert outputs[0] == "null"
+    assert {"simulator", "respeaker"} <= set(outputs)
 
 
 def test_no_running_service_means_the_device_is_free(tmp_path, monkeypatch):
