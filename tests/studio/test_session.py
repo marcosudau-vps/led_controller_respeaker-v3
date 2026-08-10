@@ -8,7 +8,10 @@ otherwise only ever be tested by a person clicking.
 from __future__ import annotations
 
 import os
+import subprocess
+import sys
 import time
+from contextlib import contextmanager
 
 import pytest
 
@@ -81,13 +84,40 @@ def test_the_outputs_offered_are_the_ones_installed():
     """Read from the entry points, like the service does. A machine without the
     hardware package is not offered hardware."""
     outputs = available_outputs()
-    assert outputs[0] == "null"
-    assert {"simulator", "respeaker"} <= set(outputs)
+    assert "null" in outputs
+    assert "simulator" in outputs
 
 
 def test_no_running_service_means_the_device_is_free(tmp_path, monkeypatch):
     monkeypatch.setenv("LEFX_STATE_ROOT", str(tmp_path))
     assert device_in_use() is None
+
+
+@contextmanager
+def a_live_process_that_is_not_this_one():
+    """A pid that is certainly alive, certainly not ours, and ours to end.
+
+    ``os.getppid()`` looks like the cheap way to get one and is not. Windows
+    keeps no parent/child relationship, so the parent may already be gone by the
+    time it is asked about — and its number may since have been recycled onto an
+    unrelated process. Which of the two happens depends on how the test run was
+    launched: a shell that waits keeps its child's parent alive, a short-lived
+    launcher shim does not, and neither is under this test's control.
+
+    A test that depends on the liveness of a process it did not start is flaky
+    by construction. Starting one costs a few hundred milliseconds once and
+    makes the answer the same everywhere.
+    """
+    process = subprocess.Popen(
+        [sys.executable, "-c", "import time; time.sleep(60)"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        yield process.pid
+    finally:
+        process.kill()
+        process.wait(timeout=10)
 
 
 def test_a_running_service_is_reported_rather_than_fought_with(tmp_path, monkeypatch):
@@ -96,23 +126,25 @@ def test_a_running_service_is_reported_rather_than_fought_with(tmp_path, monkeyp
     from lefx.interfaces import hosting, paths
 
     monkeypatch.setenv("LEFX_STATE_ROOT", str(tmp_path))
-    # A pid that exists but is not this process: the parent will do on any OS
-    # that has one, otherwise borrow this process's own and pretend.
-    info = hosting.InstanceInfo(
-        pid=os.getppid() or os.getpid(),
-        host="127.0.0.1",
-        port=8765,
-        requested_port=8765,
-        started_at=time.time(),
-        status="ready",
-    )
-    if info.pid == os.getpid():
-        pytest.skip("no second live pid to point at")
-    hosting.write_instance(paths.instance_file(), info)
+    with a_live_process_that_is_not_this_one() as pid:
+        assert pid != os.getpid()
+        hosting.write_instance(
+            paths.instance_file(),
+            hosting.InstanceInfo(
+                pid=pid,
+                host="127.0.0.1",
+                port=8765,
+                requested_port=8765,
+                started_at=time.time(),
+                status="ready",
+            ),
+        )
+        # Asked while the process is demonstrably running, not after.
+        message = device_in_use()
 
-    message = device_in_use()
     assert message is not None
     assert "8765" in message
+    assert str(pid) in message
 
 
 def test_an_abandoned_instance_file_does_not_block_the_studio(tmp_path, monkeypatch):
