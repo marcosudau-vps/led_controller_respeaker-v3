@@ -1,6 +1,6 @@
 [project]
 name = "respeaker-led-v3-workspace"
-version = "3.0.2"
+version = "3.0.3"
 description = "Workspace root for the LEFX V3 effect system and the reSpeaker LED controller"
 requires-python = ">=3.12,<3.13"
 dependencies = [

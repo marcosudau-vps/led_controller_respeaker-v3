@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "led-controller-version-3-effect-creation"
-version = "3.0.2"
+version = "3.0.3"
 description = "LEFX V3 effect creation: scaffolding, source validation, package building and the desktop studio"
 readme = "README.md"
 license = "MIT"
@@ -40,7 +40,7 @@ dependencies = [
     # The runtime, which carries the schema to write against, the loader to
     # verify what was just built, and the control surface the studio drives a
     # device through. One name now, because those four layers ship together.
-    "led-controller-version-3==3.0.2",
+    "led-controller-version-3==3.0.3",
     "PySide6>=6.0.0",
     # Imported directly to read and write a source tree. It arrives with the
     # runtime anyway, but a package that imports a thing declares it.
