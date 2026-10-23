@@ -210,3 +210,190 @@ def test_without_an_open_output_nothing_is_sent(tmp_path):
     with pytest.raises(RuntimeError):
         output.start(FRAME)
     output.stop()  # harmless
+
+
+# -- review R01: the feed and the runtime say the same thing ------------------
+#
+# Each test names its finding in the first line of its docstring, so
+# ``grep -rn "LAB-001-R01-F0" tests/`` lists the regression tests per finding.
+# The device fixture leaves the service's own render thread running: these
+# tests watch real engine ticks, not only frames rendered by hand.
+
+
+def settle(session, ticks: int = 4, timeout: float = 1.0) -> None:
+    """Let the service's render thread run a few frames, without judging them.
+
+    A tick that raises does not count as a rendered frame, so waiting for the
+    counter alone would hang on exactly the failure under test. This waits for
+    the counter *or* the timeout, and leaves the verdict to the assertions.
+    """
+    service = session.service
+    start = service.status()["service"]["render_count"]
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if service.status()["service"]["render_count"] >= start + ticks:
+            return
+        time.sleep(0.01)
+
+
+def primary_state(session):
+    layer = session.service.runtime.status()["layers"]["primary_state"]
+    return None if layer is None else layer["effect_id"]
+
+
+def test_a_reload_while_the_preview_is_paused_keeps_the_device_fed(device):
+    """LAB-001-R01-F01: no further frame is needed after a catalogue reload.
+
+    A paused preview sends nothing new, so a reconnect that waits for the next
+    frame never comes. The feed has to be back before the engine's next tick —
+    and no tick may fail in between, because a failed tick leaves the service
+    reporting an error for as long as it runs.
+    """
+    session, sinks = device
+    output = LabOutput(session)
+    output.start(FRAME)
+
+    session.reload_sources()  # F5; the paused preview pushes nothing afterwards
+    settle(session)
+
+    assert session.service.status()["service"]["last_error"] is None
+    assert sinks[-1].frames[-1] == FRAME
+    assert primary_state(session) == FEED_ID
+    assert output.active and output.carried
+
+
+def test_after_a_reload_the_global_output_settings_still_work(device):
+    """LAB-001-R01-F01: a reload must not leave an invocation nobody can resolve.
+
+    Every command renders at once. With the feed's state still on its layer but
+    its definition gone from the registry, even dimming the ring would fail.
+    """
+    session, sinks = device
+    output = LabOutput(session)
+    output.start(FRAME)
+    session.reload_sources()
+
+    session.set_output(brightness=0.5)
+    session.service.render_once(time.monotonic())
+
+    assert sinks[-1].frames[-1] == tuple(scale_color(value, 0.5) for value in FRAME)
+
+
+def test_switching_the_output_while_paused_feeds_the_new_device(device):
+    """LAB-001-R01-F01: the same holds for a whole new service, not only a new registry."""
+    session, sinks = device
+    output = LabOutput(session)
+    output.start(FRAME)
+
+    session.open("fake-respeaker")  # a new device, a new service, no push follows
+    settle(session)
+
+    assert sinks[0].closed
+    assert sinks[-1].frames[-1] == FRAME
+    assert session.service.status()["service"]["last_error"] is None
+
+
+def test_stopping_after_a_reload_really_clears_the_device(device):
+    """LAB-001-R01-F01: stop() must take the feed off even after a rebuild.
+
+    It used to compare registry identities and give up on a mismatch — leaving
+    the feed's state behind on a device the Lab said it had released.
+    """
+    session, sinks = device
+    output = LabOutput(session)
+    output.start(FRAME)
+    session.reload_sources()
+
+    output.stop()
+    settle(session)
+
+    assert session.service.status()["service"]["last_error"] is None
+    assert primary_state(session) is None
+    assert sinks[-1].frames[-1] == (0,) * 12
+    assert not output.active
+
+
+def test_a_feed_that_cannot_come_back_is_ended_and_said_so(device, monkeypatch):
+    """LAB-001-R01-F01: when restoring fails, the output is ended, not left half-alive.
+
+    The other half of "restore or clearly deactivate": the Lab must stop
+    claiming to send, the reason must reach whoever shows the status, and the
+    engine must not be left with a state it cannot render.
+    """
+    session, sinks = device
+    output = LabOutput(session)
+    reasons: list[str] = []
+    output.on_ended = reasons.append
+    output.start(FRAME)
+
+    def refuse() -> None:
+        raise RuntimeError("Registrierung verweigert")
+
+    monkeypatch.setattr(output, "_attach", refuse)
+    session.reload_sources()
+    settle(session)
+
+    assert not output.active
+    assert reasons and "Registrierung verweigert" in reasons[-1]
+    assert session.service.status()["service"]["last_error"] is None
+    assert primary_state(session) is None
+
+
+def test_a_global_clear_ends_the_lab_output_instead_of_pretending(device):
+    """LAB-001-R01-F02: after "Alles löschen" the Lab must not still claim to send.
+
+    The clear takes the feed's state off the engine. A running preview keeps
+    delivering frames, and the old output took each of them without noticing
+    that nothing was showing them any more.
+    """
+    session, sinks = device
+    output = LabOutput(session)
+    output.start(FRAME)
+
+    session.clear_everything()  # Ausgabe → Alles löschen
+    output.push(FRAME)          # the preview is running and keeps pushing
+    settle(session)
+
+    assert not output.active
+    assert sinks[-1].frames[-1] == (0,) * 12
+    assert primary_state(session) is None
+
+
+def test_after_a_global_clear_sending_resumes_only_when_asked(device):
+    """LAB-001-R01-F02: the resume rule — a clear ends sending until it is started again.
+
+    A stray frame must not take the device back: the user just emptied it on
+    purpose. Starting again is explicit, and then it works at once.
+    """
+    session, sinks = device
+    output = LabOutput(session)
+    output.start(FRAME)
+    session.clear_everything()
+
+    output.push(FRAME)  # a frame from the still-running preview
+    settle(session)
+    assert not output.active
+    assert sinks[-1].frames[-1] == (0,) * 12
+
+    output.start(FRAME)  # what ticking "An Ausgabe senden" again does
+    settle(session)
+    assert output.active and output.carried
+    assert sinks[-1].frames[-1] == FRAME
+
+
+def test_a_global_clear_is_reported_through_the_ended_callback(device):
+    """LAB-001-R01-F02: the page learns about the end at once, with the reason given."""
+    session, _ = device
+    output = LabOutput(session)
+    reasons: list[str] = []
+    output.on_ended = reasons.append
+    output.start(FRAME)
+
+    session.clear_everything()
+    assert output.verify(reason="Alles gelöscht") is False
+
+    assert not output.active
+    assert reasons == ["Alles gelöscht"]
+    # And asking again changes nothing: there is nothing left to end.
+    assert output.verify(reason="noch einmal") is False
+    assert reasons == ["Alles gelöscht"]

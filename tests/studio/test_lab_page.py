@@ -400,6 +400,122 @@ def test_typing_into_a_field_does_not_trigger_the_step_keys(window, lab, qt_app)
 # -- review R01: what the Lab says matches what the device gets --------------
 
 
+@pytest.fixture
+def device_window(qt_app, tmp_path, monkeypatch):
+    """The real window on a fake hardware output that records every frame.
+
+    Only the sink is replaced. Everything above it — the embedded service with
+    its own render thread, the engine, the TappedSink, the window's menus — is
+    the real thing, so these tests see what a reSpeaker would be sent.
+    """
+    from lefx.effect_creation.studio import session as studio_session
+    from lefx.sdk import SinkStatus
+
+    sinks: list = []
+
+    class RecordingSink:
+        name = "fake-respeaker"
+
+        def __init__(self) -> None:
+            self.frames: list[tuple[int, ...]] = []
+            self.closed = False
+
+        def apply_frame(self, frame) -> None:
+            self.frames.append(tuple(frame.leds))
+
+        def status(self):
+            return SinkStatus(available=True, detail=None)
+
+        def close(self) -> None:
+            self.closed = True
+
+    def create_sink(name, **options):
+        sinks.append(RecordingSink())
+        return sinks[-1]
+
+    monkeypatch.setenv("LEFX_STATE_ROOT", str(tmp_path))  # no other service "holds" it
+    monkeypatch.setattr(studio_session.discovery, "create_sink", create_sink)
+    session = StudioSession(search_paths=[], state_file=tmp_path / "background.json")
+    window = StudioWindow(session, initial_output="fake-respeaker")
+    window.lab.ask_before_discarding = False
+    window.tabs.setCurrentWidget(window.lab)
+    window.lab.clock._now = FakeTime()
+    qt_app.processEvents()
+    try:
+        yield window, sinks
+    finally:
+        window.close()
+        session.close()
+
+
+def trigger(window, menu: str, label: str) -> None:
+    """Run a menu entry the way a click does: through its QAction."""
+    for entry in window.menuBar().actions():
+        if entry.text().replace("&", "") == menu:
+            for action in entry.menu().actions():
+                if action.text() == label:
+                    action.trigger()
+                    return
+    raise AssertionError(f"no menu entry {menu} → {label}")
+
+
+def start_sending(window) -> tuple[int, ...]:
+    lab = window.lab
+    lab.load_example("two_points")
+    lab.send_box.setChecked(True)
+    assert lab.output.active and not lab.clock.playing  # sending, preview paused
+    return tuple(lab.frame.device)
+
+
+def test_reloading_the_catalogue_keeps_a_paused_lab_on_the_device(device_window):
+    """LAB-001-R01-F01: Katalog → Quellen neu laden, preview paused, the device keeps the Lab image.
+
+    And what the page says is true: it shows "Sendet" because the engine is
+    in fact rendering the feed, not because a flag was never reset.
+    """
+    from tests.studio.test_lab_output import settle
+
+    window, sinks = device_window
+    shown = start_sending(window)
+
+    trigger(window, "Katalog", "Quellen neu laden")
+    settle(window.session)
+
+    service = window.session.service
+    assert service.status()["service"]["last_error"] is None
+    assert sinks[-1].frames[-1] == shown
+    assert service.runtime.status()["layers"]["primary_state"]["effect_id"] == FEED_ID
+    assert window.lab.output.active and window.lab.send_box.isChecked()
+    assert "Sendet" in window.lab.output_state.text()
+
+
+def test_clearing_everything_ends_the_lab_send_and_says_so(device_window):
+    """LAB-001-R01-F02: Ausgabe → Alles löschen unticks the box and stops claiming to send.
+
+    The resume rule is visible too: nothing comes back by itself; ticking the
+    box again takes the device over once more, at once.
+    """
+    from tests.studio.test_lab_output import settle
+
+    window, sinks = device_window
+    lab = window.lab
+    shown = start_sending(window)
+
+    trigger(window, "Ausgabe", "Alles löschen")
+    settle(window.session)
+
+    assert not lab.output.active
+    assert not lab.send_box.isChecked()
+    assert "Sendet" not in lab.output_state.text()
+    assert "Alles löschen" in lab.message.text()
+    assert sinks[-1].frames[-1] == (0,) * 12
+
+    lab.send_box.setChecked(True)  # the explicit resume
+    settle(window.session)
+    assert lab.output.active and "Sendet" in lab.output_state.text()
+    assert sinks[-1].frames[-1] == shown
+
+
 def test_a_failed_export_check_keeps_the_previous_package(lab, tmp_path, monkeypatch):
     """LAB-001-R01-F03: the Lab reports success only after the check, and keeps the old file otherwise."""
     from lefx.effect_creation.studio.lab import page as page_module

@@ -106,6 +106,7 @@ class LabPage(QWidget):
         self.compiler = PreviewCompiler()
         self.clock = PreviewClock()
         self.output = LabOutput(session)
+        self.output.on_ended = self._on_output_ended
         self.path: Path | None = None
         self.editor: Editor | None = None
         self._unsubscribe: Callable[[], None] | None = None
@@ -857,7 +858,20 @@ class LabPage(QWidget):
         self.send_box.setChecked(on)
         self.send_box.blockSignals(False)
 
+    def _on_output_ended(self, reason: str) -> None:
+        """The output ended without being asked to — a clear, a failed reload."""
+        self._set_send_box(False)
+        self.report(reason, error=True)
+        self._refresh_output_state()
+
+    def verify_output(self, reason: str | None = None) -> None:
+        """Compare what the page claims with what the engine shows, and end on a mismatch."""
+        self.output.verify(reason)
+
     def _refresh_output_state(self) -> None:
+        # The once-a-second status refresh is also the safety net: whatever
+        # took the feed off without telling us, the claim ends here.
+        self.output.verify()
         problem = self.output.problem(self._led_count)
         if self.output.active:
             kind = "Gerät" if self.output.is_hardware else "ohne Hardware"
@@ -904,6 +918,7 @@ class LabPage(QWidget):
 
     def shutdown(self) -> None:
         self.deactivate()
+        self.output.close()
         if self._unsubscribe is not None:
             self._unsubscribe()
             self._unsubscribe = None

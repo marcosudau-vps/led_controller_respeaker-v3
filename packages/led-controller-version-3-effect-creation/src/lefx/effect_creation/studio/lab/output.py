@@ -12,7 +12,20 @@ So there is still one computation of the effect — the compiled design, in the
 Lab — and the device shows exactly what the Lab ring shows, at the engine's
 frame rate. Nothing is packed, no source is registered, no private registry is
 replaced: the feed is added through the registry's public ``register_effect``
-under its own source id, and added again when the registry is rebuilt.
+under its own source id.
+
+A reload or a reopen replaces the registry while the engine keeps rendering,
+and a paused preview sends no frame that could notice. So the output does not
+wait for one: the session tells it before and after every rebuild. Before, the
+feed's state is taken off its layer — the engine must never hold a state whose
+definition has just gone, or every tick after it fails. After, the feed is put
+back; if that is not possible, the output ends and says why.
+
+What the Lab claims and what the engine does are compared, not assumed:
+:attr:`LabOutput.carried` asks the runtime whether the feed is on its layer,
+and :meth:`LabOutput.verify` ends the output when it is not — after
+"Ausgabe → Alles löschen", for instance. A clear is not undone behind the
+user's back: sending starts again only when it is asked for again.
 
 Three refusals keep the device safe, all checked before anything is sent:
 
@@ -27,7 +40,7 @@ Three refusals keep the device safe, all checked before anything is sent:
 from __future__ import annotations
 
 import logging
-from typing import Sequence
+from typing import Callable, Sequence
 
 from lefx.sdk import BaseEffect, ColorModel, CompositionMode, RenderContext, StateDefinition
 
@@ -67,12 +80,19 @@ def feed_effect(latest: _Latest) -> type[BaseEffect]:
 class LabOutput:
     """Sends the Lab's frames to whatever output the session has open."""
 
+    ENDED_FROM_OUTSIDE = (
+        "Die Lab-Ausgabe liegt nicht mehr auf dem Gerät und wurde beendet. "
+        "Zum Fortsetzen „An Ausgabe senden“ erneut aktivieren."
+    )
+
     def __init__(self, session: StudioSession) -> None:
         self.session = session
         self._latest = _Latest()
         self.effect_class = feed_effect(self._latest)
         self.active = False
-        self._registry = None
+        self.on_ended: Callable[[str], None] | None = None
+        """Told the reason whenever the output ends without :meth:`stop`."""
+        self._unwatch = session.watch_rebuilds(self._on_rebuild)
 
     @property
     def target(self) -> str:
@@ -81,6 +101,14 @@ class LabOutput:
     @property
     def is_hardware(self) -> bool:
         return self.session.output_name != NULL_OUTPUT
+
+    @property
+    def carried(self) -> bool:
+        """Whether the engine really shows the feed: on its layer, and resolvable."""
+        if self.session.service is None or not self._feed_on_layer():
+            return False
+        entry = self.session.registry.effects.get(FEED_ID)
+        return entry is not None and entry.effect_class is self.effect_class
 
     def problem(self, led_count: int) -> str | None:
         """Why frames of ``led_count`` positions cannot be sent, or ``None``."""
@@ -103,28 +131,80 @@ class LabOutput:
         self.active = True
 
     def push(self, frame: Sequence[int]) -> None:
-        """Replace the frame on the device. Re-attaches after a reload or reopen."""
+        """Replace the frame on the device; ends the output if nothing shows it any more."""
         if not self.active:
             return
         if self.problem(len(frame)) is not None:
             self.stop()
             return
         self._latest.frame = tuple(frame)
-        if self.session.registry is not self._registry:
-            # The service was reopened (another output) or the catalogue was
-            # rebuilt; either way the feed and its state went with the old one.
-            self._attach()
+        self.verify()
+
+    def verify(self, reason: str | None = None) -> bool:
+        """Whether the output is still carried; if it claims to be and is not, end it.
+
+        ``reason`` is what :attr:`on_ended` is told. Ending happens once: asking
+        again afterwards only answers ``False``.
+        """
+        if not self.active:
+            return False
+        if self.carried:
+            return True
+        self._end(reason or self.ENDED_FROM_OUTSIDE)
+        return False
 
     def stop(self) -> None:
         if not self.active:
             return
         self.active = False
         self._latest.frame = None
-        service = self.session.service
-        if service is None or self.session.registry is not self._registry:
+        self._retire()
+
+    def close(self) -> None:
+        """Stop, and stop listening to the session's rebuilds."""
+        self.stop()
+        self._unwatch()
+
+    def _on_rebuild(self, phase: str) -> None:
+        if phase == "before":
+            # Off the layer while the definition still exists: the render
+            # thread may tick between the rebuild and our "after".
+            self._retire()
+            return
+        if not self.active:
+            return
+        frame = self._latest.frame or ()
+        problem = self.problem(len(frame))
+        if problem is not None:
+            self._end(f"Lab-Ausgabe beendet: {problem}")
             return
         try:
-            service.clear_state()
+            self._attach()
+        except Exception as exc:
+            logger.exception("restoring the Studio Lab feed failed")
+            self._end(f"Lab-Ausgabe nach dem Neuladen nicht wiederherstellbar und beendet: {exc}")
+
+    def _end(self, reason: str) -> None:
+        was_active = self.active
+        self.active = False
+        self._latest.frame = None
+        self._retire()
+        logger.info("Studio Lab output ended: %s", reason)
+        if was_active and self.on_ended is not None:
+            self.on_ended(reason)
+
+    def _feed_on_layer(self) -> bool:
+        service = self.session.service
+        if service is None:
+            return False
+        layer = service.runtime.status()["layers"]["primary_state"]
+        return layer is not None and layer["effect_id"] == FEED_ID
+
+    def _retire(self) -> None:
+        """Take the feed's state off the engine, if it is there. Never raises."""
+        try:
+            if self._feed_on_layer():
+                self.session.service.clear_state()
         except Exception:
             logger.exception("clearing the Studio Lab state failed")
 
@@ -136,7 +216,6 @@ class LabOutput:
             existing = None
         if existing is None:
             registry.register_effect(self.effect_class, source_id=FEED_SOURCE)
-        self._registry = registry
         self.session.clear_everything()
         self.session.play_state(FEED_ID, {})
         logger.info("Studio Lab sends to %s", self.session.output_name)

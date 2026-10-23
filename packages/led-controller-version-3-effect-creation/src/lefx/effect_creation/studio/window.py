@@ -638,6 +638,12 @@ class StudioWindow(QMainWindow):
 
     def _clear_everything(self) -> None:
         self._guarded(self.session.clear_everything)
+        # The Lab's feed went with everything else. Sending ends — it is not
+        # quietly taken back — and the Lab says so and how to resume.
+        self.lab.verify_output(
+            "Ausgabe → Alles löschen hat das Senden des Labs beendet. "
+            "Zum Fortsetzen „An Ausgabe senden“ erneut aktivieren."
+        )
 
     def _guarded(self, action) -> Any:
         if self.session.service is None:
