@@ -53,6 +53,7 @@ from lefx.sdk import DefinitionKind
 
 from . import catalogue
 from .calibration_page import CalibrationPage
+from .lab.page import LabPage
 from .parameters import SchemaForm
 from .preset_dialog import PresetDialog
 from .project import Project, iter_paths, remember
@@ -95,6 +96,7 @@ class StudioWindow(QMainWindow):
         self.frame_received.connect(self.monitor.set_colors)
         self.frame_received.connect(self.calibration.monitor.set_colors)
         self.frame_received.connect(self.editor.monitor.set_colors)
+        self.frame_received.connect(self.lab.on_device_frame)
         self.session.set_frame_listener(self.frame_received.emit)
 
         self._select_output(initial_output)
@@ -112,11 +114,15 @@ class StudioWindow(QMainWindow):
 
         self.calibration = CalibrationPage(self.session)
         self.editor = SourceEditorPage(self.session)
+        # The Lab picks outputs through the Player's box, so the busy check and
+        # the fall back to null stay in one place for the whole window.
+        self.lab = LabPage(self.session, choose_output=lambda name: self.output_box.setCurrentText(name))
 
         self.tabs = QTabWidget()
         self.tabs.addTab(splitter, "Player")
         self.tabs.addTab(self.calibration, "Kalibrierung")
         self.tabs.addTab(self.editor, "Neuer Effekt")
+        self.tabs.addTab(self.lab, "Studio Lab (experimentell)")
         self.tabs.currentChanged.connect(self._on_tab_changed)
         self.setCentralWidget(self.tabs)
 
@@ -127,10 +133,15 @@ class StudioWindow(QMainWindow):
         # The calibration page needs to know which device it is measuring, and
         # the output can have changed since it was last looked at.
         page = self.tabs.widget(index)
+        # Before anything else: leaving the Lab hands the device back.
+        if page is not self.lab:
+            self.lab.deactivate()
         if page is self.calibration:
             self.calibration.refresh()
         elif page is self.editor:
             self.editor.refresh()
+        elif page is self.lab:
+            self.lab.activate()
 
     def _build_menu(self) -> None:
         project_menu = self.menuBar().addMenu("&Projekt")
@@ -379,6 +390,7 @@ class StudioWindow(QMainWindow):
         self._refresh_output_state()
         self.calibration.refresh()
         self.editor.refresh()
+        self.lab.refresh()
 
     def _set_output_box(self, name: str) -> None:
         self.output_box.blockSignals(True)
@@ -645,6 +657,10 @@ class StudioWindow(QMainWindow):
         that closed without releasing it would leave the next thing to start
         unable to find its device with nothing on screen to explain why.
         """
+        if not self.lab.confirm_discard():
+            event.ignore()
+            return
+        self.lab.shutdown()
         self.session.set_frame_listener(None)
         # Before the session goes: a calibration run holds the device's own
         # calibration aside while it measures, and it has to be given back.

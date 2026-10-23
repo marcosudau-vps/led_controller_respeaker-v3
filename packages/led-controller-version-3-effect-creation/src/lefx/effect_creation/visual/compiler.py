@@ -8,6 +8,7 @@ import tempfile
 import types
 
 from lefx.effect_creation import pack_effect, validate_effect_source
+from lefx.engine import EffectLibrary
 from lefx.sdk import RenderContext, resolve_configuration
 
 from . import kernel
@@ -128,3 +129,29 @@ def export_package(document, path):
         report = pack_effect(source, package)
         target = atomic_write(path, package.read_bytes())
     return {**report, "path": str(target), "revision": snapshot["revision"], "design_hash": digest(snapshot)}
+
+
+CHECK_TIMES = (0.0, 0.125, 0.5, 1.0, 1.75, 2.5, 4.0, 7.25)
+
+
+def verify_package(path, document, *, times=CHECK_TIMES, led_count=12):
+    """Load an exported package with the engine's own loader; compare its frames.
+
+    The package is read exactly as a service would read it — through an
+    :class:`EffectLibrary` — and the effect it yields is rendered at ``times``
+    next to the preview compiled from ``document``. Raises if the loader refuses.
+    """
+    snapshot = validate(document)
+    library = EffectLibrary(search_paths=[])
+    try:
+        entry = library.add_source(path)
+        if entry.error:
+            raise DesignError(f"Der LEFX-Loader lehnt das Paket ab: {entry.error}")
+        loaded = library.registry.get(snapshot["effect"]["id"]).effect_class
+        exported = CompiledDesign(snapshot["revision"], digest(snapshot), "", loaded)
+        preview = compile_design(snapshot)
+        mismatches = [moment for moment in times
+                      if exported.render(moment, led_count) != preview.render(moment, led_count)]
+    finally:
+        library.close()
+    return {"effect_id": snapshot["effect"]["id"], "compared": len(times), "mismatches": mismatches}
