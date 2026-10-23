@@ -1,6 +1,7 @@
 """One source generator for previews and independent LEFX V3 packages."""
 
 from dataclasses import dataclass
+import hashlib
 import inspect
 from pathlib import Path
 from pprint import pformat
@@ -119,19 +120,39 @@ def write_source(document, directory):
     return target
 
 
-def export_package(document, path):
-    """Stage and validate a current snapshot before atomically replacing output."""
+CHECK_TIMES = (0.0, 0.125, 0.5, 1.0, 1.75, 2.5, 4.0, 7.25)
+UNCHANGED = "Die Zieldatei wurde nicht verändert."
+
+
+def export_package(document, path, *, led_count=12, times=CHECK_TIMES):
+    """Stage, pack and check a current snapshot; only a package that passed replaces ``path``.
+
+    The check is :func:`verify_package` — the engine's own loader and a frame
+    comparison with the preview — run on the staged candidate, not on the
+    written file. A package the loader refuses, or whose frames disagree with
+    the preview, raises :class:`DesignError` and leaves ``path`` exactly as it
+    was: an older valid package there survives a failed export.
+    """
     snapshot = validate(document)
     with tempfile.TemporaryDirectory(prefix="lefx-visual-build-") as temporary:
         root = Path(temporary)
         source = write_source(snapshot, root / "source")
         package = root / "effect.lefx"
         report = pack_effect(source, package)
-        target = atomic_write(path, package.read_bytes())
-    return {**report, "path": str(target), "revision": snapshot["revision"], "design_hash": digest(snapshot)}
-
-
-CHECK_TIMES = (0.0, 0.125, 0.5, 1.0, 1.75, 2.5, 4.0, 7.25)
+        try:
+            check = verify_package(package, snapshot, times=times, led_count=led_count)
+        except DesignError as exc:
+            raise DesignError(f"{exc} {UNCHANGED}") from exc
+        except Exception as exc:
+            raise DesignError(f"Die Prüfung des Pakets ist fehlgeschlagen: {exc} {UNCHANGED}") from exc
+        if check["mismatches"]:
+            raise DesignError(
+                f"Export abgebrochen: {len(check['mismatches'])} von {check['compared']} Zeitpunkten "
+                f"des Pakets weichen von der Vorschau ab. {UNCHANGED}")
+        data = package.read_bytes()
+    target = atomic_write(path, data)
+    return {**report, "path": str(target), "revision": snapshot["revision"],
+            "design_hash": digest(snapshot), "sha256": hashlib.sha256(data).hexdigest(), "check": check}
 
 
 def verify_package(path, document, *, times=CHECK_TIMES, led_count=12):

@@ -46,7 +46,7 @@ from PySide6.QtWidgets import (
 
 from lefx.effect_creation.visual import Editor, new_document
 from lefx.effect_creation.visual.blocks import BLOCKS, DesignError
-from lefx.effect_creation.visual.compiler import export_package, verify_package
+from lefx.effect_creation.visual.compiler import export_package
 from lefx.effect_creation.visual.model import validate
 from lefx.effect_creation.visual import persistence, steps
 from lefx.effect_creation.visual.preview import COMPOSITE, FOCUS, ISOLATED, VIEWS, PreviewCompiler, PreviewPlan
@@ -808,15 +808,12 @@ class LabPage(QWidget):
 
     @guarded
     def export_to(self, path: Path) -> dict:
-        report = export_package(self._document, path)
-        check = verify_package(report["path"], self._document, led_count=self._led_count)
-        if check["mismatches"]:
-            self.report(f"Exportiert nach {report['path']}, aber {len(check['mismatches'])} von "
-                        f"{check['compared']} Zeitpunkten weichen von der Vorschau ab!", error=True)
-        else:
-            self.report(f"Exportiert und geprüft: {report['path']} — der LEFX-Loader akzeptiert das "
-                        f"Paket, {check['compared']} Zeitpunkte stimmen mit der Vorschau überein.")
-        return {**report, "check": check}
+        """Export, checked before it is written; a refused package never reaches ``path``."""
+        report = export_package(self._document, path, led_count=self._led_count)
+        check = report["check"]
+        self.report(f"Exportiert und geprüft: {report['path']} — der LEFX-Loader akzeptiert das "
+                    f"Paket, {check['compared']} Zeitpunkte stimmen mit der Vorschau überein.")
+        return report
 
     # -- output -------------------------------------------------------------
 

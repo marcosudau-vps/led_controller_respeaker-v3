@@ -8,12 +8,21 @@ showed.
 
 from __future__ import annotations
 
+import hashlib
+
 import pytest
 
 from lefx.effect_creation.visual import Editor, new_document, validate
 from lefx.effect_creation.visual import persistence, steps
 from lefx.effect_creation.visual.blocks import BLOCKS, DesignError
-from lefx.effect_creation.visual.compiler import compile_design, export_package, verify_package
+from lefx.effect_creation.visual import compiler
+from lefx.effect_creation.visual.compiler import (
+    CompiledDesign,
+    compile_design,
+    export_package,
+    verify_package,
+)
+from lefx.engine import EffectLibrary
 from lefx.effect_creation.visual.preview import (
     COMPOSITE,
     FOCUS,
@@ -243,3 +252,107 @@ def test_a_new_document_is_valid_and_empty():
     document = new_document()
     assert validate(document)["layers"] == []
     assert compile_design(document).render(0.0) == [0] * 12
+
+
+# -- review R01: the target is replaced only by a package that passed ---------
+
+
+def disagree(path, document, **kwargs):
+    """A verification that compared and found differences — whatever the reason."""
+    return {"effect_id": "x", "compared": 8, "mismatches": [0.5, 1.0]}
+
+
+def refuse(path, document, **kwargs):
+    """The loader saying no, the way verify_package reports it."""
+    raise DesignError("Der LEFX-Loader lehnt das Paket ab: kaputt")
+
+
+def first_element(editor) -> str:
+    return editor.document["layers"][0]["children"][0]["id"]
+
+
+def test_a_successful_export_reports_the_check_it_passed(tmp_path):
+    """LAB-001-R01-F03: success comes with the verification it passed, and nothing else is left.
+
+    The report carries the check and the digest of the bytes now at the target,
+    so "exported" can only ever be said about a package that was verified.
+    """
+    editor, _, _ = counter_rotating()
+    editor.metadata(id="r01_ok", title="R01 ok")
+    target = tmp_path / "r01_ok.lefx"
+
+    report = export_package(editor.document, target)
+
+    assert target.is_file()
+    assert report["check"]["mismatches"] == [] and report["check"]["compared"] >= 5
+    assert report["sha256"] == hashlib.sha256(target.read_bytes()).hexdigest()
+    assert list(tmp_path.iterdir()) == [target]  # no staging leftovers beside it
+
+
+def test_an_export_whose_frames_disagree_is_never_written(tmp_path, monkeypatch):
+    """LAB-001-R01-F03: a candidate that fails the frame comparison never reaches the target."""
+    editor, _, _ = counter_rotating()
+    target = tmp_path / "refused.lefx"
+    monkeypatch.setattr(compiler, "verify_package", disagree)
+
+    with pytest.raises(DesignError, match="nicht verändert"):
+        export_package(editor.document, target)
+
+    assert not target.exists()
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_a_refused_export_leaves_the_existing_file_exactly_as_it_was(tmp_path, monkeypatch):
+    """LAB-001-R01-F03: the last valid package survives a failed export byte for byte."""
+    editor, _, _ = counter_rotating()
+    target = tmp_path / "kept.lefx"
+    export_package(editor.document, target)  # a valid package is already there
+    before = target.read_bytes()
+
+    editor.set_property(first_element(editor), "color", "#00FF00")  # the design moves on
+    monkeypatch.setattr(compiler, "verify_package", disagree)
+    with pytest.raises(DesignError):
+        export_package(editor.document, target)
+
+    assert target.read_bytes() == before
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["kept.lefx"]
+
+
+def test_a_package_the_loader_refuses_is_not_written_either(tmp_path, monkeypatch):
+    """LAB-001-R01-F03: the loader's refusal is a failed check, with the same guarantee."""
+    editor, _, _ = counter_rotating()
+    target = tmp_path / "kept.lefx"
+    export_package(editor.document, target)
+    before = target.read_bytes()
+
+    editor.set_property(first_element(editor), "color", "#00FF00")
+    monkeypatch.setattr(compiler, "verify_package", refuse)
+    with pytest.raises(DesignError, match="lehnt das Paket ab.*nicht verändert"):
+        export_package(editor.document, target)
+
+    assert target.read_bytes() == before
+
+
+@pytest.mark.parametrize("led_count", [12, 24])
+def test_the_written_package_renders_what_the_preview_shows(tmp_path, led_count):
+    """LAB-001-R01-F03: the effect at the target is the effect the preview showed.
+
+    Checked here independently of verify_package — the package is loaded with
+    the engine's own library and rendered next to the compiled preview — so the
+    equivalence does not rest on the very function whose ordering was at fault.
+    """
+    editor, _, _ = counter_rotating()
+    editor.metadata(id="r01_same", title="R01 same")
+    target = tmp_path / "same.lefx"
+    export_package(editor.document, target)
+
+    library = EffectLibrary(search_paths=[])
+    try:
+        entry = library.add_source(target)
+        assert entry.error is None
+        exported = CompiledDesign(0, "", "", library.registry.get("r01_same").effect_class)
+        preview = compile_design(editor.document)
+        for moment in (0.0, 0.3, 1.1, 2.5, 6.0):
+            assert exported.render(moment, led_count) == preview.render(moment, led_count)
+    finally:
+        library.close()

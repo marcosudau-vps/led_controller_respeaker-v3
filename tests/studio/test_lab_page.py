@@ -395,3 +395,32 @@ def test_typing_into_a_field_does_not_trigger_the_step_keys(window, lab, qt_app)
     lab.tree.tree.setFocus()
     QTest.keyClick(lab.tree.tree, Qt.Key.Key_Period)
     assert lab.clock.elapsed() == pytest.approx(2.25)
+
+
+# -- review R01: what the Lab says matches what the device gets --------------
+
+
+def test_a_failed_export_check_keeps_the_previous_package(lab, tmp_path, monkeypatch):
+    """LAB-001-R01-F03: the Lab reports success only after the check, and keeps the old file otherwise."""
+    from lefx.effect_creation.studio.lab import page as page_module
+    from lefx.effect_creation.visual import compiler
+
+    lab.load_example("counter_rotation")
+    target = tmp_path / "kept.lefx"
+    assert lab.export_to(target)["check"]["mismatches"] == []
+    before = target.read_bytes()
+
+    lab.load_example("two_points")  # a different design is on the page now
+
+    def disagree(path, document, **kwargs):
+        return {"effect_id": "x", "compared": 8, "mismatches": [0.5]}
+
+    monkeypatch.setattr(compiler, "verify_package", disagree)
+    # The page imported its own name for it before the fix; cover that too, so
+    # this test reproduces the finding against the unchanged code as well.
+    monkeypatch.setattr(page_module, "verify_package", disagree, raising=False)
+
+    assert lab.export_to(target) is None  # refused, not reported as done
+    assert target.read_bytes() == before
+    assert "Exportiert" not in lab.message.text()
+    assert "nicht verändert" in lab.message.text()
