@@ -27,7 +27,9 @@ Start: `uv run lefx-studio --project . --output null`, dann Tab **„Studio Lab 
    **Ebene isoliert** zeigt nur die gewählte Ebene, **Gesamteffekt** wieder alles.
 7. **Speichern** (`.lefx-design.json`), **Neu**, **Öffnen** – alles ist wieder da.
 8. **Als .lefx exportieren**: Das Paket wird gebaut, vom LEFX-Loader geladen und an
-   mehreren Zeitpunkten mit der Vorschau verglichen; das Ergebnis steht unten in der Meldungszeile.
+   mehreren Zeitpunkten mit der Vorschau verglichen — erst danach wird die Datei geschrieben.
+   Besteht es die Prüfung nicht, bleibt eine schon vorhandene Datei unverändert; die
+   Meldungszeile sagt das ausdrücklich. „Exportiert und geprüft“ erscheint nur nach bestandener Prüfung.
 
 Abkürzung: **Beispiele → Zwei Segmente, gegenläufig auf zwei Ebenen**.
 
@@ -49,6 +51,13 @@ genau, was der Lab-Ring zeigt – auch pausiert, gescrubbt oder schrittweise. Mi
 „Ring zeigt Gerätesignal“ zeigt der Ring die tatsächlich gesendeten Werte (inkl. globaler
 Helligkeit aus dem Player-Tab). Beim Wechsel in einen anderen Tab wird das Gerät freigegeben.
 Ist die Vorschau-Ringgröße nicht 12, wird nichts gesendet.
+
+**Katalog → Quellen neu laden** (F5) oder ein Ausgabewechsel unterbrechen das Senden nicht:
+Das Gerät zeigt kurz Schwarz und danach wieder das Lab-Bild, auch bei pausierter Vorschau.
+
+**Ausgabe → Alles löschen** beendet das Senden des Labs: Das Häkchen bei „An Ausgabe senden“
+verschwindet, und die Meldungszeile sagt, was passiert ist. Zum Fortsetzen das Häkchen wieder
+setzen — von selbst holt sich das Lab das Gerät nicht zurück.
 
 ## Legende
 

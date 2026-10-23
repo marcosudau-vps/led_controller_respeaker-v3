@@ -1,0 +1,35 @@
+# Evidenz – Commits der Nachbesserung R01 (Code und Tests)
+#
+# Ausgangscommit (geprüfter PR-Head): 2bc9896ee3d82c1dec64ac81a1cb76850ca13e5d
+# Befehl: git log --format='%H %s' 2bc9896..2106ed5   (neueste zuerst)
+# Stand: lokal, nicht gepusht.
+# ---------------------------------------------------------------------------------------
+2106ed54e229e47aa4e2ebc672569dfd88837331 fix(studio-lab): keep the Lab's send status true to the engine (LAB-001-R01-F01, F02)
+42030eda3ce7d8c9301df84e2647a78980e09f76 fix(studio-lab): check an export before it replaces the target (LAB-001-R01-F03)
+
+# Befehl: git diff --stat 2bc9896 42030ed   (F03)
+ .../src/lefx/effect_creation/studio/lab/page.py    |  17 ++-
+ .../src/lefx/effect_creation/visual/compiler.py    |  35 +++++--
+ tests/authoring/test_visual_core.py                | 115 ++++++++++++++++++++-
+ tests/studio/test_lab_page.py                      |  29 ++++++
+ 4 files changed, 178 insertions(+), 18 deletions(-)
+
+# Befehl: git diff --stat 42030ed 2106ed5   (F01, F02)
+ .../src/lefx/effect_creation/studio/lab/output.py  | 103 ++++++++++--
+ .../src/lefx/effect_creation/studio/lab/page.py    |  15 ++
+ .../src/lefx/effect_creation/studio/session.py     |  45 ++++-
+ .../src/lefx/effect_creation/studio/window.py      |   6 +
+ tests/studio/test_lab_output.py                    | 187 +++++++++++++++++++++
+ tests/studio/test_lab_page.py                      | 116 +++++++++++++
+ 6 files changed, 459 insertions(+), 13 deletions(-)
+
+# Befehl: git diff --stat 2bc9896 2106ed5   (gesamt)
+ .../src/lefx/effect_creation/studio/lab/output.py  | 103 ++++++++++--
+ .../src/lefx/effect_creation/studio/lab/page.py    |  32 ++--
+ .../src/lefx/effect_creation/studio/session.py     |  45 ++++-
+ .../src/lefx/effect_creation/studio/window.py      |   6 +
+ .../src/lefx/effect_creation/visual/compiler.py    |  35 +++-
+ tests/authoring/test_visual_core.py                | 115 ++++++++++++-
+ tests/studio/test_lab_output.py                    | 187 +++++++++++++++++++++
+ tests/studio/test_lab_page.py                      | 145 ++++++++++++++++
+ 8 files changed, 637 insertions(+), 31 deletions(-)

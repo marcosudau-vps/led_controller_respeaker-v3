@@ -1,0 +1,143 @@
+# Evidenz – Gerätetests mit ECHTER Hardware (reSpeaker per USB), nach der Korrektur
+#
+# Commit:   2106ed54e229e47aa4e2ebc672569dfd88837331
+# Befehl:   uv run pytest -m "not hardware" -p no:cacheprovider tests/device -v -rs
+# Ergebnis: 107 passed, 3 skipped, 6 deselected (Exit-Code 0)
+#           davon 14 mit Parameter [respeaker…] PASSED gegen das angeschlossene Gerät,
+#           3 [respeaker] SKIPPED ("unplugging the cable needs a person").
+# Einordnung: Das sind die allgemeinen Gerätevertragstests des Projekts (Senke, DoA-Provider,
+#           Dienst Ende-zu-Ende). Sie prüfen NICHT die R01-Pfade des Studio Labs. Die R01-Abläufe
+#           mit echter Hardware: ../pruefungen/2026-10-23_HARDWARE_DURCHSTICH_NACHHER_R01.json.
+#           Die 6 mit "hardware" markierten Tests (u. a. Kabelziehen) wurden nicht ausgeführt.
+#           In CI (ohne Gerät) werden die [respeaker]-Fälle übersprungen; daher dort mehr Skips.
+#
+# Vollständige, unveränderte pytest-Ausgabe folgt.
+# ---------------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\.venv\Scripts\python.exe
+rootdir: C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01
+configfile: pyproject.toml
+plugins: anyio-4.14.2
+collecting ... collected 116 items / 6 deselected / 110 selected
+
+tests/device/test_contention.py::test_only_this_devices_software_counts_as_related PASSED [  0%]
+tests/device/test_contention.py::test_related_software_is_ranked_ahead_of_unrelated PASSED [  1%]
+tests/device/test_contention.py::test_a_weaker_signal_ranks_behind_an_open_handle PASSED [  2%]
+tests/device/test_contention.py::test_searching_never_nominates_the_process_doing_the_searching PASSED [  3%]
+tests/device/test_contention.py::test_searching_can_be_told_to_ignore_processes PASSED [  4%]
+tests/device/test_contention.py::test_a_dry_run_report_does_not_claim_anything_was_stopped PASSED [  5%]
+tests/device/test_contention.py::test_the_report_names_what_it_stopped PASSED [  6%]
+tests/device/test_contention.py::test_a_holder_describes_itself_well_enough_to_recognise PASSED [  7%]
+tests/device/test_contention.py::test_a_reachable_device_is_left_entirely_alone PASSED [  8%]
+tests/device/test_contention.py::test_stopping_ends_the_moment_the_device_answers PASSED [  9%]
+tests/device/test_contention.py::test_unrelated_usb_software_is_never_stopped_by_default PASSED [ 10%]
+tests/device/test_contention.py::test_unrelated_software_can_be_allowed_deliberately PASSED [ 10%]
+tests/device/test_contention.py::test_a_dry_run_stops_nothing_but_says_what_it_would_stop PASSED [ 11%]
+tests/device/test_contention.py::test_a_process_that_cannot_be_stopped_is_reported_not_retried PASSED [ 12%]
+tests/device/test_contention.py::test_stopping_gives_up_rather_than_working_through_the_machine PASSED [ 13%]
+tests/device/test_contention.py::test_nothing_holding_usb_points_away_from_contention PASSED [ 14%]
+tests/device/test_device_contract.py::test_both_halves_satisfy_the_declared_ports[simulator] PASSED [ 15%]
+tests/device/test_device_contract.py::test_both_halves_satisfy_the_declared_ports[respeaker] PASSED [ 16%]
+tests/device/test_device_contract.py::test_output_and_input_are_separate_objects[simulator] PASSED [ 17%]
+tests/device/test_device_contract.py::test_output_and_input_are_separate_objects[respeaker] PASSED [ 18%]
+tests/device/test_device_contract.py::test_a_frame_of_the_right_size_is_accepted[simulator] PASSED [ 19%]
+tests/device/test_device_contract.py::test_a_frame_of_the_right_size_is_accepted[respeaker] PASSED [ 20%]
+tests/device/test_device_contract.py::test_apply_frame_does_not_raise_when_the_device_is_gone[simulator] PASSED [ 20%]
+tests/device/test_device_contract.py::test_apply_frame_does_not_raise_when_the_device_is_gone[respeaker] SKIPPED [ 21%]
+tests/device/test_device_contract.py::test_an_unavailable_sink_says_why[simulator] PASSED [ 22%]
+tests/device/test_device_contract.py::test_an_unavailable_sink_says_why[respeaker] SKIPPED [ 23%]
+tests/device/test_device_contract.py::test_a_frame_of_the_wrong_size_is_refused_rather_than_reshaped[simulator--1] PASSED [ 24%]
+tests/device/test_device_contract.py::test_a_frame_of_the_wrong_size_is_refused_rather_than_reshaped[simulator-1] PASSED [ 25%]
+tests/device/test_device_contract.py::test_a_frame_of_the_wrong_size_is_refused_rather_than_reshaped[respeaker--1] PASSED [ 26%]
+tests/device/test_device_contract.py::test_a_frame_of_the_wrong_size_is_refused_rather_than_reshaped[respeaker-1] PASSED [ 27%]
+tests/device/test_device_contract.py::test_closing_the_sink_twice_is_not_an_error[simulator] PASSED [ 28%]
+tests/device/test_device_contract.py::test_closing_the_sink_twice_is_not_an_error[respeaker] PASSED [ 29%]
+tests/device/test_device_contract.py::test_a_reading_validates_against_the_schema_effects_declare[simulator] PASSED [ 30%]
+tests/device/test_device_contract.py::test_a_reading_validates_against_the_schema_effects_declare[respeaker] PASSED [ 30%]
+tests/device/test_device_contract.py::test_sampling_returns_none_when_the_device_is_gone[simulator] PASSED [ 31%]
+tests/device/test_device_contract.py::test_sampling_returns_none_when_the_device_is_gone[respeaker] SKIPPED [ 32%]
+tests/device/test_device_contract.py::test_sampling_does_not_touch_the_device[simulator] PASSED [ 33%]
+tests/device/test_device_contract.py::test_sampling_does_not_touch_the_device[respeaker] PASSED [ 34%]
+tests/device/test_device_contract.py::test_refresh_keeps_to_its_own_rate[simulator] PASSED [ 35%]
+tests/device/test_device_contract.py::test_refresh_keeps_to_its_own_rate[respeaker] PASSED [ 36%]
+tests/device/test_device_contract.py::test_the_provider_reports_its_own_state[simulator] PASSED [ 37%]
+tests/device/test_device_contract.py::test_the_provider_reports_its_own_state[respeaker] PASSED [ 38%]
+tests/device/test_device_contract.py::test_a_device_reports_a_bearing_on_its_own_ring[simulator] PASSED [ 39%]
+tests/device/test_device_contract.py::test_a_device_reports_a_bearing_on_its_own_ring[respeaker] PASSED [ 40%]
+tests/device/test_device_contract.py::test_an_uncalibrated_device_hands_out_what_it_measured[simulator] PASSED [ 40%]
+tests/device/test_device_contract.py::test_an_uncalibrated_device_hands_out_what_it_measured[respeaker] PASSED [ 41%]
+tests/device/test_device_contract.py::test_closing_the_provider_twice_is_not_an_error[simulator] PASSED [ 42%]
+tests/device/test_device_contract.py::test_closing_the_provider_twice_is_not_an_error[respeaker] PASSED [ 43%]
+tests/device/test_device_contract.py::test_the_service_drives_the_device_end_to_end[simulator] PASSED [ 44%]
+tests/device/test_device_contract.py::test_the_service_drives_the_device_end_to_end[respeaker] PASSED [ 45%]
+tests/device/test_device_logic.py::test_the_two_hardware_halves_share_one_usb_connection PASSED [ 46%]
+tests/device/test_device_logic.py::test_the_two_simulator_halves_share_one_link PASSED [ 47%]
+tests/device/test_device_logic.py::test_a_device_that_enumerates_but_refuses_transfers_is_not_connected PASSED [ 48%]
+tests/device/test_device_logic.py::test_the_transport_connects_and_reconnects PASSED [ 49%]
+tests/device/test_device_logic.py::test_a_write_failure_disconnects_and_is_reported_to_the_caller PASSED [ 50%]
+tests/device/test_device_logic.py::test_lifecycle_callbacks_run_off_the_caller_thread PASSED [ 50%]
+tests/device/test_device_logic.py::test_the_transport_never_stops_another_process_unless_asked PASSED [ 51%]
+tests/device/test_device_logic.py::test_an_absent_device_is_not_treated_as_contention PASSED [ 52%]
+tests/device/test_device_logic.py::test_force_claim_runs_once_and_then_reconnects PASSED [ 53%]
+tests/device/test_device_logic.py::test_a_claim_that_does_not_help_is_not_repeated_every_retry PASSED [ 54%]
+tests/device/test_device_logic.py::test_closing_the_transport_twice_is_not_an_error PASSED [ 55%]
+tests/device/test_device_logic.py::test_the_ring_mode_is_asserted_once_and_unchanged_frames_are_skipped PASSED [ 56%]
+tests/device/test_device_logic.py::test_a_reconnected_device_is_told_the_ring_mode_again PASSED [ 57%]
+tests/device/test_device_logic.py::test_a_frame_sent_while_disconnected_is_not_an_exception PASSED [ 58%]
+tests/device/test_device_logic.py::test_a_write_failure_is_absorbed_and_surfaces_in_status PASSED [ 59%]
+tests/device/test_device_logic.py::test_recovery_after_a_failed_write_resends_everything PASSED [ 60%]
+tests/device/test_device_logic.py::test_a_ring_size_the_device_does_not_have_is_reported_not_reshaped PASSED [ 60%]
+tests/device/test_device_logic.py::test_a_well_formed_payload_decodes[payload0-expected0] PASSED [ 61%]
+tests/device/test_device_logic.py::test_a_well_formed_payload_decodes[payload1-expected1] PASSED [ 62%]
+tests/device/test_device_logic.py::test_a_well_formed_payload_decodes[payload2-expected2] PASSED [ 63%]
+tests/device/test_device_logic.py::test_silence_is_a_healthy_reading_not_a_failure PASSED [ 64%]
+tests/device/test_device_logic.py::test_a_malformed_payload_is_rejected[payload0] PASSED [ 65%]
+tests/device/test_device_logic.py::test_a_malformed_payload_is_rejected[payload1] PASSED [ 66%]
+tests/device/test_device_logic.py::test_a_malformed_payload_is_rejected[not a payload] PASSED [ 67%]
+tests/device/test_device_logic.py::test_a_malformed_payload_is_rejected[payload3] PASSED [ 68%]
+tests/device/test_device_logic.py::test_a_malformed_payload_is_rejected[payload4] PASSED [ 69%]
+tests/device/test_device_logic.py::test_a_malformed_payload_is_rejected[payload5] PASSED [ 70%]
+tests/device/test_device_logic.py::test_a_malformed_payload_is_rejected[payload6] PASSED [ 70%]
+tests/device/test_device_logic.py::test_a_malformed_payload_is_rejected[payload7] PASSED [ 71%]
+tests/device/test_device_logic.py::test_a_malformed_payload_is_rejected[payload8] PASSED [ 72%]
+tests/device/test_device_logic.py::test_the_provider_reads_at_its_own_rate_not_the_render_rate PASSED [ 73%]
+tests/device/test_device_logic.py::test_a_failed_read_drops_the_cached_direction PASSED [ 74%]
+tests/device/test_device_logic.py::test_a_malformed_reading_is_a_provider_error_not_a_bad_value PASSED [ 75%]
+tests/device/test_device_logic.py::test_a_message_survives_the_round_trip PASSED [ 76%]
+tests/device/test_device_logic.py::test_framing_holds_when_the_stream_arrives_in_pieces PASSED [ 77%]
+tests/device/test_device_logic.py::test_a_clean_close_reads_as_the_end_not_as_an_error PASSED [ 78%]
+tests/device/test_device_logic.py::test_an_oversized_announcement_is_refused_before_it_is_read PASSED [ 79%]
+tests/device/test_device_logic.py::test_a_port_that_cannot_be_bound_leaves_the_link_unavailable PASSED [ 80%]
+tests/device/test_device_logic.py::test_a_window_is_told_the_ring_size_when_it_connects PASSED [ 80%]
+tests/device/test_device_logic.py::test_the_reading_is_dropped_when_the_last_window_goes PASSED [ 81%]
+tests/device/test_device_logic.py::test_frames_reach_the_window PASSED   [ 82%]
+tests/device/test_device_logic.py::test_any_ring_size_travels_end_to_end[1] PASSED [ 83%]
+tests/device/test_device_logic.py::test_any_ring_size_travels_end_to_end[5] PASSED [ 84%]
+tests/device/test_device_logic.py::test_any_ring_size_travels_end_to_end[12] PASSED [ 85%]
+tests/device/test_device_logic.py::test_any_ring_size_travels_end_to_end[24] PASSED [ 86%]
+tests/device/test_device_logic.py::test_black_stays_black_on_the_wire PASSED [ 87%]
+tests/device/test_device_logic.py::test_a_closed_link_comes_back_when_it_is_started_again PASSED [ 88%]
+tests/device/test_device_logic.py::test_a_window_reporting_nonsense_is_held_to_the_same_contract_as_the_firmware PASSED [ 89%]
+tests/device/test_device_logic.py::test_a_null_direction_is_a_legitimate_reading PASSED [ 90%]
+tests/device/test_device_logic.py::test_the_default_transfer_timeout_is_actually_a_timeout PASSED [ 90%]
+tests/device/test_device_logic.py::test_a_device_carries_the_timeout_it_was_given_into_every_transfer PASSED [ 91%]
+tests/device/test_device_logic.py::test_device_identity_and_timeout_reach_the_finder PASSED [ 92%]
+tests/device/test_device_logic.py::test_naming_only_a_timeout_keeps_the_documented_device PASSED [ 93%]
+tests/device/test_device_logic.py::test_an_ordinary_installation_is_handed_no_finder_at_all PASSED [ 94%]
+tests/device/test_simulator_window.py::test_the_ring_draws_at_any_size PASSED [ 95%]
+tests/device/test_simulator_window.py::test_black_is_drawn_as_black_not_as_off PASSED [ 96%]
+tests/device/test_simulator_window.py::test_a_frame_of_the_wrong_length_is_ignored PASSED [ 97%]
+tests/device/test_simulator_window.py::test_resizing_the_ring_clears_it PASSED [ 98%]
+tests/device/test_simulator_window.py::test_the_window_connects_signals_that_actually_match_their_slots PASSED [ 99%]
+tests/device/test_simulator_window.py::test_the_window_is_never_imported_by_the_service_half PASSED [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\_pytest\config\__init__.py:1474
+  C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\.venv\Lib\site-packages\_pytest\config\__init__.py:1474: PytestConfigWarning: Unknown config option: cache_dir
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [3] tests\device\conftest.py:253: unplugging the cable needs a person
+=========== 107 passed, 3 skipped, 6 deselected, 1 warning in 5.50s ===========

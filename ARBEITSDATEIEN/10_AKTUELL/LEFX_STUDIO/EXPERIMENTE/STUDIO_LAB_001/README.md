@@ -2,7 +2,9 @@
 
 Stand: 23.10.2026 · Auftrag: `ARBEITSDATEIEN/10_AKTUELL/LEFX_STUDIO/PLANUNG/AUFTRAEGE/prompt_LEFX-STUDIO-LAB-001.md`
 (im Hauptcheckout) · Anwenderanleitung: [ANWENDERANLEITUNG.md](ANWENDERANLEITUNG.md) ·
-Screenshots: [screenshots/](screenshots/)
+Screenshots: [screenshots/](screenshots/) ·
+**Nachbesserung nach Review R01:** [Abschnitt 9](#9-nachbesserung-nach-review-r01) und
+[ARBEITSAKTE/R01_NACHBESSERUNG/](ARBEITSAKTE/R01_NACHBESSERUNG/)
 
 Alles hier ist **experimentell**. Die unten genannten Festlegungen sind kleine, umkehrbare
 Arbeitsannahmen des Labs, keine genehmigten Produktentscheidungen; ins zentrale
@@ -20,7 +22,7 @@ Kalibrierung und „Neuer Effekt“ sind unverändert vorhanden.
 | Vorschau | `RingMonitor` mit drei Ansichten: Gesamteffekt · Ebene isoliert · Ebene hervorgehoben (übrige abgedunkelt, nur Anzeige). Transparente Positionen (`None`) werden gestrichelt gezeichnet, deckendes Schwarz schwarz. Ringgröße der Vorschau einstellbar (nicht Teil des Entwurfs). |
 | Zeitleiste | Play/Pause, Stopp (zurück zum Anfang), gezeichnete Zeitachse mit Abspielkopf (klicken/ziehen springt), „Gehe zu“ auf die Millisekunde, Zeitraum, Tempo 0,1×–4×, Schleife. Zeitbasis: `time.monotonic()` mit Anker (`studio/lab/clock.py`), unabhängig von der UI-Framerate. |
 | Schrittansicht | Schrittquelle wählbar: gleichmäßige Abtastpunkte oder jede vorhandene Animation (Rotation → LED-Versätze, Blinken → Phasen an/aus, Funkeln → Takte, Pulsieren/Farbwechsel → ausdrücklich „Abtastpunkte“). Anzeige z. B. „Versatz 3 von 12 LEDs · Zyklus: 12 Schritte bei 12 LEDs, 2 verschiedene Bilder“. |
-| Speichern/Laden/Export | Neu, Öffnen (`.lefx-design.json` oder eingebetteter Entwurf aus `.lefx`), Speichern, Speichern unter, Änderungsstatus „ungespeichert“, Rückfrage vor Verwerfen und beim Schließen, Export als `.lefx` mit anschließender Prüfung durch den Engine-Loader und Framevergleich mit der Vorschau. |
+| Speichern/Laden/Export | Neu, Öffnen (`.lefx-design.json` oder eingebetteter Entwurf aus `.lefx`), Speichern, Speichern unter, Änderungsstatus „ungespeichert“, Rückfrage vor Verwerfen und beim Schließen, Export als `.lefx` mit Prüfung durch den Engine-Loader und Framevergleich mit der Vorschau — seit R01 **vor** dem Schreiben: nur ein geprüftes Paket ersetzt die Zieldatei (F03). |
 | Beispiele | Fünf Startpunkte für die Konzeptfälle (zwei Punkte gemeinsam, gegenläufige Segmente, A/B-Muster, Segment mit Farbwechsel, Überlagerung), gebaut mit den normalen Editor-Operationen. |
 | ReSpeaker-Ausgabe | Ausgabewahl im Lab (dieselbe wie im Player), „An Ausgabe senden“, Ringanzeige wahlweise „Entwurf“ oder „Gerätesignal“ (exakt die an das Gerät gesendeten Werte inkl. globaler Helligkeit). |
 
@@ -48,7 +50,9 @@ Kalibrierung und „Neuer Effekt“ sind unverändert vorhanden.
   Helligkeit/An-Aus, `TappedSink`, Gerät. So funktionieren auch Pause, Scrubbing und
   Schritte auf dem Gerät, ohne zweite Effektberechnung. Kein Packen, kein Austausch privater
   Registry-Strukturen, kein USB-Sonderweg, keine SDK-/Engine-Änderung. Nach einem
-  Katalog-Reload oder Ausgabewechsel registriert sich die Einspeisung neu. Primärzustände
+  Katalog-Reload oder Ausgabewechsel registriert sich die Einspeisung neu — seit R01 sofort,
+  ohne auf einen neuen Frame zu warten: Die Session meldet jeden Umbau vorher und nachher, das
+  Lab nimmt seinen Zustand vorher von der Ebene und spielt ihn danach neu ein (F01). Primärzustände
   persistiert der Service nicht; der Feed landet also nie in der Hintergrundzustandsdatei (Test).
 * **Gerätesicherheit:** Eine Vorschau-Ringgröße ≠ LED-Anzahl der Ausgabe wird nicht
   gesendet. Belegtprüfung (`device_in_use`) und Rückfall auf `null` bleiben in der
@@ -142,8 +146,9 @@ mit den heutigen Bausteinen nicht ausdrückbar. Es wurde **kein** neuer Baustein
 
 1. `RingMonitor` zeichnet den Gehäusekreis etwas größer als das Widget (Radius 0,51 der
    Kantenlänge); oben/unten wird er leicht abgeschnitten. Vorbestehend, auch im Player; nicht geändert.
-2. „Ausgabe → Alles löschen“ während das Lab sendet entfernt den Feed; das Lab merkt das
-   erst beim nächsten Registry-Wechsel oder erneutem Anhaken.
+2. ~~„Ausgabe → Alles löschen“ während das Lab sendet entfernt den Feed; das Lab merkt das
+   erst beim nächsten Registry-Wechsel oder erneutem Anhaken.~~ **Behoben in R01 (F02):** Das
+   Senden endet sichtbar; fortgesetzt wird durch erneutes Anhaken.
 3. Die Lab-Übernahme beendet die Player-Wiedergabe; der Player zeigt danach nicht von
    selbst wieder seinen Effekt.
 4. Das Gerät sieht höchstens die Engine-Rate (30 fps); das Lab rendert mit ~60 Hz.
@@ -192,3 +197,28 @@ mit den heutigen Bausteinen nicht ausdrückbar. Es wurde **kein** neuer Baustein
 6. **Experimenteller A/B-Musterbaustein** und ein segmentinternes Musterzyklus-Konzept für
    Konzeptfall 4 – erst nach fachlicher Klärung von Mustergröße vs. Ringposition.
 7. Varianten nebeneinander vergleichen (zwei Entwürfe, zwei Ringe).
+
+## 9. Nachbesserung nach Review R01
+
+Review R01 (PR #1, [Kommentar 6355020849](https://github.com/marcosudau-vps/led_controller_respeaker-v3/pull/1#issuecomment-6355020849),
+geprüfter Commit `2bc9896`) verlangte drei Korrekturen (`CHANGES_REQUIRED`). Alle drei wurden
+vor der Korrektur reproduziert, behoben und mit Regressionstests abgesichert. Vollständige
+Arbeitsakte mit Originalauftrag, Verlauf, Ergebnissen, Abschlussbericht und Evidenz:
+[ARBEITSAKTE/R01_NACHBESSERUNG/](ARBEITSAKTE/R01_NACHBESSERUNG/).
+
+| Befund | Was falsch war | Was jetzt gilt | Commit |
+|---|---|---|---|
+| `LAB-001-R01-F01` Katalog-Reload | Nach „Quellen neu laden“ bei pausierter Vorschau scheiterte jeder Engine-Tick (Definition weg, Zustand noch da); Gerät eingefroren, Dienst dauerhaft „degraded“, Lab zeigte „Sendet“. | Vor jedem Reload/Ausgabewechsel nimmt das Lab seinen Zustand von der Ebene, danach spielt es ihn sofort neu ein — oder beendet das Senden mit Grund. | `2106ed5` |
+| `LAB-001-R01-F02` Alles löschen | Lab zeigte nach dem Löschen weiter „Sendet“; erneutes Anhaken bewirkte nichts. | Das Lab gleicht seinen Anspruch mit der Runtime ab: Senden endet sichtbar, Checkbox ab, Grund und Wiederaufnahme werden genannt. Fortsetzen nur durch erneutes Anhaken. | `2106ed5` |
+| `LAB-001-R01-F03` Export | Zieldatei wurde vor der Prüfung ersetzt; Meldung begann mit „Exportiert nach …“. | Kandidat wird im Staging geprüft; nur ein geprüftes Paket ersetzt das Ziel; sonst bleibt es byte-gleich und die Meldung sagt das. | `42030ed` |
+
+**Tests:** 17 neue Testfälle (vorher 15 failed / 2 passed, nachher 17 passed); gesamte
+hardwarefreie Suite 1629 passed, 3 skipped. F01/F02 automatisiert mit Fake-Senke über den
+eingebetteten Dienst, zusätzlich ein Durchstich mit dem echten reSpeaker (Zustände und
+gesendete Frames geprüft, **LEDs nicht angesehen**).
+
+**Neue Einschränkungen:** Während eines Katalog-Reloads zeigt das Gerät kurz Schwarz. Weitere
+Restpunkte: `ARBEITSAKTE/R01_NACHBESSERUNG/04_abschlussbericht.md`, Abschnitt 9.
+
+**Stand:** lokal committet, nicht gepusht (keine Push-Autorisierung); PR #1 zeigt auf GitHub
+weiterhin `2bc9896`. Lokal als `REVIEW_READY` bereitgestellt — keine Merge-Freigabe.
