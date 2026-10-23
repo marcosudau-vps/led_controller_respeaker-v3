@@ -95,6 +95,17 @@ GUI_ONLY_STUDIO_MODULES = frozenset(
     }
 )
 
+# The Studio Lab is a package of its own inside the studio, held to the same
+# split: its clock, its way to the device and its examples are checkable
+# without a display; the panels draw.
+LAB_ROOT = STUDIO_ROOT / "lab"
+GUI_FREE_LAB_MODULES = ("clock", "output", "examples")
+GUI_ONLY_LAB_MODULES = frozenset({"page", "tree", "inspector", "timeline"})
+
+# The headless visual authoring core sits in the authoring half, below the
+# studio. Nothing in it may draw or reach up into the studio.
+VISUAL_ROOT = CREATION_ROOT / "visual"
+
 
 ALL_LAYERS = sorted(layers())
 
@@ -299,6 +310,34 @@ def test_importing_the_studio_package_does_not_import_qt():
     reached = imported_modules(parse(STUDIO_ROOT / "__init__.py"))
     assert not any(name.split(".")[0] == "PySide6" for name in reached)
     assert not any(name.rsplit(".", 1)[-1] in GUI_ONLY_STUDIO_MODULES for name in reached)
+
+
+@pytest.mark.parametrize("module", GUI_FREE_LAB_MODULES)
+def test_the_controller_half_of_the_lab_carries_no_qt(module):
+    path = LAB_ROOT / f"{module}.py"
+    qt = sorted(name for name in imported_modules(parse(path)) if name.split(".")[0] == "PySide6")
+    assert qt == []
+
+
+def test_every_lab_module_is_either_gui_free_or_declared_gui_only():
+    modules = {path.stem for path in LAB_ROOT.glob("*.py")} - {"__init__"}
+    assert modules == set(GUI_FREE_LAB_MODULES) | GUI_ONLY_LAB_MODULES
+
+
+def test_importing_the_lab_package_does_not_import_qt():
+    reached = imported_modules(parse(LAB_ROOT / "__init__.py"))
+    assert not any(name.split(".")[0] == "PySide6" for name in reached)
+    assert not any(name.rsplit(".", 1)[-1] in GUI_ONLY_LAB_MODULES for name in reached)
+
+
+def test_the_visual_core_neither_draws_nor_imports_the_studio():
+    """The Lab is one client of the core; the core must not depend on it."""
+    offenders = []
+    for path in sorted(VISUAL_ROOT.glob("*.py")):
+        for name in sorted(imported_modules(parse(path))):
+            if name.split(".")[0] == "PySide6" or name == "lefx.effect_creation.studio"                     or name.startswith("lefx.effect_creation.studio."):
+                offenders.append(f"{path.name} imports {name}")
+    assert offenders == []
 
 
 def test_the_authoring_half_of_effect_creation_carries_no_qt():

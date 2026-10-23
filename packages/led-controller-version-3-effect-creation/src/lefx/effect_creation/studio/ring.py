@@ -12,6 +12,10 @@ gaps marked makes calibrating one a matter of counting.
 Black is drawn as black. ``0x000000`` is a colour that covers; an LED that is
 off looks the same but means something else, and a monitor that showed them
 alike would hide the difference exactly where it is being checked.
+
+For the same reason a position given as ``None`` — nothing contributed, the
+renderer's own word for transparent — is drawn as an empty, dashed socket and
+never as black. Device frames never contain one; a design preview does.
 """
 
 from __future__ import annotations
@@ -28,6 +32,7 @@ SOCKET_COLOR = QColor(32, 35, 42)
 INDEX_COLOR = QColor(120, 126, 140)
 SECTOR_COLOR = QColor(70, 76, 92)
 MARK_COLOR = QColor(210, 170, 60)
+TRANSPARENT_COLOR = QColor(150, 156, 172)
 
 
 class RingMonitor(QWidget):
@@ -39,7 +44,7 @@ class RingMonitor(QWidget):
     def __init__(self, led_count: int = 12, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._led_count = max(1, int(led_count))
-        self._colors: list[int] = [0] * self._led_count
+        self._colors: list[int | None] = [0] * self._led_count
         self._show_indices = True
         self._show_sectors = False
         self._marked_sector: int | None = None
@@ -60,17 +65,22 @@ class RingMonitor(QWidget):
         self._colors = [0] * count
         self.update()
 
-    def set_colors(self, colors: list[int] | tuple[int, ...]) -> None:
+    def set_colors(self, colors: list[int | None] | tuple[int | None, ...]) -> None:
         """Take a frame. A frame of the wrong length is ignored, not reshaped.
 
         The same rule the sinks follow: padding would light positions the
         renderer never addressed, and the monitor exists to show what was sent.
+        ``None`` stays ``None`` and is drawn as transparent.
         """
         values = list(colors)
         if len(values) != self._led_count:
             return
-        self._colors = [int(value) & 0xFFFFFF for value in values]
+        self._colors = [None if value is None else int(value) & 0xFFFFFF for value in values]
         self.update()
+
+    @property
+    def colors(self) -> tuple[int | None, ...]:
+        return tuple(self._colors)
 
     def set_show_indices(self, show: bool) -> None:
         self._show_indices = bool(show)
@@ -122,12 +132,18 @@ class RingMonitor(QWidget):
             position = QPointF(
                 center.x() + radius * math.cos(angle), center.y() + radius * math.sin(angle)
             )
-            color = QColor(
-                (color_int >> 16) & 0xFF, (color_int >> 8) & 0xFF, color_int & 0xFF
-            )
-            painter.setPen(QPen(RIM_COLOR, 1.0))
-            painter.setBrush(color)
-            painter.drawEllipse(position, led_size / 2.0, led_size / 2.0)
+            if color_int is None:
+                painter.setPen(QPen(TRANSPARENT_COLOR, 1.2, Qt.PenStyle.DashLine))
+                painter.setBrush(Qt.BrushStyle.NoBrush)
+                painter.drawEllipse(position, led_size / 2.0, led_size / 2.0)
+                painter.drawEllipse(position, led_size / 8.0, led_size / 8.0)
+            else:
+                color = QColor(
+                    (color_int >> 16) & 0xFF, (color_int >> 8) & 0xFF, color_int & 0xFF
+                )
+                painter.setPen(QPen(RIM_COLOR, 1.0))
+                painter.setBrush(color)
+                painter.drawEllipse(position, led_size / 2.0, led_size / 2.0)
 
             if self._show_indices:
                 painter.setPen(QPen(INDEX_COLOR))

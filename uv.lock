@@ -162,7 +162,7 @@ wheels = [
 
 [[package]]
 name = "led-controller-version-3"
-version = "3.0.2"
+version = "3.0.3"
 source = { editable = "packages/led-controller-version-3" }
 dependencies = [
     { name = "fastapi" },
@@ -204,7 +204,7 @@ provides-extras = ["simulated-respeaker", "effect-creation", "all"]
 
 [[package]]
 name = "led-controller-version-3-device-simulated-respeaker"
-version = "3.0.2"
+version = "3.0.3"
 source = { editable = "packages/led-controller-version-3-device-simulated-respeaker" }
 dependencies = [
     { name = "led-controller-version-3" },
@@ -224,7 +224,7 @@ provides-extras = ["gui"]
 
 [[package]]
 name = "led-controller-version-3-effect-creation"
-version = "3.0.2"
+version = "3.0.3"
 source = { editable = "packages/led-controller-version-3-effect-creation" }
 dependencies = [
     { name = "led-controller-version-3" },
@@ -491,7 +491,7 @@ wheels = [
 
 [[package]]
 name = "respeaker-led-v3-workspace"
-version = "3.0.2"
+version = "3.0.3"
 source = { virtual = "." }
 dependencies = [
     { name = "led-controller-version-3" },

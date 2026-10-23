@@ -9,7 +9,7 @@ Dieses Handbuch bietet praxisnahe Anleitungen, vollständige Parameter-Referenze
 ## 📚 Themenübersicht
 
 | Guide | Beschreibung | Zielgruppe |
-|---|---|---|
+| --- | --- | --- |
 | 🚀 **[Schnellstart](getting_started.md)** | Erste Schritte, Installation, Service-Start und erste Effekte in unter 5 Minuten. | Einsteiger & Anwender |
 | 💻 **[CLI-Referenz](cli_guide.md)** | Vollständige Dokumentation des Befehlszeilen-Werkzeugs `lefx` mit allen Verben & Parametern. | Terminal-Nutzer & Skripte |
 | 🌐 **[HTTP-API-Referenz](api_guide.md)** | REST-Schnittstelle unter `/api/v3/*` mit JSON-Schemas, Endpunkten & `curl`-Beispielen. | Web/Network Integratoren |

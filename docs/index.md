@@ -110,7 +110,7 @@ Projekt bekommt nur, was auch wirklich optional ist.
 | `led-controller-version-3-effect-creation` | `[effect-creation]` |
 
 | Schicht | Rolle | Darf importieren | Liegt in |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **lefx.sdk** | Der Vertrag. Was ein Effekt deklarieren darf, wie Werte normalisiert werden, wie ein Gerät angesprochen wird. | — | `led-controller-version-3` |
 | **lefx.engine** | Die Laufzeit. Layer, Komposition, Lebenszyklen, Registry, Paketformat `lefx/3`. | sdk | `led-controller-version-3` |
 | **lefx.interfaces** | Die Steuerungsoberfläche: `ControllerService`, HTTP-API, CLI, Client, Discovery, Konfiguration. | sdk, engine | `led-controller-version-3` |
@@ -207,7 +207,7 @@ Welcher Layer bedient wird, folgt aus dem **Typ der Definition** — nicht aus
 einem Feld, das man falsch setzen kann. Die vier Formen sind:
 
 | Form | Verb | Kanal | Endet | Runtime-Inputs |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | `StateDefinition` | `set state` | — | nie | — |
 | `TimedOverlayDefinition` | `set overlay` | — | selbst | — |
 | `ControlledOverlayDefinition` | `set overlay --channel` | ja | nie | ja |
