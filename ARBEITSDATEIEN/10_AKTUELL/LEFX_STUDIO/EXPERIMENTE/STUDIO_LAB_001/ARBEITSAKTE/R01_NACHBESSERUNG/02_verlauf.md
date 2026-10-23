@@ -198,6 +198,13 @@ Nach dem ersten grünen Lauf eine kleine Härtung in `export_package()`: Auch ei
 unerwartete Ausnahme aus der Prüfung (nicht nur `DesignError`) wird mit „Die Zieldatei wurde
 nicht verändert.“ gemeldet. Danach erneut getestet (Abschnitt 9).
 
+Dokumentation des Labs angepasst (im Arbeitsakten-Commit): `STUDIO_LAB_001/README.md` —
+Kopfverweis, Hinweise an den betroffenen Stellen (Export, Datenfluss), offener Punkt 6.2 als
+behoben markiert, neuer Abschnitt 9 „Nachbesserung nach Review R01“;
+`STUDIO_LAB_001/ANWENDERANLEITUNG.md` — Exportverhalten, Verhalten bei Katalog-Reload und
+„Alles löschen“. *(Dieser Absatz wurde im Abschluss-Commit nachgetragen; beim
+Arbeitsakten-Commit fehlte er, weil eine Textersetzung nicht griff.)*
+
 ## 9. Testdurchläufe nach der Korrektur
 
 In der Reihenfolge der Ausführung:
@@ -260,15 +267,18 @@ den `TappedSink` gesendeten Frames — **nicht** die LEDs selbst; niemand hat au
 |---|---|
 | `42030eda3ce7d8c9301df84e2647a78980e09f76` | F03: Export prüft vor dem Schreiben; Regressionstests F03 |
 | `2106ed54e229e47aa4e2ebc672569dfd88837331` | F01 und F02: Rebuild-Benachrichtigung, Abgleich mit der Runtime; Regressionstests F01/F02 |
-| (folgender Commit) | diese Arbeitsakte, Aktualisierung von `README.md` und `ANWENDERANLEITUNG.md` des Labs |
+| `39c485f441450b407f70f2392e4257e904da3db4` | diese Arbeitsakte, Aktualisierung von `README.md` und `ANWENDERANLEITUNG.md` des Labs |
+| Abschluss-Commit (folgt) | `evidenz/code/2026-10-23_ABSCHLUSSSTAND_R01.txt`, Nachträge in diesem Verlauf und die Commit-IDs im Abschlussbericht |
 
-Ein Commit kann seine eigene ID nicht enthalten. Die ID des Arbeitsakten-Commits und der
-Git-Status danach stehen in `evidenz/code/2026-10-23_ABSCHLUSSSTAND_R01.txt`, angelegt im
-unmittelbar folgenden Commit.
+Ein Commit kann seine eigene ID nicht enthalten; die ID des Abschluss-Commits steht in
+`git log` und in der Abschlussmeldung der Sitzung.
 
 ## 12. Abschließender Bearbeitungsstand
 
 Technische Korrekturen, Tests und Arbeitsakte sind lokal committet; nichts wurde gepusht.
+Nach dem Arbeitsakten-Commit war die Arbeitskopie sauber, der Branch 3 Commits vor dem Remote,
+kein Stash, kein Tag (`evidenz/code/2026-10-23_ABSCHLUSSSTAND_R01.txt`); mit dem Abschluss-Commit
+sind es 4.
 PR #1 zeigt auf GitHub weiterhin `2bc9896`
 (`evidenz/review/2026-10-23_PR1_STAND_R01.md`). Einzelheiten, Einschränkungen und Status:
 `03_ergebnisse.md` und `04_abschlussbericht.md`.

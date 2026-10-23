@@ -160,12 +160,11 @@ Quellen: die JSON-Dateien in `evidenz/pruefungen/` und die Testausgaben in `evid
 | `2bc9896ee3d82c1dec64ac81a1cb76850ca13e5d` | Ausgangscommit, vom Review geprüfter PR-Kopf |
 | `42030eda3ce7d8c9301df84e2647a78980e09f76` | `fix(studio-lab): check an export before it replaces the target (LAB-001-R01-F03)` |
 | `2106ed54e229e47aa4e2ebc672569dfd88837331` | `fix(studio-lab): keep the Lab's send status true to the engine (LAB-001-R01-F01, F02)` |
-| Arbeitsakten-Commit | diese Akte und die Aktualisierung von `README.md`/`ANWENDERANLEITUNG.md` des Labs |
-| Abschluss-Commit | `evidenz/code/2026-10-23_ABSCHLUSSSTAND_R01.txt` mit der ID des Arbeitsakten-Commits und dem Git-Status danach |
+| `39c485f441450b407f70f2392e4257e904da3db4` | `docs(studio-lab): work file for the R01 review remediation` — diese Akte, Aktualisierung von `README.md`/`ANWENDERANLEITUNG.md` des Labs |
+| Abschluss-Commit | `evidenz/code/2026-10-23_ABSCHLUSSSTAND_R01.txt` (Git- und PR-Stand nach `39c485f`), Nachträge in `02_verlauf.md`, die IDs in dieser Tabelle |
 
-Ein Commit kann seine eigene ID nicht enthalten; deshalb stehen die IDs der beiden letzten
-Commits in `evidenz/code/2026-10-23_ABSCHLUSSSTAND_R01.txt` bzw. in der Abschlussmeldung und in
-`git log`.
+Ein Commit kann seine eigene ID nicht enthalten; die ID des Abschluss-Commits steht in
+`git log` und in der Abschlussmeldung der Sitzung.
 
 ## 11. Endgültiger lokaler Git-Status
 

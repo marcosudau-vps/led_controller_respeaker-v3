@@ -1,0 +1,47 @@
+# Evidenz – Abschlussstand LAB-001-R01 (lokaler Git- und PR-Stand)
+#
+# Aufgenommen unmittelbar nach dem Arbeitsakten-Commit 39c485f441450b407f70f2392e4257e904da3db4,
+# vor dem Commit, der diese Datei hinzufügt (ein Commit kann seine eigene ID nicht enthalten).
+# Dieser folgende "Abschluss-Commit" enthält nur: diese Datei, den Nachtrag in 02_verlauf.md
+# (Absatz zur Dokumentation in Abschnitt 8, Abschnitte 11 und 12) und die Commit-IDs in
+# 04_abschlussbericht.md (Abschnitte 10 und 11). Danach ist der Branch 4 Commits vor dem Remote.
+#
+# Hauptcheckout: Die Zahl von 39 Einträgen in "git status --porcelain" entspricht der Momentaufnahme,
+# die beim Fortsetzen der Agentensitzung erfasst wurde. In diesen Checkout wurde während R01 nicht
+# geschrieben (nur gelesen: ARBEITSDATEIEN/10_AKTUELL/LEFX_STUDIO/PLANUNG/).
+#
+# Remote: gh pr view 1 --repo marcosudau-vps/led_controller_respeaker-v3 --json headRefOid,state,updatedAt
+{"headRefOid":"2bc9896ee3d82c1dec64ac81a1cb76850ca13e5d","state":"OPEN","updatedAt":"2026-10-23T01:15:46Z"}
+
+# Lokale Befehle und Ausgaben, unverändert:
+# ---------------------------------------------------------------------------------------
+$ git rev-parse HEAD
+39c485f441450b407f70f2392e4257e904da3db4
+
+$ git status --branch --porcelain=v1
+## claude/lefx-studio-lab-prompt-0f58f5...origin/claude/lefx-studio-lab-prompt-0f58f5 [ahead 3]
+
+$ git log --oneline 2bc9896~1..HEAD
+39c485f docs(studio-lab): work file for the R01 review remediation
+2106ed5 fix(studio-lab): keep the Lab's send status true to the engine (LAB-001-R01-F01, F02)
+42030ed fix(studio-lab): check an export before it replaces the target (LAB-001-R01-F03)
+2bc9896 docs(studio-lab): STUDIO_LAB_001 report, user guide and screenshots
+
+$ git rev-list --left-right --count origin/claude/lefx-studio-lab-prompt-0f58f5...HEAD   (links: nur Remote, rechts: nur lokal)
+0	3
+
+$ git stash list
+(leer)
+
+$ git tag --points-at HEAD; git tag --contains 2bc9896
+(leer)
+
+$ git worktree list
+C:/Users/marco/source/repos/respeaker-led-v3                           117b064 [main]
+C:/Users/marco/.codex/worktrees/lefx-studio-authoring/respeaker-led-v3 117b064 [codex/lefx-studio-authoring]
+C:/Users/marco/source/repos/respeaker-led-v3-lab001-r01                39c485f [claude/lefx-studio-lab-prompt-0f58f5]
+
+$ git -C C:/Users/marco/source/repos/respeaker-led-v3 rev-parse --abbrev-ref HEAD; ... rev-parse HEAD; status --porcelain | wc -l
+main
+117b06463f7c6bf629c001a15be6058b2511be42
+39
