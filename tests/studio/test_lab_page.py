@@ -376,3 +376,22 @@ def test_unsaved_work_can_veto_closing(qt_app, tmp_path):
     window.lab.confirm_discard = lambda: True
     window.close()
     assert session.service is None
+
+
+def test_typing_into_a_field_does_not_trigger_the_step_keys(window, lab, qt_app):
+    """"," steps back and "." forward — but not while a number is being typed,
+    where either may be the decimal separator."""
+    window.show()
+    lab.tree.add_layer_button.click()
+    segment(lab, leds=2, color="#FF0000")
+    lab.seek(2.0)
+    spin = lab.inspector.field("brightness").spin
+    spin.setFocus()
+    spin.lineEdit().selectAll()
+    QTest.keyClicks(spin, "0,5")
+    QTest.keyClicks(spin, "0.5")
+    qt_app.processEvents()
+    assert lab.clock.elapsed() == pytest.approx(2.0)
+    lab.tree.tree.setFocus()
+    QTest.keyClick(lab.tree.tree, Qt.Key.Key_Period)
+    assert lab.clock.elapsed() == pytest.approx(2.25)

@@ -50,9 +50,7 @@ class StepPlan:
 
     def label(self, index):
         cycle, point = divmod(index, len(self.offsets))
-        if self.cyclic:
-            return f"{self.labels[point]} ({point + 1}/{len(self.offsets)})"
-        return f"{self.labels[point]} {index}"
+        return self.labels[point] if self.cyclic else f"{self.labels[point]} {index}"
 
     def _around(self, elapsed):
         base = math.floor((elapsed - self.origin) / self.period) * len(self.offsets)
@@ -71,7 +69,7 @@ class StepPlan:
 def samples(title, origin, period, count):
     count = max(1, int(count))
     return StepPlan(title, False, origin, period, tuple(period * i / count for i in range(count)),
-                    tuple(f"Abtastpunkt {i + 1}" for i in range(count)))
+                    tuple(f"Abtastpunkt {i + 1} von {count}" for i in range(count)))
 
 
 def uniform(interval):
@@ -97,7 +95,7 @@ def plan_for(animation, led_count, sample_count=8):
         return StepPlan(f"{label}: LED-Versätze ({led_count} je Umdrehung)", True,
                         -p["phase"] / velocity, spacing * led_count,
                         tuple(spacing * m for m in range(led_count)),
-                        tuple(f"Versatz {(sign * m) % led_count}" for m in range(led_count)))
+                        tuple(f"Versatz {(sign * m) % led_count} von {led_count} LEDs" for m in range(led_count)))
     if kind == "blink":
         if p["frequency"] <= 0:
             return None
@@ -105,9 +103,9 @@ def plan_for(animation, led_count, sample_count=8):
         origin = -p["phase"] * period
         duty = p["duty"]
         if duty <= 0 or duty >= 1 or p["minimum"] == p["maximum"]:
-            return StepPlan(f"{label}: konstant", True, origin, period, (period / 2,), ("konstant",))
+            return StepPlan(f"{label}: konstant", True, origin, period, (period / 2,), ("Konstant",))
         return StepPlan(f"{label}: Phasen an/aus", True, origin, period,
-                        (duty / 2 * period, (1 + duty) / 2 * period), ("an", "aus"))
+                        (duty / 2 * period, (1 + duty) / 2 * period), ("Phase an (1 von 2)", "Phase aus (2 von 2)"))
     if kind == "sparkle":
         if p["frequency"] <= 0:
             return None

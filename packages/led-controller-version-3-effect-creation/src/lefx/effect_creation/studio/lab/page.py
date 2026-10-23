@@ -127,6 +127,10 @@ class LabPage(QWidget):
         self.timer = QTimer(self)
         self.timer.setInterval(TICK_MS)
         self.timer.timeout.connect(self._tick)
+        # The device can come and go while the Lab sends; say so within a second.
+        self._status_timer = QTimer(self)
+        self._status_timer.setInterval(1000)
+        self._status_timer.timeout.connect(self._refresh_output_state)
         self._message_timer = QTimer(self)
         self._message_timer.setSingleShot(True)
         self._message_timer.timeout.connect(lambda: self.message.setText(""))
@@ -886,6 +890,7 @@ class LabPage(QWidget):
     def activate(self) -> None:
         """The tab came to the front."""
         self._active = True
+        self._status_timer.start()
         self.refresh()
         self._sync_timer()
         self._render_now()
@@ -893,6 +898,7 @@ class LabPage(QWidget):
     def deactivate(self) -> None:
         """The tab went to the back: no timer, no output, the device is free."""
         self._active = False
+        self._status_timer.stop()
         if self.clock.playing:
             self.clock.pause()
         self._sync_timer()

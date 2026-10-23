@@ -185,7 +185,7 @@ def test_a_rotation_steps_through_led_offsets_not_through_time():
     assert plan.time(1) == pytest.approx(1 / 6)
     assert plan.after(0.0) == 1 and plan.before(plan.time(3)) == 2
     reverse = steps.plan_for({**rotation, "properties": {**rotation["properties"], "reverse": True}}, 12)
-    assert reverse.label(1).startswith("Versatz 11")
+    assert reverse.label(1) == "Versatz 11 von 12 LEDs"
 
 
 def test_led_count_and_number_of_different_pictures_are_kept_apart():
@@ -209,7 +209,7 @@ def test_continuous_animations_offer_samples_not_states():
     assert plan.time(5) == pytest.approx(0.5)
     blink = {"type": "blink", "properties": {"frequency": 1.0, "phase": 0.0, "duty": 0.25,
                                               "minimum": 0.0, "maximum": 1.0}}
-    assert steps.plan_for(blink, 12).labels == ("an", "aus")
+    assert steps.plan_for(blink, 12).labels == ("Phase an (1 von 2)", "Phase aus (2 von 2)")
     assert steps.uniform(0.25).time(4) == pytest.approx(1.0)
 
 
