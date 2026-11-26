@@ -30,6 +30,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -165,6 +166,10 @@ def make_environment(root: Path) -> Path:
     return python
 
 
+def workspace_version() -> str:
+    return tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+
+
 def install(python: Path, *requests: str) -> subprocess.CompletedProcess:
     """Install from what was just built, and from nothing else.
 
@@ -182,7 +187,7 @@ def install(python: Path, *requests: str) -> subprocess.CompletedProcess:
             "--python", str(python),
             "--find-links", str(DIST_DIR),
             *refresh,
-            *requests,
+            *(f"{request}=={workspace_version()}" for request in requests),
         ],
         cwd=REPO_ROOT,
     )
@@ -229,7 +234,7 @@ def check_versions(python: Path, distributions=DISTRIBUTIONS) -> None:
     require(result.returncode == 0, "every distribution reports its version")
     versions = json.loads(result.stdout)
     require(
-        len(set(versions.values())) == 1,
+        set(versions.values()) == {workspace_version()},
         f"they all carry one version ({sorted(set(versions.values()))})",
     )
 

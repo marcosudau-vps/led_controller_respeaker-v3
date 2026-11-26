@@ -120,6 +120,26 @@ def a_live_process_that_is_not_this_one():
         process.wait(timeout=10)
 
 
+def test_liveness_check_never_terminates_the_process():
+    from lefx.effect_creation.studio.session import _process_alive
+
+    process = subprocess.Popen(
+        [sys.executable, "-c", "import time; time.sleep(20)"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        assert _process_alive(process.pid)
+        # Repeated queries must leave the child running, including on Windows.
+        assert _process_alive(process.pid)
+        assert process.poll() is None
+    finally:
+        if process.poll() is None:
+            process.kill()
+        process.wait(timeout=10)
+    assert not _process_alive(process.pid)
+
+
 def test_a_running_service_is_reported_rather_than_fought_with(tmp_path, monkeypatch):
     """Two processes cannot hold one reSpeaker, and finding that out by watching
     writes fail is a poor way to be told."""

@@ -44,6 +44,7 @@ FILES = (
     "LICENSE",
     "config.example.yaml",
     "scripts/check_release.py",
+    "scripts/release_bundle.py",
 )
 
 # Copied whole, minus the exclusions below.

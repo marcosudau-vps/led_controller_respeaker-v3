@@ -1,0 +1,133 @@
+name: Patch Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Serialize the entire process, including both publication paths.
+concurrency:
+  group: lefx-patch-release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Select next patch and create immutable candidate
+    if: github.repository == 'marcosudau-vps/led_controller_respeaker-v3' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    outputs:
+      version: ${{ steps.candidate.outputs.version }}
+      commit: ${{ steps.candidate.outputs.commit }}
+      base: ${{ steps.candidate.outputs.base }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+      - name: Select version, synchronize pins and lockfile, push candidate
+        id: candidate
+        run: uv run --no-project --python 3.12 python scripts/server_release.py prepare --run-id "$GITHUB_RUN_ID"
+
+  validate:
+    name: Test and build exact release candidate
+    needs: prepare
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+    with:
+      source_ref: ${{ needs.prepare.outputs.commit }}
+      release_candidate: true
+
+  publish:
+    name: Verify all artifacts, tag, publish and mirror
+    needs: [prepare, validate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      actions: read
+    outputs:
+      mirror_commit: ${{ steps.publish.outputs.mirror_commit }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.prepare.outputs.version }}
+      COMMIT: ${{ needs.prepare.outputs.commit }}
+      BASE: ${{ needs.prepare.outputs.base }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.commit }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-pypi
+          path: checked/release-pypi
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-studio
+          path: checked/release-studio
+      - name: Verify access to the PyPI-only repository
+        uses: actions/checkout@v4
+        with:
+          repository: marcosudau-vps/led-ctrl-v3
+          ref: main
+          path: mirror-checkout
+          ssh-key: ${{ secrets.RELEASE_REPO_DEPLOY_KEY }}
+          fetch-depth: 0
+      - name: Commit and tag atomically, publish checked files, SSH mirror
+        id: publish
+        run: |
+          python scripts/server_release.py finalize --version "$VERSION" --commit "$COMMIT" --base "$BASE" --run-id "$GITHUB_RUN_ID" --artifacts checked --mirror mirror-checkout
+
+  verify:
+    name: Confirm PyPI workflow and all published file digests
+    needs: [prepare, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.prepare.outputs.version }}
+      COMMIT: ${{ needs.prepare.outputs.commit }}
+      MIRROR_COMMIT: ${{ needs.publish.outputs.mirror_commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-pypi
+          path: checked/release-pypi
+      - name: Confirm the exact mirrored tag and six PyPI file hashes
+        run: python scripts/server_release.py wait --version "$VERSION" --commit "$COMMIT" --mirror-commit "$MIRROR_COMMIT" --artifacts checked
+      - uses: astral-sh/setup-uv@v5
+      - name: Fresh installation from PyPI, not the checkout
+        run: |
+          cd "$RUNNER_TEMP"
+          uv venv --python 3.12 lefx-published
+          uv pip install --python lefx-published/bin/python "led-controller-version-3[all]==$VERSION"
+          lefx-published/bin/python -c 'import importlib.metadata as m, os; names=("led-controller-version-3","led-controller-version-3-effect-creation","led-controller-version-3-device-simulated-respeaker"); assert all(m.version(n)==os.environ["VERSION"] for n in names); print({n:m.version(n) for n in names})'
+          lefx-published/bin/lefx --help
+          lefx-published/bin/lefx-studio --help
+      - name: Release summary
+        run: |
+          echo "## LEFX $VERSION published" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Development commit: $COMMIT" >> "$GITHUB_STEP_SUMMARY"
+          echo "- PyPI repository commit: $MIRROR_COMMIT" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [GitHub Release](https://github.com/marcosudau-vps/led_controller_respeaker-v3/releases/tag/v$VERSION)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- All three PyPI projects published; wheel and sdist SHA-256 verified; fresh installation successful." >> "$GITHUB_STEP_SUMMARY"

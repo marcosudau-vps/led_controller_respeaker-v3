@@ -6,9 +6,9 @@
 > überschrieben. Ein manueller Commit geht beim nächsten Sync verloren oder
 > erzeugt einen Konflikt, den nur ein Force-Push auflöst.
 
-Dies ist der Baum, aus dem die PyPI-Pakete gebaut werden — nur das, was
-`uv build --all-packages` braucht, damit ein Release lesbar und zwischen
-Versionen vergleichbar bleibt.
+Dies ist der gepr?fte Quellbaum der PyPI-Distributionen. Die zugeh?rigen
+Wheels und Source-Distributionen wurden bereits im Entwicklungsrepository
+vor der Tagvergabe gebaut, installiert und getestet.
 
 Entwickelt wird in
 **[marcosudau-vps/led_controller_respeaker-v3](https://github.com/marcosudau-vps/led_controller_respeaker-v3)**.
@@ -33,13 +33,17 @@ die README dieses Pakets.
 
 ## Wie ein Release hierher kommt
 
-1. Im Entwicklungs-Repository läuft `scripts/release.py`: Version schreiben,
-   Kataloge bauen, Tests, `check_release.py`, committen, pushen.
-2. Das Skript wartet auf grünes CI **für genau diesen Commit** und setzt erst
-   dann den Tag `vX.Y.Z`.
-3. Der Tag startet dort `sync-release-repo.yml`, das diesen Baum erzeugt,
-   hierher committet und hier denselben Tag setzt.
-4. Dieser Tag startet hier `release.yml`: bauen, das Gebaute in einer leeren
-   Umgebung installieren und benutzen, dann pro Projekt nach PyPI hochladen.
+1. Patch Release im Entwicklungsrepository erstellt automatisch die n?chste
+   Patch-Version und pr?ft den Kandidaten vollst?ndig auf Linux und Windows.
+2. Erst nach Artefaktpr?fung werden main und Tag atomar aktualisiert. Das
+   ?ffentliche GitHub Release enth?lt die gepr?ften Wheels, sdists und EXE.
+3. Der gepr?fte Quellbaum wird samt release-manifest.json per SSH hierher
+   ?bertragen. Derselbe Versionstag wird gesetzt.
+4. release.yml l?dt ausschlie?lich die sechs gepr?ften Distributionsdateien
+   aus dem Entwicklungs-GitHub-Release, verifiziert Gr??e und SHA-256 gegen
+   das Manifest und ver?ffentlicht sie per PyPI Trusted Publishing.
+5. Der Entwicklungsworkflow pr?ft den erfolgreichen PyPI-Lauf, die dort
+   ver?ffentlichten Hashes und eine frische Installation.
 
-Ein Tag hier bedeutet also: drüben geprüft.
+Hier wird keine neue EXE gebaut, kein GitHub Release erzeugt und keine
+Version manuell vergeben.

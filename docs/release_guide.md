@@ -1,247 +1,142 @@
-# Release- und Update-Anleitung
+# Release- und Update-Anleitung – serverseitiger Patch Release
 
-## Die beiden Repositories
+## Start
 
-| Repository | Aufgabe | Wer schreibt hinein? |
-|---|---|---|
-| [led_controller_respeaker-v3](https://github.com/marcosudau-vps/led_controller_respeaker-v3) | Entwicklung, Tests, Effektquellen, Studio, Build und öffentliche GitHub Releases | Entwicklung; Release-Skript und GitHub-Release-Workflow |
-| [led-ctrl-v3](https://github.com/marcosudau-vps/led-ctrl-v3) | Ausschließlich der für PyPI benötigte Release-Baum | Automatisch durch sync-release-repo.yml |
+Das Entwicklungsrepository ist die einzige Stelle, an der ein neuer Release
+gestartet wird:
 
-Niemals manuell in das Release-Repository pushen oder taggen. Der Sync
-materialisiert den Baum anhand von scripts/sync_release_tree.py. Die gebauten
-.lefxset-Archive sind im Entwicklungsrepo Ausgabe, im Release-Repo Quelle.
-Die Windows-EXE und die GitHub-Release-Assets verbleiben ausschließlich im
-Entwicklungsrepo; sie werden nicht über den Release-Baum gespiegelt.
+https://github.com/marcosudau-vps/led_controller_respeaker-v3/actions/workflows/patch-release.yml
 
-## Die drei Distributionen
-
-Alle tragen dieselbe Versionsnummer und werden gemeinsam veröffentlicht.
-tests/architecture/test_versions.py erzwingt die Übereinstimmung der Versionen
-und der exakten internen Pins. Nur optionale Komponenten sind eigene Pakete.
-
-| PyPI-Projekt | Rolle | Installation |
-|---|---|---|
-| led-controller-version-3 | SDK, Engine, API/CLI, reSpeaker und beide Effektkataloge | Standard |
-| led-controller-version-3-device-simulated-respeaker | Software-Geräteersatz | [simulated-respeaker] |
-| led-controller-version-3-effect-creation | lefx-pack und lefx-studio (Qt) | [effect-creation] |
-
-Python-Importpfade heißen lefx.*. Python 3.12 ist die unterstützte Version.
-Schichtgrenzen werden durch die Architekturtests geprüft.
-
-## 1. Normales Code-Update (ohne Veröffentlichung)
+Actions → Patch Release → Run workflow → main → Run workflow.
+Keine Versionsangabe, keine lokale Umgebung, keine weitere Bestätigung nötig.
+Alternativ authentifizierter GitHub CLI:
 
 ```bash
-uv run python scripts/build_effects.py
-uv run pytest -q -m "not hardware"
-git add <betroffene-Dateien>
-git commit -m "fix: Beschreibung der Änderung"
-git push origin main
+gh workflow run patch-release.yml --repo marcosudau-vps/led_controller_respeaker-v3 --ref main
 ```
 
-Alternativ per Feature-Branch und PR. CI baut und prüft bereits die Wheels und
-die Windows-Studio-EXE als interne Workflow-Artefakte. Ohne Tag entstehen
-weder ein öffentliches GitHub Release noch eine PyPI-Veröffentlichung.
+Der frühere lokale Einstieg `uv run python scripts/release.py` dispatcht nur
+noch diesen Workflow. `--dry-run` ist weiterhin eine optionale lokale
+Entwicklerprüfung ohne Veröffentlichung. Die alte lokale Tagvergabe und die
+separaten Tag-Push-Workflows im Entwicklungsrepo entfallen.
 
-## 2. Offizielles Release
+## Versionsverwaltung
 
-In einem sauberen, aktuellen Main-Checkout, mit uv, git und authentifiziertem gh:
+Der Workflow liest die numerisch höchste veröffentlichte Versionsmarke,
+prüft, dass main auf dieser Version oder ihrem noch unveröffentlichten
+nächsten Patch steht, und erhöht die Patch-Komponente. Beispiel: 3.0.3 →
+3.0.4. Minor-/Major-Workflows sind noch nicht Bestandteil der Implementierung.
+Root- und Paket-pyproject.toml, exakte interne Pins und uv.lock werden
+konsistent aktualisiert. Der Bot pusht zunächst nur einen unveränderlichen
+Kandidatencommit unter release-candidate/<run-id>. main bleibt bis zum
+bestandenen Gate unverändert.
 
-```bash
-uv sync
-uv run python scripts/release.py
-```
+Der nächste normale Start ist blockiert, falls eine bereits getaggte Version
+noch nicht vollständig veröffentlicht wurde. Bei neuen serverseitigen Releases
+muss der verknüpfte vorherige Workflow erfolgreich beendet sein, das GitHub
+Release öffentlich sein und alle drei Projekte müssen die erwarteten Dateien
+auf PyPI besitzen. Historische Releases ohne GitHub Release werden anhand der
+beiden Tags und der drei PyPI-Projekte geprüft. Releases sind serialisiert.
 
-Das Skript fragt nach Version und Bestätigung. Ist die aktuelle Version bereits
-getaggt, wird die nächste Patchversion vorgeschlagen; andernfalls die noch
-unveröffentlichte aktuelle Version. Mit --version X.Y.Z kann sie explizit gewählt
-werden. Nur bestätigen, wenn wirklich veröffentlicht werden soll.
+## Verbindlicher Ablauf
 
-### Verbindliche Reihenfolge
-
-| Schritt | Prüfung bzw. Aktion |
+| Schritt | Ausführung |
 |---|---|
-| 1 | Sauberer Main-Checkout, HEAD exakt origin/main; Tag in beiden Repos und Version in allen drei PyPI-Projekten frei |
-| 2 | Effektkataloge neu bauen |
-| 3 | Gesamte hardwarefreie Testsuite |
-| 4 | check_release.py: alle Pakete bauen, in eine leere Umgebung installieren und benutzen |
-| 5 | Versionsbump in alle vier pyproject.toml inklusive exakter interner Pins, uv.lock synchronisieren |
-| 6 | Versionskonsistenz erneut prüfen; Release-Commit und Push |
-| 7 | CI des exakten main-Push-Commits abwarten: Linux-Tests, Paket- und Release-Baum-Checks, Windows-PyInstaller-Build, EXE-Self-Checks |
-| 8 | Alle drei Wheels und die Studio-EXE aus genau diesem CI-Lauf herunterladen, Versions-/Commit-Zuordnung, Dateinamen und SHA-256 prüfen |
-| 9 | origin/main, Arbeitsbaum und freie Version erneut prüfen; erst dann annotierten Tag setzen und pushen |
+| 1 | GitHub-Runner: main prüfen, nächste Patch-Version ermitteln, freie Version/Tags und vorherigen Release prüfen |
+| 2 | Versionsbump, Pins und Lockfile, Kandidatencommit auf temporärem Branch |
+| 3 | Reusable CI am exakten Kandidaten-SHA: Linux-Tests, Paketgrenzen, Kataloge, Paketbau und Installationsprüfung |
+| 4 | Windows-Runner: hardwarefreie Testsuite, portabler Studio-Onefile-Build, Frozen-Self-Check und automatischer GUI-Start |
+| 5 | PyPI-Release-Baum materialisieren, daraus drei Wheels und drei sdists bauen und installieren; exakt diese geprüften Dateien und den Baum als versiegeltes Bundle sichern |
+| 6 | Bundle und Windows-EXE herunterladen; SHA-256, Größe, Version und Commit prüfen; Schreibzugriff auf Release-Repo mit SSH-Deploy-Key und Dry-Run prüfen |
+| 7 | Main nochmals auf unveränderten Ausgangsstand prüfen, freie Version erneut prüfen; main und annotierten Versionstag gemeinsam per atomarem Git-Push aktualisieren |
+| 8 | Öffentliches GitHub Release: Draft erstellen, drei Wheels, drei sdists und versionierte Studio-EXE hochladen, Remote-Digests verifizieren, veröffentlichen |
+| 9 | Exakt geprüften Release-Baum samt Manifest per SSH in das PyPI-Repository übertragen, dort main und Tag atomar pushen |
+| 10 | Release-Repo lädt ausschließlich die sechs vorher geprüften Distributionsdateien aus dem öffentlichen Entwicklungs-GitHub-Release herunter, prüft Manifest und lädt sie per Trusted Publishing auf PyPI |
+| 11 | Entwicklungsworkflow wartet auf erfolgreichen Workflow am exakten Release-Repo-Tag, prüft die sechs PyPI-Dateidigestwerte, installiert die neue Version in frischer Umgebung und erstellt die Abschlusszusammenfassung |
 
-**Ein Versionsbump im Arbeitsbaum oder ein Release-Commit verbraucht noch
-keine PyPI-Version.** Scheitern lokale Prüfungen, CI, Windows-Build oder
-Artefaktprüfung, wird kein Tag gesetzt. Nach Behebung kann dieselbe noch
-unveröffentlichte Version mit --version X.Y.Z wieder verwendet werden.
-Ein Umgehen der CI-Schranke per --skip-ci ist nicht mehr vorgesehen.
+Es gibt keine erneute Kompilierung nach dem Tag. Der normale Release
+verwendet keinen lokalen PC und kein --skip-ci. Ein automatisierter
+GitHub-Token-Push löst normalerweise keine anderen Push-Workflows desselben
+Repos aus: deshalb werden alle Entwicklungsschritte ausdrücklich durch
+patch-release.yml orchestriert. Der separate SSH-Push löst release.yml im
+Release-Repo aus. Kein zusätzliches persönliches Access-Token notwendig.
 
-Der Linux-CI-Job baut außerdem den materialisierten Release-Baum und prüft
-dessen Installierbarkeit. Der Windows-CI-Job baut die Onefile-EXE aus demselben
-Commit, prüft den realen eingefrorenen Build, Effektkatalog und Output-Entry-
-Points mit --self-check sowie den Qt-Start mit --gui-self-check (null output,
-automatisches Schließen). Das ist kein Hardwaretest und keine manuelle UX-Abnahme.
-Die Versionsnummer im EXE-Namen stammt aus der Root-Projektversion.
+Ein Windows-EXE-Build ist keine Hardwareabnahme. Die Studio-EXE ist
+portabel, Windows x64, PyInstaller Onefile; das vorhandene Studio-Projektmodell
+(--project) bleibt erhalten.
 
-### Vorher hineinsehen
-
-```bash
-uv run python scripts/release.py --dry-run --version 3.0.4
-```
-
-Prüft Voraussetzungen und führt die lokalen Katalog-, Test- und Paketprüfungen
-mit dem aktuellen Versionsstand aus. Schreibt keine neue Version, keinen Commit
-und keinen Tag. Der Windows-CI-Build der Zielversion gehört zum regulären
-Release-Commit-CI, nicht zum lokalen Dry-Run.
-
-Release-Baum lokal ansehen:
-
-```bash
-uv run python scripts/build_effects.py
-uv run python scripts/sync_release_tree.py --target ../release_preview
-```
-
-Ein manueller Sync ohne Tag spiegelt main ins Release-Repo, ohne PyPI-Publish:
-
-```bash
-gh workflow run sync-release-repo.yml --repo marcosudau-vps/led_controller_respeaker-v3 --ref main
-```
-
-Das optionale Feld tag leer lassen. Ein solcher Sync verändert bereits das
-Release-Repo; für die gewöhnliche Release-Vorprüfung ist er nicht erforderlich.
-Bei Wiederholung eines getaggten Sync-Laufs den vorhandenen Entwicklungstag
-als Workflow-Ref wählen. Keinen freien Tagname auf main angeben.
-
-## 3. Nach dem Tag: zwei getrennte Veröffentlichungswege
-
-### A. Öffentliches GitHub Release im Entwicklungsrepository
-
-github-release.yml lädt die CI-Artefakte des exakten getaggten Main-Commits
-herunter, prüft die Manifeste (Commit, Version, Namen, Größe, SHA-256) erneut
-und erzeugt ein GitHub Release als Draft. Die vier Dateien werden hochgeladen
-und die Remote-Digests bzw. heruntergeladenen Uploads geprüft. Erst danach
-wird der Draft veröffentlicht. Es wird nicht nach dem Tag neu kompiliert.
+## Download-Artefakte
 
 Beispiel für 3.0.4:
-
+- lefx-studio-3.0.4-windows-x64.exe
 - led_controller_version_3-3.0.4-py3-none-any.whl
 - led_controller_version_3_effect_creation-3.0.4-py3-none-any.whl
 - led_controller_version_3_device_simulated_respeaker-3.0.4-py3-none-any.whl
-- lefx-studio-3.0.4-windows-x64.exe
+- die drei zugehörigen .tar.gz Source-Distributionen
 
-Die Wheels gehören zusammen und sind auf exakt dieselbe Version gepinnt.
-Die Studio-EXE ist der portable PyInstaller-Onefile-Build für Windows x64.
-Das vorhandene Studio-Projektmodell gilt weiterhin: mit --project auf den
-gewünschten Checkout bzw. Effektkatalog zeigen. Kein Installer, keine
-mitgelieferten Projektquellen in der EXE. Automatische GitHub-Quellarchive
-sind zusätzlich wie gewohnt vorhanden.
+Die sdists sind bewusst ebenfalls öffentliche Release-Assets, damit das
+PyPI-Repo dieselben vorab geprüften Bytes statt eines erneuten Builds
+verwendet. Der versiegelte Release-Baum und die Manifeste bleiben interne
+CI-Artefakte (90 Tage). Das PyPI-Repo enthält nur den erzeugten Quellbaum,
+das Manifest und den PyPI-Workflow, keine Studio-EXE und keine GitHub Releases.
 
-Öffentliche Releases:
-https://github.com/marcosudau-vps/led_controller_respeaker-v3/releases
+## Fehlerbehandlung
 
-### B. PyPI-Veröffentlichung über das Release-Repository
+- Vor dem Tag: main/Versionsnummer bleiben unverändert. Fehler beheben,
+  Workflow neu starten; dieselbe Patch-Version wird wieder gewählt.
+- Nach dem Tag: keine neue Version vergeben, keine Tags verschieben.
+  Ausschließlich fehlgeschlagene Jobs des vorhandenen Patch-Release-Runs
+  erneut ausführen (Re-run failed jobs, NICHT Re-run all jobs). Ein vollständiger
+  Rerun nach dem Tag wird bewusst abgelehnt, damit keine geprüften Dateien
+  durch neue Builds ersetzt werden.
+- Ein fehlgeschlagener GitHub-Upload bleibt Draft, derselbe Publish-Job
+  kann fortgesetzt werden. Ein öffentliches Release wird nur verifiziert,
+  nicht überschrieben. SSH-Mirror ist auf Source-SHA und Manifest gebunden.
+- Bei PyPI-Fehler den fehlgeschlagenen Job im Release-Repo erneut ausführen,
+  danach den Verify-Job des Entwicklungsworkflows wiederholen. Bereits
+  publizierte Dateien werden nicht überschrieben (skip-existing); die
+  abschließende Digestprüfung erkennt abweichende Dateien.
+- Nach Ablauf der internen Artefakte nicht blind neu bauen oder taggen.
+  Bereits veröffentlichte unveränderliche Dateien und das Manifest prüfen;
+  gegebenenfalls ist eine gezielte Wiederherstellung nötig.
+- Candidate-Branches bleiben als Nachweis erhalten und können nach Prüfung
+  erfolgreicher Releases bei Bedarf gelöscht werden. Kein Force-Push.
 
-1. sync-release-repo.yml (Entwicklungsrepo) prüft den getaggten Commit und
-   dessen erfolgreiche CI-Artefakte erneut, baut die Kataloge und
-   materialisiert den Release-Baum.
-2. Via RELEASE_REPO_DEPLOY_KEY wird das Release-Repo ausgecheckt,
-   der neue Baum nach main gepusht und derselbe Tag auf dessen eigenen
-   Release-Commit gesetzt. Die Commit-SHAs beider Repos sind unterschiedlich.
-3. release.yml (Release-Repo) prüft Repository und Tag, baut Wheels und sdists,
-   prüft die Installation und stellt die Distributionsartefakte für den Upload
-   bereit.
-4. Drei getrennte Publish-Jobs veröffentlichen die PyPI-Pakete über Trusted
-   Publishing (OIDC). Das Release-Repo erstellt kein GitHub Release mit EXE.
-   Ein Job pro Projekt, eigene Environments, max-parallel: 1, skip-existing: true.
+Externe Dienststörungen, Kontingente, Berechtigungsänderungen oder ein
+OIDC-Fehler lassen sich nicht vorab vollständig ausschließen. Der Deploy-Key
+wird vor dem Tag getestet; tatsächliches Trusted Publishing wird erst im
+Veröffentlichungsrepo bestätigt. Der Entwicklungsworkflow meldet erst nach
+beiden Publikationswegen und Installation Erfolg.
 
-Beide Wege sind erst nach ihren erfolgreichen Workflows vollständig
-abgeschlossen. Der lokale Release-Befehl bestätigt zunächst den gepushten Tag,
-nicht automatisch die abgeschlossenen Veröffentlichungen. Prüfen:
+## Repositorys und Einrichtung
 
-```bash
-gh run list --workflow github-release.yml --limit 3
-gh run list --workflow sync-release-repo.yml --limit 3
-gh run list --repo marcosudau-vps/led-ctrl-v3 --workflow release.yml --limit 3
-gh release view v3.0.4
-```
+Entwicklung: https://github.com/marcosudau-vps/led_controller_respeaker-v3
+Veröffentlichung: https://github.com/marcosudau-vps/led-ctrl-v3
 
-Zusätzlich alle drei Versionen auf PyPI prüfen und in einer frischen
-Python-3.12-Umgebung installieren. Nicht ungeprüft produktive Installationen
-aktualisieren.
+Das Veröffentlichungsrepo wird niemals von Hand verändert. Das
+Entwicklungsrepo benötigt den vorhandenen Secret RELEASE_REPO_DEPLOY_KEY
+(Schreibzugriff auf das Release-Repo) und für die Release-Jobs
+contents: write sowie actions: read des eingebauten GITHUB_TOKEN.
+Eventuelle Branch-/Tag-Rulesets müssen diese autorisierte Bot-Aktion
+erlauben; keine Schutzregel automatisch abschalten.
 
-## 4. Fehlerbehandlung
+PyPI Trusted Publisher (unverändert): Owner marcosudau-vps, Repository
+led-ctrl-v3, Workflow release.yml. Separate Environments:
 
-- Fehler vor dem Tag: nicht taggen. Beheben, CI erneut ausführen und dieselbe
-  noch unveröffentlichte Version verwenden. Wenn der Release-Commit schon
-  auf main liegt, den Release-Befehl explizit mit derselben Version starten.
-- Fehler beim GitHub-Asset-Upload: Release bleibt Draft; fehlgeschlagenen
-  Workflow erneut starten. Ein bereits öffentliches Release wird nicht
-  überschrieben, sondern nur verifiziert. CI-Artefakte werden 90 Tage
-  aufbewahrt. Nach Ablauf muss derselbe CI-Lauf am selben Commit erneut
-  vollständig ausgeführt und geprüft werden.
-- Fehler beim Sync: Workflow am bestehenden Entwicklungstag wiederholen.
-  Falls der Tag im Release-Repo bereits korrekt gesetzt wurde, dort den
-  PyPI-Workflow wiederholen statt erneut zu taggen.
-- Fehler bei PyPI: fehlgeschlagene Jobs desselben Release-Laufs erneut
-  ausführen; skip-existing schützt bereits hochgeladene Dateien. Keine neue
-  Version oder neuen Tag nur für die Wiederholung erzeugen.
-- 429 beim Anlegen neuer Projekte: PyPI beschränkt die Anzahl neuer Projekte
-  pro Konto und Tag. Bestehende Projekte sind davon nicht betroffen. Bei
-  einem solchen Fehler den fehlenden Upload nach Ablauf des Kontingents
-  wiederholen; bereits erfolgreiche Uploads bleiben erhalten.
-- 403 bei Trusted Publishing: Repository, Workflow und Environment mit den
-  Publisher-Einstellungen auf PyPI abgleichen. Keine Tokens als Workaround
-  im Repository speichern.
-
-Ein erfolgreicher Testlauf reduziert Buildfehler vor der Tagvergabe. Externe
-Dienststörungen, Deploy-Key-, Berechtigungs- oder Uploadfehler nach dem Tag
-lassen sich nicht ausschließen; sie sind durch Wiederholung der betroffenen
-Workflows zu behandeln, ohne die Version neu zu vergeben.
-
-## 5. Einmalige Einrichtung
-
-### Release-Repository und Deploy-Key
-
-Das Release-Repository benötigt mindestens einen initialen Commit und main.
-Der maschinelle Sync überschreibt den Release-Baum. Für ein neues Repository:
-
-1. Initialen README-Commit anlegen.
-2. Separates Ed25519-Schlüsselpaar für den Sync erzeugen.
-3. Öffentlichen Schlüssel im Release-Repo unter Settings / Deploy keys
-   mit Schreibberechtigung hinterlegen.
-4. Privaten Schlüssel als Actions-Secret RELEASE_REPO_DEPLOY_KEY im
-   Entwicklungsrepo hinterlegen; lokale temporäre Schlüsseldateien sicher
-   entfernen. Kein Schlüssel im Repository.
-5. Der eingebaute GITHUB_TOKEN reicht für den Cross-Repository-Push nicht aus.
-
-Der GitHub-Release-Workflow schreibt nur in das Entwicklungsrepo und verwendet
-dessen eingebauten Token mit contents: write und actions: read; kein zusätzlicher
-Deploy-Key oder PyPI-Token erforderlich.
-
-### PyPI Trusted Publishing
-
-Je PyPI-Projekt ein eigenes Environment im Release-Repo:
-
-| PyPI-Projekt | Environment |
+| Projekt | Environment |
 |---|---|
 | led-controller-version-3 | pypi |
 | led-controller-version-3-effect-creation | pypi-effect-creation |
 | led-controller-version-3-device-simulated-respeaker | pypi-simulator |
 
-Gemeinsame Publisher-Felder: Owner marcosudau-vps, Repository led-ctrl-v3,
-Workflow release.yml. Das Environment muss zur Matrix des Workflows passen.
-Bei bestehendem Projekt unter Manage project / Publishing einen Trusted
-Publisher einrichten; bei neuem Projektnamen Pending Publisher im Konto.
-Ein Pending Publisher gilt nur für einen noch freien Namen und kann nicht
-bearbeitet werden (löschen und neu anlegen). Nur der Projekt-Owner kann
-Publisher hinzufügen. OIDC verwendet kurzlebige Upload-Tokens, kein
-dauerhaftes PyPI-Passwort. Unterschiedliche Projekt-Owner sind möglich;
-Publikationsrechte müssen für jedes Projekt separat verwaltet werden.
+Je Projekt eigener Publisher, id-token: write nur im Publish-Job,
+max-parallel: 1. Keine dauerhaften PyPI-Token. Die bestehenden Publisher
+nicht ändern. Ein zusätzlicher Configurator benötigt spätere, gesonderte
+Release-Integration (Workspace, Versionen/Pins, Paketprüfungen, Bundle,
+Workflow-Matrix, Publisher und Extras); nicht Teil dieses Releases.
 
-### Künftige zusätzliche Distributionen
+## Reguläre Entwicklung
 
-Ein zusätzliches Paket benötigt getrennte Prüfung von Workspace, Lockfile,
-Versions-/Architekturtests, check_release.py, Asset-Manifest, Release-Workflow-
-Matrix, optionalen Extras und PyPI-Publisher. Die bloße Existenz eines neuen
-Paketordners genügt nicht. Der Configurator ist in dieser dreiteiligen
-Release-Strecke noch nicht enthalten.
+Branch/PR wie bisher; CI verwendet dieselben read-only Prüfjobs. Nur Patch
+Release auf main erzeugt einen neuen Release. Kein Tag bei gewöhnlichen
+Pushes oder PRs.
