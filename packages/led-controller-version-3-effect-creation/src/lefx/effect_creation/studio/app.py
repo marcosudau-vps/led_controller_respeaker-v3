@@ -58,6 +58,11 @@ def build_parser() -> argparse.ArgumentParser:
             "The way to find out whether a standalone build is complete."
         ),
     )
+    parser.add_argument(
+        "--gui-self-check",
+        action="store_true",
+        help="Open the Studio with null output, run the Qt event loop briefly and exit.",
+    )
     parser.add_argument("--verbose", action="store_true")
     return parser
 
@@ -150,13 +155,18 @@ def main(argv: list[str] | None = None) -> int:
         search_paths=args.sources,
         project=project,
     )
-    remember(project)
+    if not args.gui_self_check:
+        remember(project)
 
     application = QApplication(sys.argv[:1])
     application.setApplicationName("LEFX Studio")
-    window = StudioWindow(session, initial_output=args.output)
+    window = StudioWindow(session, initial_output=NULL_OUTPUT if args.gui_self_check else args.output)
     window.setWindowTitle(f"LEFX Studio — {project.label}")
     window.show()
+    if args.gui_self_check:
+        from PySide6.QtCore import QTimer
+
+        QTimer.singleShot(1000, window.close)
     try:
         return int(application.exec())
     finally:

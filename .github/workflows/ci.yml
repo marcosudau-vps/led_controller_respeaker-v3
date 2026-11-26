@@ -14,6 +14,7 @@ name: CI
 
 on:
   push:
+    branches: ["**"]
   pull_request:
   workflow_dispatch:
 
@@ -98,3 +99,58 @@ jobs:
           uv run python scripts/sync_release_tree.py --target ../release-tree --clean
           cd ../release-tree
           uv build --all-packages --out-dir dist
+          uv run --no-project python scripts/check_release.py
+
+      - name: Stage the tested wheels for GitHub Releases
+        run: uv run python scripts/release_assets.py stage release-wheels build/dist-packages build/release-wheels --commit "$GITHUB_SHA"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-wheels
+          path: build/release-wheels/
+          if-no-files-found: error
+          retention-days: 90
+
+
+  studio-windows:
+    name: Build and verify Windows Studio executable
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Install build dependencies
+        run: uv sync --group build
+      - name: Build the effect catalogue
+        run: uv run python scripts/build_effects.py
+      - name: Build the standalone Studio
+        run: uv run --group build python scripts/build_studio.py --onefile --clean
+      - name: Verify the frozen Studio without hardware
+        shell: pwsh
+        run: |
+          $output = & .\build\dist\lefx-studio.exe --project "$PWD" --self-check
+          $exit = $LASTEXITCODE
+          $output | Write-Output
+          if ($exit -ne 0) { throw "Studio self-check exited with $exit" }
+          $report = $output -join "`n"
+          if ($report -notmatch 'frozen build\s*:\s*True' -or
+              $report -notmatch 'catalogue\s*:\s*[1-9][0-9]* Definitionen' -or
+              $report -notmatch 'outputs\s*:[^\r\n]*respeaker' -or
+              $report -notmatch 'outputs\s*:[^\r\n]*simulator') {
+            throw "Frozen Studio is missing the catalogue or output entry points"
+          }
+      - name: Start and close the frozen Studio GUI
+        shell: pwsh
+        run: |
+          & .\build\dist\lefx-studio.exe --project "$PWD" --gui-self-check
+          if ($LASTEXITCODE -ne 0) { throw "Frozen Studio GUI self-check failed" }
+      - name: Stage the versioned Windows executable
+        run: uv run python scripts/release_assets.py stage release-studio build/dist/lefx-studio.exe build/release-studio --commit "$env:GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-studio
+          path: build/release-studio/
+          if-no-files-found: error
+          retention-days: 90
