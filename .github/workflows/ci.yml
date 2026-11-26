@@ -1,15 +1,6 @@
-# What has to hold before a commit is allowed to be part of this repository —
-# and, since scripts/release.py waits for this workflow on the exact commit it
-# is about to tag, what has to hold before anything reaches PyPI. Nothing here
-# pushes or publishes; that is sync-release-repo.yml, and it runs on a tag.
-#
-# The steps mirror the ways this workspace can break: the packages stop
-# resolving against each other, a definition stops building, behaviour
-# regresses, a package boundary is crossed, a V1 concept comes back, the
-# distributions stop being buildable, or the release tree stops being
-# materialisable. The last two are not covered by the tests: an editable
-# workspace imports from the checkout, so a wheel that ships the wrong files
-# passes every test and fails at installation.
+# Read-only checks used both on ordinary changes and by Patch Release.
+# The release caller supplies the exact versioned candidate commit.
+# No CI job tags, pushes or publishes anything.
 name: CI
 
 on:
@@ -17,6 +8,14 @@ on:
     branches: ["**"]
   pull_request:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      source_ref:
+        type: string
+        required: true
+      release_candidate:
+        type: boolean
+        default: false
 
 env:
   # Every distribution declares >=3.12,<3.13. One version, because the code
@@ -36,6 +35,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref || github.sha }}
+          persist-credentials: false
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -57,19 +59,19 @@ jobs:
       #    absent. The studio brings Qt regardless — it *is* a window — which is
       #    why the libraries above are installed.
       - name: Sync the workspace
-        run: uv sync
+        run: uv sync --locked
 
       # 2. Every definition validates, packs and loads back. The catalogue is
       #    built output rather than a committed artefact, so this is also what
       #    puts one where the later steps expect it.
       - name: Build the effect catalogue
-        run: uv run python scripts/build_effects.py
+        run: uv run --locked python scripts/build_effects.py
 
       # 3. Everything that does not need a device. The runner has no reSpeaker,
       #    so the hardware suite is deselected by its marker; what needs a
       #    device and nothing else is the one thing a CI cannot answer.
       - name: Run the hardware-free test suite
-        run: uv run pytest -q -m "not hardware"
+        run: uv run --locked pytest -q -m "not hardware"
 
       # 4. and 5. Both ran above as part of the suite. They are repeated here on
       #    their own because they are the two rules that do not protect a
@@ -77,10 +79,10 @@ jobs:
       #    name itself in the job list rather than be one line inside a suite of
       #    a thousand.
       - name: Check the package boundaries
-        run: uv run pytest -q tests/architecture/test_architecture.py
+        run: uv run --locked pytest -q tests/architecture/test_architecture.py
 
       - name: Check for returning V1 concepts
-        run: uv run pytest -q tests/architecture/test_legacy.py
+        run: uv run --locked pytest -q tests/architecture/test_legacy.py
 
       # 6. Build all three distributions, install them into an empty environment
       #    and exercise what only an installation can show: entry points,
@@ -88,7 +90,7 @@ jobs:
       #    INCLUDED_LEFXSET selecting on installed metadata, and the simulator's
       #    service half with no Qt present.
       - name: Build the distributions and smoke-test the artefacts
-        run: uv run python scripts/check_release.py
+        run: uv run --locked python scripts/check_release.py
 
       # 7. The release tree can be materialised and stands on its own. Checked
       #    here rather than discovered on a tag: the sync workflow is the one
@@ -96,13 +98,14 @@ jobs:
       #    file is missing from the whitelist means finding out after the tag.
       - name: Materialise the release tree and build it
         run: |
-          uv run python scripts/sync_release_tree.py --target ../release-tree --clean
+          uv run --locked python scripts/sync_release_tree.py --target ../release-tree --clean
+          tar -czf ../release-tree.tar.gz -C ../release-tree .
           cd ../release-tree
           uv build --all-packages --out-dir dist
           uv run --no-project python scripts/check_release.py
 
       - name: Stage the tested wheels for GitHub Releases
-        run: uv run python scripts/release_assets.py stage release-wheels build/dist-packages build/release-wheels --commit "$GITHUB_SHA"
+        run: uv run --locked python scripts/release_assets.py stage release-wheels build/dist-packages build/release-wheels --commit "$(git rev-parse HEAD)"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -110,7 +113,20 @@ jobs:
           path: build/release-wheels/
           if-no-files-found: error
           retention-days: 90
+          overwrite: true
 
+      - name: Seal the tested PyPI distributions and release tree
+        run: |
+          version=$(uv run --locked python -c "import tomllib,pathlib;print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
+          uv run --locked python scripts/release_bundle.py stage ../release-tree/build/dist-packages ../release-tree.tar.gz build/release-pypi --version "$version" --commit "$(git rev-parse HEAD)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-pypi
+          path: build/release-pypi/
+          if-no-files-found: error
+          retention-days: 90
+          overwrite: true
 
   studio-windows:
     name: Build and verify Windows Studio executable
@@ -118,15 +134,20 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref || github.sha }}
+          persist-credentials: false
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
       - name: Install build dependencies
-        run: uv sync --group build
+        run: uv sync --locked --group build
       - name: Build the effect catalogue
-        run: uv run python scripts/build_effects.py
+        run: uv run --locked python scripts/build_effects.py
+      - name: Run the Windows hardware-free test suite
+        run: uv run --locked --group build pytest -q -m "not hardware"
       - name: Build the standalone Studio
-        run: uv run --group build python scripts/build_studio.py --onefile --clean
+        run: uv run --locked --group build python scripts/build_studio.py --onefile --clean
       - name: Verify the frozen Studio without hardware
         shell: pwsh
         run: |
@@ -149,10 +170,11 @@ jobs:
           & .\build\dist\lefx-studio.exe --project "$PWD" --gui-self-check
           if ($LASTEXITCODE -ne 0) { throw "Frozen Studio GUI self-check failed" }
       - name: Stage the versioned Windows executable
-        run: uv run python scripts/release_assets.py stage release-studio build/dist/lefx-studio.exe build/release-studio --commit "$env:GITHUB_SHA"
+        run: uv run --locked python scripts/release_assets.py stage release-studio build/dist/lefx-studio.exe build/release-studio --commit (git rev-parse HEAD)
       - uses: actions/upload-artifact@v4
         with:
           name: release-studio
           path: build/release-studio/
           if-no-files-found: error
           retention-days: 90
+          overwrite: true

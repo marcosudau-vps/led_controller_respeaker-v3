@@ -78,59 +78,21 @@ def test_wrong_wheel_metadata_is_rejected(tmp_path, modules):
         assets.validate_binary(path, VERSION)
 
 
-@pytest.mark.parametrize("conclusion,head", [("failure", SHA), ("success", "b" * 40)])
-def test_wrong_ci_is_rejected(modules, monkeypatch, conclusion, head):
+def test_normal_release_dispatches_server_workflow_only(modules, monkeypatch):
     _, release, _ = modules
-    monkeypatch.setattr(release, "run", lambda *a, **k: json.dumps([{
-        "status": "completed", "conclusion": conclusion, "headSha": head,
-        "databaseId": 123, "url": "https://example.invalid",
-    }]))
-    with pytest.raises(release.Abort):
-        release.wait_for_ci(SHA)
+    monkeypatch.setattr(release, "run", Mock(return_value=""))
+    assert release.main([]) == 0
+    release.run.assert_called_once_with(
+        ["gh", "workflow", "run", "patch-release.yml", "--repo", release.REPOSITORY, "--ref", "main"],
+        capture=False,
+    )
 
 
-def test_ci_returns_exact_push_run(modules, monkeypatch):
+def test_local_release_cannot_choose_version_without_dry_run(modules):
     _, release, _ = modules
-    def run(command, **kwargs):
-        assert "--event" in command and command[command.index("--event")+1] == "push"
-        assert "--branch" in command and command[command.index("--branch")+1] == "main"
-        assert command[command.index("--commit")+1] == SHA
-        return json.dumps([{"status": "completed", "conclusion": "success",
-                            "headSha": SHA, "databaseId": 123, "url": "https://example.invalid"}])
-    monkeypatch.setattr(release, "run", run)
-    assert release.wait_for_ci(SHA) == 123
-
-
-@pytest.mark.parametrize("failure", ["ci", "assets", "moved_main", "dirty", "tag_taken", None])
-def test_tag_gate(modules, monkeypatch, failure):
-    _, release, _ = modules
-    calls = []
-    def run(command, **kwargs):
-        calls.append(command)
-        if command == ["git", "rev-parse", "HEAD"]:
-            return SHA
-        if command == ["git", "rev-parse", "origin/main"]:
-            return "b" * 40 if failure == "moved_main" else SHA
-        if command == ["git", "status", "--porcelain"]:
-            return " M unwanted" if failure == "dirty" else ""
-        return ""
-    monkeypatch.setattr(release, "run", run)
-    monkeypatch.setattr(release, "current_version", lambda: VERSION)
-    monkeypatch.setattr(release, "check_the_tree_is_ready", lambda version: None)
-    monkeypatch.setattr(release, "confirm", lambda *a, **k: None)
-    monkeypatch.setattr(release, "write_version", lambda version: [])
-    monkeypatch.setattr(release, "check_tag_is_free",
-                        Mock(side_effect=release.Abort("tag taken") if failure == "tag_taken" else None))
-    monkeypatch.setattr(release, "wait_for_ci",
-                        Mock(side_effect=release.Abort("CI failed") if failure == "ci" else None, return_value=123))
-    monkeypatch.setattr(release, "download",
-                        Mock(side_effect=ValueError("asset failed") if failure == "assets" else None,
-                             return_value=[Path("asset.whl")]))
-    assert release.main(["--version", VERSION]) == (1 if failure else 0)
-    tag = ["git", "tag", "-a", f"v{VERSION}", "-m", f"v{VERSION}"]
-    push = ["git", "push", "origin", f"v{VERSION}"]
-    assert (tag in calls) == (failure is None)
-    assert (push in calls) == (failure is None)
+    with pytest.raises(SystemExit) as exc:
+        release.main(["--version", VERSION])
+    assert exc.value.code == 2
 
 
 def test_dry_run_never_bumps_or_tags(modules, monkeypatch):
@@ -138,21 +100,17 @@ def test_dry_run_never_bumps_or_tags(modules, monkeypatch):
     monkeypatch.setattr(release, "current_version", lambda: "3.0.3")
     monkeypatch.setattr(release, "check_the_tree_is_ready", lambda version: None)
     monkeypatch.setattr(release, "run", Mock(return_value=""))
-    for name in ("write_version", "download", "wait_for_ci"):
-        monkeypatch.setattr(release, name, Mock(side_effect=AssertionError(name)))
+    monkeypatch.setattr(release, "write_version", Mock(side_effect=AssertionError("write version")))
     assert release.main(["--dry-run", "--version", VERSION]) == 0
-    assert all(call.args[0][0] != "git" for call in release.run.call_args_list)
+    assert not any(c.args[0][:2] in (["git", "tag"], ["git", "push"], ["gh", "workflow"])
+                   for c in release.run.call_args_list)
 
 
 @pytest.mark.parametrize("existing", [False, True])
 def test_upload_failure_never_publishes_draft(tmp_path, modules, monkeypatch, existing):
     _, _, publisher = modules
-    monkeypatch.setattr(publisher, "version", lambda: VERSION)
-    monkeypatch.setattr(publisher.subprocess, "check_output", lambda *a, **k: SHA)
-    monkeypatch.setattr(publisher, "successful_run", lambda commit: 123)
     asset = tmp_path / "example.whl"
     asset.write_bytes(b"wheel")
-    monkeypatch.setattr(publisher, "download", lambda *a, **k: [asset])
     monkeypatch.setattr(publisher, "release_record",
                         lambda tag: {"draft": True} if existing else None)
     calls = []
@@ -163,7 +121,7 @@ def test_upload_failure_never_publishes_draft(tmp_path, modules, monkeypatch, ex
         return ""
     monkeypatch.setattr(publisher, "gh", gh)
     with pytest.raises(RuntimeError, match="upload failed"):
-        publisher.publish(f"v{VERSION}")
+        publisher.publish_assets(f"v{VERSION}", [asset])
     assert not any(c[:2] == ("release", "edit") for c in calls)
     assert any(c[:2] == ("release", "create") for c in calls) != existing
 
@@ -172,25 +130,21 @@ def test_verified_release_publishes_only_after_upload_check(tmp_path, modules, m
     _, _, publisher = modules
     asset = tmp_path / "example.whl"
     asset.write_bytes(b"wheel")
-    monkeypatch.setattr(publisher, "version", lambda: VERSION)
-    monkeypatch.setattr(publisher.subprocess, "check_output", lambda *a, **k: SHA)
-    monkeypatch.setattr(publisher, "successful_run", lambda commit: 123)
-    monkeypatch.setattr(publisher, "download", lambda *a, **k: [asset])
     monkeypatch.setattr(publisher, "release_record", Mock(side_effect=[None, {"draft": True}]))
     calls = []
     monkeypatch.setattr(publisher, "gh", lambda *a: calls.append(a[:2]) or "")
     monkeypatch.setattr(publisher, "verify_uploaded", lambda *a: calls.append(("verify", "uploaded")))
-    publisher.publish(f"v{VERSION}")
+    publisher.publish_assets(f"v{VERSION}", [asset])
     assert calls == [("release", "create"), ("release", "upload"), ("verify", "uploaded"), ("release", "edit")]
 
 
-def test_verify_only_never_creates_release(tmp_path, modules, monkeypatch):
+def test_public_release_is_verified_never_overwritten(tmp_path, modules, monkeypatch):
     _, _, publisher = modules
-    monkeypatch.setattr(publisher, "version", lambda: VERSION)
-    monkeypatch.setattr(publisher.subprocess, "check_output", lambda *a, **k: SHA)
-    monkeypatch.setattr(publisher, "successful_run", lambda commit: 123)
-    monkeypatch.setattr(publisher, "download", Mock(return_value=[]))
-    monkeypatch.setattr(publisher, "release_record", Mock(side_effect=AssertionError("release read")))
-    monkeypatch.setattr(publisher, "gh", Mock(side_effect=AssertionError("release write")))
-    publisher.publish(f"v{VERSION}", verify_only=True)
-    publisher.download.assert_called_once()
+    asset = tmp_path / "example.whl"
+    asset.write_bytes(b"wheel")
+    record = {"draft": False}
+    monkeypatch.setattr(publisher, "release_record", lambda tag: record)
+    monkeypatch.setattr(publisher, "verify_uploaded", Mock())
+    monkeypatch.setattr(publisher, "gh", Mock(side_effect=AssertionError("public release must not be modified")))
+    publisher.publish_assets(f"v{VERSION}", [asset])
+    publisher.verify_uploaded.assert_called_once_with(record, [asset])

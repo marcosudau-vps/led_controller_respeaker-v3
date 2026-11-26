@@ -128,13 +128,11 @@ uv run lefx serve --sink simulator
 
 ## Release
 
-```bash
-uv run python scripts/release.py
-```
-
-Fragt nach der Version, fragt nach, ob du sicher bist, und macht dann alles
-allein — inklusive Warten auf grünes CI, bevor getaggt wird. Details in
-[docs/release_guide.md](docs/release_guide.md).
+[GitHub Actions ? Patch Release](https://github.com/marcosudau-vps/led_controller_respeaker-v3/actions/workflows/patch-release.yml)
+auf main starten. Die n?chste Patch-Version, vollst?ndige Linux-/Windows-CI,
+Tagvergabe und beide Ver?ffentlichungen laufen automatisch serverseitig.
+Der lokale Befehl `uv run python scripts/release.py` l?st nur den Workflow aus.
+Details: [docs/release_guide.md](docs/release_guide.md).
 
 ## Lizenz
 
