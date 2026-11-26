@@ -89,8 +89,14 @@ def self_check(project: Project) -> int:
     if outputs == [NULL_OUTPUT]:
         print("             ! no device package reachable — entry point metadata is missing")
 
+    from lefx.interfaces.discovery import installed_effect_sets
+
+    sets = installed_effect_sets()
+    print(f"effect sets  : {', '.join(sorted(sets))}")
     session = StudioSession(project=project)
     failures: list[str] = []
+    if under_a_frozen_build() and not {"core-set", "smartspeaker-set"} <= sets.keys():
+        failures.append("Frozen build is missing installed effect-set archives")
     try:
         session.open(NULL_OUTPUT)
         effects = session.registry.list_effects()

@@ -50,7 +50,7 @@ from lefx.effect_creation.studio.app import main
 raise SystemExit(main())
 '''
 
-ENTRY_POINT_GROUPS = ("lefx.frame_sinks", "lefx.input_providers")
+ENTRY_POINT_GROUPS = ("lefx.frame_sinks", "lefx.input_providers", "lefx.effect_sets")
 
 # Distributions whose metadata has to travel even though nothing imports them
 # by name. The lefx ones are here because ``importlib.metadata.version``
@@ -95,6 +95,17 @@ def entry_point_distributions() -> list[str]:
     return sorted(found)
 
 
+def entry_point_modules(group: str | None = None) -> list[str]:
+    """Collect modules discovered through metadata, not visible to static imports."""
+    return sorted({
+        entry.module
+        for distribution in distributions()
+        for entry in distribution.entry_points
+        if entry.group in ENTRY_POINT_GROUPS and (group is None or entry.group == group)
+    })
+
+
+
 def author_stdlib() -> list[str]:
     """What an effect package is allowed to import, and therefore might."""
     from lefx.effect_creation import ALLOWED_STDLIB
@@ -106,6 +117,7 @@ def hidden_imports() -> list[str]:
     """Modules nothing imports statically but something imports at runtime."""
     names = [
         # Reached only through entry points, by string.
+        *entry_point_modules(),
         "lefx.device.respeaker.registration",
         "lefx.device.simulated_respeaker.registration",
         # The studio's own Qt pages are imported inside main().
@@ -138,6 +150,9 @@ def check_recipe() -> list[str]:
             problems.append(f"{name} registers an entry point but its metadata is not copied")
 
     hidden = set(hidden_imports())
+    for name in entry_point_modules():
+        if name not in hidden:
+            problems.append(f"entry point module {name} is not a hidden import")
     for name in author_stdlib():
         if name not in hidden:
             problems.append(f"effects may import {name}, but it is not a hidden import")
@@ -190,6 +205,9 @@ def build(*, onefile: bool, windowed: bool, clean: bool) -> Path:
         command += ["--copy-metadata", name]
     for name in hidden_imports():
         command += ["--hidden-import", name]
+    # The effect-set entry points return a path to the archive beside the module.
+    for name in entry_point_modules("lefx.effect_sets"):
+        command += ["--collect-data", name]
     for name in EXCLUDES:
         command += ["--exclude-module", name]
     command.append(str(launcher))

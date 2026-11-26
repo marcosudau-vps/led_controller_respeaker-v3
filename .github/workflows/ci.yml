@@ -138,7 +138,9 @@ jobs:
           if ($report -notmatch 'frozen build\s*:\s*True' -or
               $report -notmatch 'catalogue\s*:\s*[1-9][0-9]* Definitionen' -or
               $report -notmatch 'outputs\s*:[^\r\n]*respeaker' -or
-              $report -notmatch 'outputs\s*:[^\r\n]*simulator') {
+              $report -notmatch 'outputs\s*:[^\r\n]*simulator' -or
+              $report -notmatch 'effect sets\s*:[^\r\n]*core-set' -or
+              $report -notmatch 'effect sets\s*:[^\r\n]*smartspeaker-set') {
             throw "Frozen Studio is missing the catalogue or output entry points"
           }
       - name: Start and close the frozen Studio GUI
