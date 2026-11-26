@@ -17,12 +17,17 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to set over there. Leave empty to mirror without publishing."
+        description: "Leave empty for an untagged main sync; tagged syncs must use the existing tag as ref."
         required: false
         default: ""
 
+concurrency:
+  group: release-repository-sync
+  cancel-in-progress: false
+
 permissions:
   contents: read
+  actions: read
 
 env:
   UV_PYTHON: "3.12"
@@ -54,12 +59,31 @@ jobs:
 
       - name: Work out which tag this is
         id: tag
+        env:
+          REQUESTED_TAG: ${{ inputs.tag }}
         run: |
+          echo "source_commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           if [ "${GITHUB_REF}" != "${GITHUB_REF#refs/tags/}" ]; then
             echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
           else
-            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+            if [ -n "$REQUESTED_TAG" ]; then
+              echo "Select the existing tag as workflow ref for a tagged release." >&2
+              exit 1
+            fi
+            echo "tag=" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Verify the exact pre-tag CI assets before mirroring a release
+        if: steps.tag.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          if [ "$GITHUB_REF" != "refs/tags/$TAG" ]; then
+            echo "For a tagged release, select the existing development tag as the workflow ref." >&2
+            exit 1
+          fi
+          uv run python scripts/publish_github_release.py "$TAG" --verify-only
 
       - name: Check out the release repository
         uses: actions/checkout@v4
@@ -76,27 +100,45 @@ jobs:
         run: uv run python scripts/sync_release_tree.py --target release-repo --clean
 
       - name: Commit and push
+        id: mirror
         working-directory: release-repo
         run: |
           git config user.name "lefx release bot"
           git config user.email "noreply@github.com"
           git add -A
+          if [ -n "$TAG" ] && git show-ref --verify --quiet "refs/tags/$TAG"; then
+            # Rebuilding ZIP catalogues can change archive timestamps; bind
+            # retries to the immutable source commit recorded in our tag.
+            if ! git for-each-ref --format='%(contents)' "refs/tags/$TAG" | grep -Fx "Development commit: $SOURCE_COMMIT"; then
+              echo "Existing release tag is not bound to the expected source commit; refusing to overwrite." >&2
+              exit 1
+            fi
+            if ! git show "$TAG:pyproject.toml" | grep -Fx "version = \"${TAG#v}\""; then
+              echo "Existing release tag has a different version." >&2
+              exit 1
+            fi
+            echo "already_tagged=true" >> "$GITHUB_OUTPUT"
+            echo "Release tag already exists for the expected source. No push needed."
+            exit 0
+          fi
           if git diff --cached --quiet; then
             echo "the release tree is unchanged"
           else
-            git commit -m "release: sync from ${GITHUB_SHA::8}${TAG:+ ($TAG)}"
+            git commit -m "release: sync from ${SOURCE_COMMIT}${TAG:+ ($TAG)}"
             git push origin HEAD:main
           fi
         env:
           TAG: ${{ steps.tag.outputs.tag }}
+          SOURCE_COMMIT: ${{ steps.tag.outputs.source_commit }}
 
       # Last, and only with a tag. This is what starts release.yml over there,
       # so it must not happen before the tree it describes is pushed.
       - name: Tag the release commit over there
-        if: steps.tag.outputs.tag != ''
+        if: steps.tag.outputs.tag != '' && steps.mirror.outputs.already_tagged != 'true'
         working-directory: release-repo
         run: |
-          git tag -a "$TAG" -m "$TAG"
+          git tag -a "$TAG" -m "$TAG" -m "Development commit: $SOURCE_COMMIT"
           git push origin "$TAG"
         env:
           TAG: ${{ steps.tag.outputs.tag }}
+          SOURCE_COMMIT: ${{ steps.tag.outputs.source_commit }}

@@ -58,6 +58,11 @@ def build_parser() -> argparse.ArgumentParser:
             "The way to find out whether a standalone build is complete."
         ),
     )
+    parser.add_argument(
+        "--gui-self-check",
+        action="store_true",
+        help="Open the Studio with null output, run the Qt event loop briefly and exit.",
+    )
     parser.add_argument("--verbose", action="store_true")
     return parser
 
@@ -84,8 +89,14 @@ def self_check(project: Project) -> int:
     if outputs == [NULL_OUTPUT]:
         print("             ! no device package reachable — entry point metadata is missing")
 
+    from lefx.interfaces.discovery import installed_effect_sets
+
+    sets = installed_effect_sets()
+    print(f"effect sets  : {', '.join(sorted(sets))}")
     session = StudioSession(project=project)
     failures: list[str] = []
+    if under_a_frozen_build() and not {"core-set", "smartspeaker-set"} <= sets.keys():
+        failures.append("Frozen build is missing installed effect-set archives")
     try:
         session.open(NULL_OUTPUT)
         effects = session.registry.list_effects()
@@ -150,13 +161,18 @@ def main(argv: list[str] | None = None) -> int:
         search_paths=args.sources,
         project=project,
     )
-    remember(project)
+    if not args.gui_self_check:
+        remember(project)
 
     application = QApplication(sys.argv[:1])
     application.setApplicationName("LEFX Studio")
-    window = StudioWindow(session, initial_output=args.output)
+    window = StudioWindow(session, initial_output=NULL_OUTPUT if args.gui_self_check else args.output)
     window.setWindowTitle(f"LEFX Studio — {project.label}")
     window.show()
+    if args.gui_self_check:
+        from PySide6.QtCore import QTimer
+
+        QTimer.singleShot(1000, window.close)
     try:
         return int(application.exec())
     finally:
