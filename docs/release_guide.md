@@ -33,7 +33,8 @@ bestandenen Gate unverändert.
 
 Der nächste normale Start ist blockiert, falls eine bereits getaggte Version
 noch nicht vollständig veröffentlicht wurde. Bei neuen serverseitigen Releases
-muss der verknüpfte vorherige Workflow erfolgreich beendet sein, das GitHub
+muss der verknüpfte vorherige Workflow erfolgreich beendet sein oder eine
+erfolgreiche, exakt daran gebundene Wiederherstellungsverifikation vorliegen; das GitHub
 Release öffentlich sein und alle drei Projekte müssen die erwarteten Dateien
 auf PyPI besitzen. Historische Releases ohne GitHub Release werden anhand der
 beiden Tags und der drei PyPI-Projekte geprüft. Releases sind serialisiert.
@@ -81,6 +82,22 @@ CI-Artefakte (90 Tage). Das PyPI-Repo enthält nur den erzeugten Quellbaum,
 das Manifest und den PyPI-Workflow, keine Studio-EXE und keine GitHub Releases.
 
 ## Fehlerbehandlung
+
+Die abschließende PyPI-Installation verwendet keinen uv-Cache, ignoriert
+lokale Index-Konfigurationen, nutzt explizit https://pypi.org/simple und
+wiederholt Installationsfehler bis zu viermal in frischen Umgebungen.
+
+Wenn der historische Abschlussjob selbst fehlerhaft ist, auf main den
+Workflow **Verify Published Release** mit der bereits veröffentlichten
+Version starten (z.B. 3.0.4). Er prüft beide Tags, die erfolgreichen
+ursprünglichen Prüf-/Publish-Jobs, die sieben ursprünglichen CI-Dateien gegen
+GitHub, das gespiegelte Manifest, PyPI-Workflow und sechs Hashes, und
+installiert frisch inklusive beider CLI-Startprüfungen. Keine neuen
+Builds, Tags, Uploads oder Versionsbump. Ein erfolgreicher Recovery-Job
+für exakt Version, Commit und ursprünglichen Run gilt für die nächste
+Patch-Freigabe als Abschlussnachweis. Die Original-Artefakte müssen
+noch verfügbar sein.
+
 
 - Vor dem Tag: main/Versionsnummer bleiben unverändert. Fehler beheben,
   Workflow neu starten; dieselbe Patch-Version wird wieder gewählt.
