@@ -3,6 +3,8 @@ from json import dumps, loads
 from pathlib import Path
 from runpy import run_path
 
+import pytest
+
 from PySide6.QtCore import QCoreApplication, QEvent, Qt, QTimer
 from PySide6.QtTest import QSignalSpy, QTest
 from PySide6.QtWidgets import (
@@ -268,6 +270,53 @@ def test_add_remove_and_discard_one_call(qapp, catalogue):
     view.cancel()
     assert view.value() == {"close": {"clear_state": "primary"}}
     close_widget(view)
+
+
+@pytest.mark.parametrize("open_call", [False, True])
+@pytest.mark.parametrize("load", ["set_value", "set_draft"])
+def test_host_load_is_silent_and_preserves_apply_cancel(qapp, catalogue, open_call, load):
+    initial = {"e": {"emit_event": "success_event"}}
+    loaded = {"e": {"emit_event": "success_event", "priority": 4}}
+    widget = LedFeedbackConfigurator([EventSpec("e", "Ereignis")], catalogue, rules=initial)
+    widget.show()
+    if open_call:
+        widget.mapping.open_event("e")
+        widget.mapping.edit_call()
+    draft = QSignalSpy(widget.draft_changed)
+    mapping_draft = QSignalSpy(widget.mapping.draft_changed)
+    applied = QSignalSpy(widget.applied)
+    cancelled = QSignalSpy(widget.cancelled)
+
+    getattr(widget, load)(loaded)
+    assert draft.count() == mapping_draft.count() == applied.count() == cancelled.count() == 0
+    assert widget.mapping.call_editor is None and widget.value() == loaded
+    assert widget.is_dirty() is (load == "set_draft")
+    loaded["e"]["priority"] = 99
+    assert widget.value()["e"]["priority"] == 4
+
+    widget.cancel()
+    assert widget.value()["e"].get("priority") == (None if load == "set_draft" else 4)
+    assert cancelled.count() == 1 and applied.count() == 0
+    widget.mapping.open_event("e")
+    widget.mapping.edit_call()
+    notifications = draft.count()
+    type_text(named(widget.mapping.call_editor, QLineEdit, "Priorität"), "7")
+    assert draft.count() > notifications and widget.is_dirty()
+    assert widget.apply()
+    assert applied.count() == 1 and cancelled.count() == 1
+    assert widget.value()["e"]["priority"] == 7 and not widget.is_dirty()
+    applied.at(0)[0]["e"]["priority"] = 42
+    assert widget.value()["e"]["priority"] == 7
+
+    widget.mapping.open_event("e")
+    widget.mapping.edit_call()
+    type_text(named(widget.mapping.call_editor, QLineEdit, "Priorität"), "8")
+    notifications = draft.count()
+    widget.cancel()
+    assert draft.count() == notifications + 1
+    assert applied.count() == 1 and cancelled.count() == 2
+    assert widget.mapping.call_editor is None and widget.value()["e"]["priority"] == 7
+    close_widget(widget)
 
 
 def test_testlab_import_export_keeps_non_led_fields(qapp):

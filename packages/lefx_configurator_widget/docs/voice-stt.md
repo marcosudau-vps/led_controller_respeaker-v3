@@ -29,4 +29,4 @@ Die Voice-STT-Fähigkeiten verwenden `primary` für einen ausgelassenen State-Sl
 
 Die Anpassung an ein anderes Host-Framework erfolgt über dessen Ereignis- und Persistenzadapter. Generische Qt-Widgets können als einzelne Quellen übernommen werden. Das Paket erfordert weder den Voice-STT-Client noch das Dynamic Settings Widget als Abhängigkeit.
 
-Der geprüfte Client-Referenzstand pinnt historisch LEFX 3.0.3. Dieses Paket pinnt LEFX 3.0.4. Bevor der Client das Wheel integriert, muss seine eigene Abhängigkeitsauflösung eine gemeinsame LEFX-Version vorsehen. [Voice-STT-Referenzcommit](https://github.com/marcosudau-vps/voice-stt-client/tree/0574ba94fd9f0876297288cbcdb55a650b7cee74)
+Der geprüfte Client-Referenzstand pinnt historisch LEFX 3.0.3. Der Configurator und der LEFX-Kern teilen einen exakten Versions-Pin. Der Entwicklungsstand der Integration ist 3.0.4. Bevor der Client das Wheel integriert, muss seine eigene Abhängigkeitsauflösung eine gemeinsame LEFX-Version vorsehen. [Voice-STT-Referenzcommit](https://github.com/marcosudau-vps/voice-stt-client/tree/0574ba94fd9f0876297288cbcdb55a650b7cee74)

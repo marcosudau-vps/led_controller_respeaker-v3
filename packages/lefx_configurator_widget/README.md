@@ -4,7 +4,11 @@ Qt-Editoren für vorhandene LEFX-Effekte, Presets und LED-Aufrufe zu frei defini
 
 ## Installation und Start
 
-Im Repository-Stamm unter PowerShell:
+Im Entwicklungs-Workspace installierst du alle lokalen Mitglieder mit `uv sync --locked`.
+Danach baust du die Kataloge mit `uv run --locked python scripts/build_effects.py` und
+startest das TestLab mit `uv run --locked lefx-configurator-widget`.
+
+Für eine separate Installation des Paketordners führe im Repository-Stamm unter PowerShell aus:
 
 ```powershell
 uv venv --python 3.12 work/configurator-venv
@@ -14,7 +18,7 @@ work/configurator-venv/Scripts/python.exe -m lefx.configurator_widget
 
 Für ein bereits gebautes Wheel übergib dessen Pfad anstelle des Paketordners an `uv pip install`. Der Programmeinstieg unter Windows heißt `lefx-configurator-widget.exe` und liegt im `Scripts`-Verzeichnis der Umgebung. `python -m lefx.configurator_widget --smoke` öffnet und schließt das TestLab für einen kurzen Starttest.
 
-Die Distribution heißt `lefx_configurator_widget`. Paketindizes normalisieren den Namen zu `lefx-configurator-widget`. Python importiert aus dem LEFX-Namespace `lefx.configurator_widget`. Der aktuelle Stand wird lokal aus dem Paketordner oder Wheel installiert. Die Integration in die Release-Pipeline ist ein eigener Schritt.
+Die Distribution heißt `lefx_configurator_widget`. Paketindizes normalisieren den Namen zu `lefx-configurator-widget`. Python importiert aus dem LEFX-Namespace `lefx.configurator_widget`. Der Workspace koppelt die Version exakt an den Kern. Ab der gemeinsamen Veröffentlichung kannst du das Paket über `pip install "led-controller-version-3[configurator]"` oder direkt über `pip install lefx-configurator-widget` installieren. `[all]` schließt den Configurator ebenfalls ein.
 
 ## Einbettung
 

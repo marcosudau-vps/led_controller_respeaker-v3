@@ -68,6 +68,32 @@ integer = module.RangeEditor(number_type=int, value=(-12, 75000000000), step=2)
 assert integer.value() == (-12, 75000000000)
 integer._controls[1].click()
 assert integer.value() == (-10, 75000000000)
+integral_step = module.RangeEditor(number_type=int, value=(1, 3), step=1.0, minimum=1, maximum=3)
+changed = QSignalSpy(integral_step.value_changed)
+edited = QSignalSpy(integral_step.value_edited)
+integral_step._controls[1].click()
+assert integral_step.value() == (2, 3) and integral_step.fields[0].text() == "2"
+for spy in (changed, edited):
+    assert spy.count() == 1 and all(type(value) is int for value in spy.at(0)[0])
+integral_step._controls[0].click()
+assert integral_step.value() == (1, 3)
+integral_step._controls[0].click()
+integral_step._controls[3].click()
+assert changed.count() == edited.count() == 2
+integral_step.set_read_only(True)
+integral_step._controls[1].click()
+assert integral_step.value() == (1, 3) and edited.count() == 2
+try:
+    module.RangeEditor(number_type=int, step=0.5)
+except ValueError:
+    pass
+else:
+    raise AssertionError("a fractional step was accepted for integer values")
+fractional = module.RangeEditor(value=(1., 3.), step=0.5)
+fractional._controls[1].click()
+assert fractional.value() == (1.5, 3.)
+fractional._controls[0].click()
+assert fractional.value() == (1., 3.)
 """,
     "color_list_editor.py": """
 w = module.ColorListEditor(value=("#FF0000", "#123456", "#FF0000"),

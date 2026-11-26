@@ -139,7 +139,8 @@ class FeedbackMappingEditor(QWidget):
     def set_draft(self, rules):
         """Load a saved working copy while retaining the accepted baseline."""
         self._rules = deepcopy(dict(rules))
-        self.show_overview(keep_call=False)
+        self._close_call(keep=False, notify=False)
+        self.show_overview()
 
     def accept_baseline(self):
         """Use the current mapping as the reference for subsequent edits."""
@@ -382,7 +383,7 @@ class FeedbackMappingEditor(QWidget):
         self.stack.setCurrentWidget(page)
         self.draft_changed.emit(self.value())
 
-    def _close_call(self, *, keep):
+    def _close_call(self, *, keep, notify=True):
         if self._call is None:
             return
         changed = keep and not self._locked()
@@ -398,7 +399,8 @@ class FeedbackMappingEditor(QWidget):
         page.deleteLater()
         self._refresh_calls(index)
         self.calls.setFocus()
-        self.draft_changed.emit(self.value())
+        if notify:
+            self.draft_changed.emit(self.value())
 
     def commit_open_call(self):
         """Keep the current subdraft and return to its event."""

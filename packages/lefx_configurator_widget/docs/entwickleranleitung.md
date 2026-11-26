@@ -34,7 +34,7 @@ rules = {
 
 Der Konfigurator nimmt pro Ereignis ein Aufrufobjekt, eine geordnete Sequenz oder `None` an. `value()` liefert einen unabhängigen Snapshot des aktuellen Entwurfs einschließlich eines geöffneten Aufrufs. `export()` prüft die bekannten Regeln und meldet Fehler als `ValueError`. Unbekannte Aufrufformen oder Erweiterungsfelder sperren die betroffene Regel. Sie bleiben als Originaldaten erhalten und stehen in `warnings()`. IDs außerhalb des Ereignisschemas werden unverändert durchgereicht. Erstellt der Host eine strengere Exportprüfung, kann er auch diese Warnungen als Sperre behandeln.
 
-`set_value()` lädt eine neue Ausgangskonfiguration. `set_draft()` stellt eine gespeicherte Arbeitskopie zur aktuellen Ausgangskonfiguration wieder her. Laden erzeugt keine `applied`-Signale. `apply()` prüft, akzeptiert und signalisiert mit `applied(object)` eine Kopie. `validation_failed(object)` übergibt bei einem fehlgeschlagenen Apply feldbezogene `Diagnostic`-Objekte. `cancel()` setzt den Entwurf auf die letzte Ausgangskonfiguration zurück und sendet `cancelled()`. `back_requested()` gibt die Navigation an den Host ab. `draft_changed(object)` eignet sich für eine Anzeige im Host. Die Persistenz ist dessen Aufgabe.
+`set_value()` lädt eine neue Ausgangskonfiguration. `set_draft()` stellt eine gespeicherte Arbeitskopie zur aktuellen Ausgangskonfiguration wieder her. Programmatisches Laden schließt eine geöffnete Aufrufseite und emittiert weder `draft_changed` noch `applied`. `apply()` prüft, akzeptiert und signalisiert mit `applied(object)` eine Kopie. `validation_failed(object)` übergibt bei einem fehlgeschlagenen Apply feldbezogene `Diagnostic`-Objekte. `cancel()` setzt den Entwurf auf die letzte Ausgangskonfiguration zurück und sendet `cancelled()`. Ändert sich der Entwurf dabei, erhält der Host zusätzlich genau ein `draft_changed`. `back_requested()` gibt die Navigation an den Host ab. `draft_changed(object)` eignet sich für eine Anzeige im Host. Die Persistenz ist dessen Aufgabe.
 
 ## Schema und LEFX-Verträge
 
@@ -72,4 +72,13 @@ work/configurator-test/Scripts/python.exe -m pytest -p no:cacheprovider --basete
 
 Setze für die Kopiertests `LEFX_QT_ONLY_PYTHON` auf die Python-Executable einer zweiten Umgebung, die ausschließlich `PySide6-Essentials` und dessen Shiboken-Abhängigkeit enthält. Für die GUI-Prüfung unter Windows setze `QT_QPA_PLATFORM=windows`. Mit `LEFX_GUI_EVIDENCE` als vorhandenes Verzeichnis speichern die GUI-Tests ihre Bilder dort.
 
-Das Paket wird über sein eigenes `pyproject.toml` gebaut und aus seinem Wheel installiert. Die Root-Workspace-Regeln aus 3.0.4 erfassen automatisch neue Unterordner unter `packages/`. Dadurch erkennt `uv lock --check` das zusätzliche Paket und die Architekturtests erwarten Aktualisierungen ihrer Paketmatrizen und der Hauptpaket-Extras. Die Anpassung dieser Integrationsdateien gehört zur späteren Aufnahme in den Workspace und den Releaseprozess.
+Im integrierten Workspace synchronisiert `uv sync --locked` alle vier Projekte. Nach
+dem Katalogbau erfasst `uv run --locked pytest -m "not hardware"` auch diese
+Tests. Die sieben Kopiertests starten pro Datei einen isolierten Prozess.
+`LEFX_QT_ONLY_PYTHON` aktiviert zusätzlich die Prüfung mit einer Umgebung ohne
+installiertes LEFX.
+
+Der Configurator bleibt über sein eigenes `pyproject.toml` baubar und bezieht den
+Kern mit einem exakten Pin. Die zentrale Release-Installationsprüfung verwendet
+die Wheels aus dem aktuellen Build und testet direkte Installation und das
+Hauptpaket-Extra getrennt. Siehe das [Release-Handbuch](../../../docs/release_guide.md).

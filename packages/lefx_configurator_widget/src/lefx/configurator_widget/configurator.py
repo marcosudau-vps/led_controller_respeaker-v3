@@ -99,8 +99,11 @@ class LedFeedbackConfigurator(QWidget):
         return True
 
     def cancel(self):
+        dirty = self.is_dirty()
         self.mapping.set_value(self._initial)
         self._update_status()
+        if dirty:
+            self.draft_changed.emit(self.value())
         self.cancelled.emit()
 
     def _confirm_cancel(self):

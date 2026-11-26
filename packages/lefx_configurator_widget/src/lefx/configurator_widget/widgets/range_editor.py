@@ -40,7 +40,9 @@ class RangeEditor(QWidget):
                 or (minimum is not None and maximum is not None and minimum > maximum)
                 or (number_type is int and int(step) != step)):
             raise ValueError("Invalid numeric range configuration")
-        self.number_type, self.step, self.decimals = number_type, step, decimals
+        self.number_type = number_type
+        self.step = int(step) if number_type is int else step
+        self.decimals = decimals
         self.minimum, self.maximum = minimum, maximum
         self.fields = []
         self._controls = []
