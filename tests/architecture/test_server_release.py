@@ -45,6 +45,7 @@ def make_bundle(tmp_path, bundle):
             item = tarfile.TarInfo(name)
             item.size = len(data)
             archive.addfile(item, io.BytesIO(data))
+    (dist / ".gitignore").write_text("*\n", encoding="utf-8")
     folder = tmp_path / "bundle"
     bundle.stage(dist, tree, folder, VERSION, SHA)
     return folder

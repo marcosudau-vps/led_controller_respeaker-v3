@@ -78,9 +78,12 @@ def validate_distribution(path: Path, version: str) -> None:
 def stage(distributions: Path, tree: Path, destination: Path, version: str, commit: str) -> None:
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise ValueError("Full source commit required")
-    files = sorted(distributions.iterdir())
-    if {p.name for p in files} != expected(version):
-        raise ValueError("Expected exactly three wheels and three sdists")
+    # uv may create a .gitignore in the output directory. It is not a
+    # distribution and must not enter the sealed bundle.
+    files = sorted(path for path in distributions.iterdir() if path.name != ".gitignore")
+    names = {path.name for path in files}
+    if names != expected(version):
+        raise ValueError(f"Distribution set mismatch: missing={sorted(expected(version)-names)}, extra={sorted(names-expected(version))}")
     destination.mkdir(parents=True, exist_ok=False)
     for path in files:
         validate_distribution(path, version)
