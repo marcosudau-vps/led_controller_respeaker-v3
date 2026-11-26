@@ -1,0 +1,2155 @@
+# Evidenz – Regressionstests R01 gegen den UNVERÄNDERTEN Stand (Reproduktion)
+#
+# Commit:   2bc9896ee3d82c1dec64ac81a1cb76850ca13e5d (PR-Head, Produktionscode unverändert;
+#           nur die neuen Tests und die Arbeitsakte waren hinzugefügt)
+# Befehl:   uv run pytest <16 Knoten-IDs, siehe 2026-10-23_TESTAUSWAHL_R01.txt> -p no:cacheprovider --tb=short -q
+# Ergebnis: 15 failed, 2 passed (Exit-Code 1) — erwartet: die Tests reproduzieren die Befunde.
+# Gerät:    Fake-Senke (RecordingSink); keine echte Hardware.
+#
+# Vollständige, unveränderte pytest-Ausgabe folgt.
+# Die wiederholten Zeilen "render loop iteration failed" stammen aus dem laufenden
+# Render-Thread des eingebetteten Dienstes und sind selbst Teil des Befunds F01.
+# ---------------------------------------------------------------------------------------
+FFFFFFFFFFFF..FFF                                                        [100%]
+================================== FAILURES ===================================
+_______ test_a_reload_while_the_preview_is_paused_keeps_the_device_fed ________
+tests\studio\test_lab_output.py:259: in test_a_reload_while_the_preview_is_paused_keeps_the_device_fed
+    assert session.service.status()["service"]["last_error"] is None
+E   assert 'TargetNotFoundError("No effect or preset named \'studio_lab_live\'")' is None
+------------------------------ Captured log call ------------------------------
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+__________ test_after_a_reload_the_global_output_settings_still_work __________
+tests\studio\test_lab_output.py:276: in test_after_a_reload_the_global_output_settings_still_work
+    session.set_output(brightness=0.5)
+packages\led-controller-version-3-effect-creation\src\lefx\effect_creation\studio\session.py:290: in set_output
+    return self._require().set_output(**settings)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages\led-controller-version-3\src\lefx\interfaces\service.py:352: in set_output
+    self._command(apply)
+packages\led-controller-version-3\src\lefx\interfaces\service.py:293: in _command
+    self.runtime.render_once(time.monotonic())
+packages\led-controller-version-3\src\lefx\engine\runtime.py:224: in render_once
+    frames = self.composer.compose(
+packages\led-controller-version-3\src\lefx\engine\composer.py:115: in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages\led-controller-version-3\src\lefx\engine\composer.py:136: in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages\led-controller-version-3\src\lefx\engine\composer.py:128: in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages\led-controller-version-3\src\lefx\engine\registry.py:216: in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+E   lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+---------------------------- Captured log teardown ----------------------------
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+_________ test_switching_the_output_while_paused_feeds_the_new_device _________
+tests\studio\test_lab_output.py:292: in test_switching_the_output_while_paused_feeds_the_new_device
+    assert sinks[-1].frames[-1] == FRAME
+E   assert (0, 0, 0, 0, 0, 0, ...) == (16711680, 16...11680, 0, ...)
+E     
+E     At index 0 diff: 0 != 16711680
+E     Use -v to get more diff
+____________ test_stopping_after_a_reload_really_clears_the_device ____________
+tests\studio\test_lab_output.py:310: in test_stopping_after_a_reload_really_clears_the_device
+    assert session.service.status()["service"]["last_error"] is None
+E   assert 'TargetNotFoundError("No effect or preset named \'studio_lab_live\'")' is None
+------------------------------ Captured log call ------------------------------
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+___________ test_a_feed_that_cannot_come_back_is_ended_and_said_so ____________
+tests\studio\test_lab_output.py:336: in test_a_feed_that_cannot_come_back_is_ended_and_said_so
+    assert not output.active
+E   assert not True
+E    +  where True = <lefx.effect_creation.studio.lab.output.LabOutput object at 0x00000207BC9C9B20>.active
+------------------------------ Captured log call ------------------------------
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+________ test_a_global_clear_ends_the_lab_output_instead_of_pretending ________
+tests\studio\test_lab_output.py:357: in test_a_global_clear_ends_the_lab_output_instead_of_pretending
+    assert not output.active
+E   assert not True
+E    +  where True = <lefx.effect_creation.studio.lab.output.LabOutput object at 0x00000207BC7390D0>.active
+__________ test_after_a_global_clear_sending_resumes_only_when_asked __________
+tests\studio\test_lab_output.py:375: in test_after_a_global_clear_sending_resumes_only_when_asked
+    assert not output.active
+E   assert not True
+E    +  where True = <lefx.effect_creation.studio.lab.output.LabOutput object at 0x00000207BCDBAC60>.active
+_________ test_a_global_clear_is_reported_through_the_ended_callback __________
+tests\studio\test_lab_output.py:393: in test_a_global_clear_is_reported_through_the_ended_callback
+    assert output.verify(reason="Alles gel�scht") is False
+           ^^^^^^^^^^^^^
+E   AttributeError: 'LabOutput' object has no attribute 'verify'
+____________ test_a_successful_export_reports_the_check_it_passed _____________
+tests\authoring\test_visual_core.py:287: in test_a_successful_export_reports_the_check_it_passed
+    assert report["check"]["mismatches"] == [] and report["check"]["compared"] >= 5
+           ^^^^^^^^^^^^^^^
+E   KeyError: 'check'
+____________ test_an_export_whose_frames_disagree_is_never_written ____________
+tests\authoring\test_visual_core.py:298: in test_an_export_whose_frames_disagree_is_never_written
+    with pytest.raises(DesignError, match="nicht ver�ndert"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE <class 'lefx.effect_creation.visual.blocks.DesignError'>
+______ test_a_refused_export_leaves_the_existing_file_exactly_as_it_was _______
+tests\authoring\test_visual_core.py:314: in test_a_refused_export_leaves_the_existing_file_exactly_as_it_was
+    with pytest.raises(DesignError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE <class 'lefx.effect_creation.visual.blocks.DesignError'>
+___________ test_a_package_the_loader_refuses_is_not_written_either ___________
+tests\authoring\test_visual_core.py:330: in test_a_package_the_loader_refuses_is_not_written_either
+    with pytest.raises(DesignError, match="lehnt das Paket ab.*nicht ver�ndert"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE <class 'lefx.effect_creation.visual.blocks.DesignError'>
+________ test_reloading_the_catalogue_keeps_a_paused_lab_on_the_device ________
+tests\studio\test_lab_page.py:485: in test_reloading_the_catalogue_keeps_a_paused_lab_on_the_device
+    assert service.status()["service"]["last_error"] is None
+E   assert 'TargetNotFoundError("No effect or preset named \'studio_lab_live\'")' is None
+------------------------------ Captured log call ------------------------------
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+ERROR    lefx.interfaces.service:service.py:172 render loop iteration failed
+Traceback (most recent call last):
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 169, in _loop
+    self.render_once(started)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\interfaces\service.py", line 179, in render_once
+    self.runtime.render_once(moment)
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\runtime.py", line 224, in render_once
+    frames = self.composer.compose(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 115, in compose
+    pixels=self._render(invocation, now, led_count),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 136, in _render
+    instance = self._instance_for(invocation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\composer.py", line 128, in _instance_for
+    registered = self._registry.get(invocation.effect_id)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\engine\registry.py", line 216, in get
+    raise TargetNotFoundError(effect_id, suggestions=self._suggest(effect_id))
+lefx.engine.errors.TargetNotFoundError: No effect or preset named 'studio_lab_live'
+___________ test_clearing_everything_ends_the_lab_send_and_says_so ____________
+tests\studio\test_lab_page.py:507: in test_clearing_everything_ends_the_lab_send_and_says_so
+    assert not lab.output.active
+E   assert not True
+E    +  where True = <lefx.effect_creation.studio.lab.output.LabOutput object at 0x00000207BCDD3FE0>.active
+E    +    where <lefx.effect_creation.studio.lab.output.LabOutput object at 0x00000207BCDD3FE0> = <lefx.effect_creation.studio.lab.page.LabPage(0x207bb629220) at 0x00000207BCD399C0>.output
+____________ test_a_failed_export_check_keeps_the_previous_package ____________
+tests\studio\test_lab_page.py:539: in test_a_failed_export_check_keeps_the_previous_package
+    assert lab.export_to(target) is None  # refused, not reported as done
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: assert {'check': {'compared': 8, 'effect_id': 'x', 'mismatches': [0.5]}, 'design_hash': '62b9c06dd6094b497425d4a59c9663f44637c7143f4e02e77d35b244d93faa28', 'effect_id': 'zwei_punkte', 'kind': 'package', ...} is None
+E    +  where {'check': {'compared': 8, 'effect_id': 'x', 'mismatches': [0.5]}, 'design_hash': '62b9c06dd6094b497425d4a59c9663f44637c7143f4e02e77d35b244d93faa28', 'effect_id': 'zwei_punkte', 'kind': 'package', ...} = export_to(WindowsPath('C:/Users/marco/source/repos/respeaker-led-v3-lab001-r01/tests/.cache/tmp/test_a_failed_export_check_kee0/kept.lefx'))
+E    +    where export_to = <lefx.effect_creation.studio.lab.page.LabPage(0x207bb93d840) at 0x00000207BCEE5D00>.export_to
+============================== warnings summary ===============================
+.venv\Lib\site-packages\_pytest\config\__init__.py:1474
+  C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\.venv\Lib\site-packages\_pytest\config\__init__.py:1474: PytestConfigWarning: Unknown config option: cache_dir
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/studio/test_lab_output.py::test_a_reload_while_the_preview_is_paused_keeps_the_device_fed
+FAILED tests/studio/test_lab_output.py::test_after_a_reload_the_global_output_settings_still_work
+FAILED tests/studio/test_lab_output.py::test_switching_the_output_while_paused_feeds_the_new_device
+FAILED tests/studio/test_lab_output.py::test_stopping_after_a_reload_really_clears_the_device
+FAILED tests/studio/test_lab_output.py::test_a_feed_that_cannot_come_back_is_ended_and_said_so
+FAILED tests/studio/test_lab_output.py::test_a_global_clear_ends_the_lab_output_instead_of_pretending
+FAILED tests/studio/test_lab_output.py::test_after_a_global_clear_sending_resumes_only_when_asked
+FAILED tests/studio/test_lab_output.py::test_a_global_clear_is_reported_through_the_ended_callback
+FAILED tests/authoring/test_visual_core.py::test_a_successful_export_reports_the_check_it_passed
+FAILED tests/authoring/test_visual_core.py::test_an_export_whose_frames_disagree_is_never_written
+FAILED tests/authoring/test_visual_core.py::test_a_refused_export_leaves_the_existing_file_exactly_as_it_was
+FAILED tests/authoring/test_visual_core.py::test_a_package_the_loader_refuses_is_not_written_either
+FAILED tests/studio/test_lab_page.py::test_reloading_the_catalogue_keeps_a_paused_lab_on_the_device
+FAILED tests/studio/test_lab_page.py::test_clearing_everything_ends_the_lab_send_and_says_so
+FAILED tests/studio/test_lab_page.py::test_a_failed_export_check_keeps_the_previous_package
+15 failed, 2 passed, 1 warning in 8.34s

@@ -1,0 +1,88 @@
+{
+  "commit": "2bc9896ee3d82c1dec64ac81a1cb76850ca13e5d",
+  "uncommitted_changes_under_packages": false,
+  "python": "3.12.10",
+  "device": "fake-respeaker (RecordingSink) — keine echte Hardware",
+  "LAB-001-R01-F01": {
+    "scenario": "Lab sendet, Vorschau pausiert, Katalog → Quellen neu laden, danach kein neuer Frame",
+    "preview_playing": false,
+    "render_loop_failures_after_reload": 9,
+    "device_last_frame_equals_lab_frame": true,
+    "device_last_frame": [
+      16733491,
+      0,
+      0,
+      0,
+      0,
+      0,
+      3381759,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "lab_frame": [
+      16733491,
+      0,
+      0,
+      0,
+      0,
+      0,
+      3381759,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "lab_output_active": true,
+    "send_box_checked": true,
+    "status_text": "Sendet an „fake-respeaker“ (Gerät). Player-Wiedergabe ist beendet.",
+    "message_text": "Beispiel geladen: Zwei Punkte rotieren gemeinsam",
+    "primary_state_effect": "studio_lab_live",
+    "service_last_error": "TargetNotFoundError(\"No effect or preset named 'studio_lab_live'\")"
+  },
+  "LAB-001-R01-F02": {
+    "scenario": "Lab sendet, Ausgabe → Alles löschen",
+    "device_last_frame_is_black": true,
+    "lab_output_active": true,
+    "send_box_checked": true,
+    "status_text": "Sendet an „fake-respeaker“ (Gerät). Player-Wiedergabe ist beendet.",
+    "message_text": "Beispiel geladen: Zwei Punkte rotieren gemeinsam",
+    "primary_state_effect": null,
+    "service_last_error": null,
+    "after_resume": {
+      "device_last_frame_equals_lab_frame": false,
+      "lab_output_active": true,
+      "send_box_checked": true,
+      "status_text": "Sendet an „fake-respeaker“ (Gerät). Player-Wiedergabe ist beendet.",
+      "message_text": "Beispiel geladen: Zwei Punkte rotieren gemeinsam",
+      "primary_state_effect": null,
+      "service_last_error": null
+    }
+  },
+  "LAB-001-R01-F03": {
+    "scenario": "gültiges Paket liegt am Ziel; neuer Export mit fehlschlagender Abschlussprüfung",
+    "first_export_check": {
+      "effect_id": "gegenlaeufige_segmente",
+      "compared": 8,
+      "mismatches": []
+    },
+    "failing_export_returned": {
+      "path": "C:\\Users\\marco\\AppData\\Local\\Temp\\lab001-r01-6rft1e9k\\f03\\export\\kept.lefx",
+      "check": {
+        "effect_id": "x",
+        "compared": 8,
+        "mismatches": [
+          0.5
+        ]
+      }
+    },
+    "target_sha256_before": "3b0266e5f2444c8fdbf47980614f44014904f7b6c6b8f459c797f3fa25250e9b",
+    "target_sha256_after": "939e6650ad8742aeca0774250cbcf1d959f4a1503c941823acb00b8a99480ed3",
+    "target_unchanged": false,
+    "leftover_files_in_target_dir": [],
+    "message_text": "Exportiert nach C:\\Users\\marco\\AppData\\Local\\Temp\\lab001-r01-6rft1e9k\\f03\\export\\kept.lefx, aber 1 von 8 Zeitpunkten weichen von der Vorschau ab!"
+  }
+}

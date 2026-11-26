@@ -100,7 +100,7 @@ unter den Plätzen, die seine Definition in `slots` anbietet.
 Drei Ebenen, sechs LEDs, damit es in eine Tabelle passt:
 
 | Ebene | 0 | 1 | 2 | 3 | 4 | 5 |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- |---|---|---|
 | `background_state` — aus | – | – | – | – | – | – |
 | `primary_state` — Rot, opaque | 🟥 | 🟥 | 🟥 | 🟥 | 🟥 | 🟥 |
 | `controlled_overlay` — Richtung, transparent | `None` | `None` | 🟩 | `None` | `None` | `None` |

@@ -10,13 +10,15 @@ Diese Referenz dokumentiert das Befehlszeilenwerkzeug `lefx`. Alle CLI-Befehle f
 lefx [Kommando] [Optionen]
 ```
 
-### Hilfe abrufen:
+### Hilfe abrufen
+
 ```powershell
 lefx --help
 lefx <kommando> --help
 ```
 
-### JSON-Argumente in der CLI:
+### JSON-Argumente in der CLI
+
 Optionen wie `--config` und `--inputs` erwarten ein gültiges JSON-Objekt.
 In der PowerShell umschließt man das JSON-Objekt mit einfachen Anführungszeichen `'...'`:
 
@@ -35,12 +37,13 @@ In der PowerShell umschließt man das JSON-Objekt mit einfachen Anführungszeich
 Alle Befehle, die einen laufenden Service steuern, unterstützen folgende Verbindungsoptionen (nach dem Subcommand):
 
 | Option | Typ | Standardwert | Beschreibung |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `--host` | String | `127.0.0.1` | Service-Hostadresse |
 | `--port` | Integer | `8765` | Service-Port |
 | `--timeout` | Float | `5.0` | HTTP-Timeout in Sekunden |
 
 Beispiel:
+
 ```powershell
 lefx status --host 192.168.1.50 --port 8765 --timeout 2.0
 ```
@@ -62,7 +65,7 @@ lefx serve [Optionen]
 #### Parameter:
 
 | Option | Typ | Standardwert | Beschreibung |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `--host` | String | `127.0.0.1` | Bind-Adresse für HTTP REST-API |
 | `--port` | Integer | `8765` | Bevorzugter HTTP-Port |
 | `--port-pool` | String | `""` | Fallback-Portbereich, z. B. `8765,8770-8774` |
@@ -184,7 +187,7 @@ lefx set overlay <target> --channel <name> [--config <JSON>] [--inputs <JSON>] [
 #### Parameter:
 
 | Option | Standardwert | Beschreibung |
-|---|---|---|
+| --- | --- | --- |
 | `<target>` | Pflicht | Effekt-ID oder Preset-ID |
 | `--slot` | `primary` | `primary` (Hauptanzeige) oder `background` (Hintergrund) |
 | `--channel` | `null` | Kanalname bei Overlays (z. B. `doa`, `volume`) |
@@ -274,7 +277,7 @@ lefx emit event <target> [--config <JSON>] [--priority <int>] [--duration-ms <in
 #### Parameter:
 
 | Option | Standardwert | Beschreibung |
-|---|---|---|
+| --- | --- | --- |
 | `<target>` | Pflicht | Event-ID oder Event-Preset |
 | `--config` | `{}` | Konfigurations-Parameter als JSON-Objekt |
 | `--priority` | `null` | Priorität für die Warteschlange (höher = wichtiger) |

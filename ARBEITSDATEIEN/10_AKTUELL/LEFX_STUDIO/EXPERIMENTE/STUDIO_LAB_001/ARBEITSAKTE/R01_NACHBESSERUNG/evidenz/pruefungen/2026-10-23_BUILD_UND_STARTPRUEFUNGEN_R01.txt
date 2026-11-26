@@ -1,0 +1,243 @@
+# Evidenz – Build- und Startprüfungen nach der Korrektur
+#
+# Commit:   2106ed54e229e47aa4e2ebc672569dfd88837331 (sauber unter packages/ und tests/)
+#
+# Teil A – CI-Schritte 6 und 7, nacheinander in einem Lauf ausgeführt:
+#   uv run python scripts/check_release.py                                → Exit-Code 0, "all release checks passed"
+#   uv run python scripts/sync_release_tree.py --target <scratchpad>/release-tree --clean   → Exit-Code 0
+#   (im Release-Baum) uv build --all-packages --out-dir dist              → Exit-Code 0, 6 Artefakte
+#   Abweichung zu CI: Zielverzeichnis des Release-Baums lag im Sitzungs-Scratchpad statt in ../release-tree,
+#   damit außerhalb des Worktrees nichts angelegt wird. Absolute Pfade unten verweisen auf dieses Scratchpad.
+#
+# Teil B – Startprüfung des Studios:
+#   QT_QPA_PLATFORM=offscreen uv run lefx-studio --self-check --project .   → Exit-Code 0, "Dieser Build ist vollständig."
+#   Die Self-Check-Ausgabe wurde vom Prozess in der Windows-Codepage cp1252 geschrieben und für
+#   diese Datei verlustfrei nach UTF-8 umkodiert (betrifft nur das "ä" in "vollständig").
+#
+# Vollständige, unveränderte Ausgaben folgen.
+# ===================================== Teil A ==========================================
+HEAD=2106ed54e229e47aa4e2ebc672569dfd88837331
+building 3 distributions into build\dist-packages
+  ok  built a wheel and an sdist for each of the 3 distributions
+  ok  there is at least one catalogue to check for
+  ok  exactly one wheel for led-controller-version-3
+  ok  led_controller_version_3-3.0.3-py3-none-any.whl contains lefx/sets/core_set/core-set.lefxset (run scripts/build_effects.py before building)
+  ok  led_controller_version_3-3.0.3-py3-none-any.whl contains lefx/sets/smartspeaker_set/smartspeaker-set.lefxset (run scripts/build_effects.py before building)
+installing into build\lefx-release-qamjpw6d
+  ok  every distribution reports its version
+  ok  they all carry one version (['3.0.3'])
+  ok  import lefx.sdk
+  ok  import lefx.engine
+  ok  import lefx.interfaces
+  ok  import lefx.device.respeaker
+  ok  import lefx.device.simulated_respeaker
+  ok  import lefx.sets.core_set
+  ok  import lefx.sets.smartspeaker_set
+  ok  console script lefx is installed
+  ok  console script lefx-respeaker is installed
+  ok  console script lefx-simulator is installed
+  ok  lefx --help runs
+  ok  lefx-respeaker --help runs
+  ok  lefx-pack is absent until effect creation is installed
+  ok  lefx.effect_creation is not importable either
+  ok  lefx sinks runs
+
+  ok  both frame sinks are discovered (['null', 'respeaker', 'simulator'])
+  ok  both DoA providers are discovered (['respeaker.doa', 'simulator.doa'])
+  ok  every installed provider offers the bare capability the engine asks for
+  ok  both effect sets are discovered (['core-set', 'smartspeaker-set'])
+  ok  each installed set is enabled and points at an archive that is there
+  ok  nothing warned while loading the entry points
+
+  ok  the installed catalogue loads with no broken source
+{"count": 36, "sources": ["core-set", "smartspeaker-set"]}
+
+
+  ok  the installed sets registered 36 definitions
+  ok  both sets are among the loaded sources (['core-set', 'smartspeaker-set'])
+  ok  INCLUDED_LEFXSET=[core] leaves only the core set: ['core-set']
+
+  ok  the environment has no Qt, as an installation without the extra would not
+  ok  the simulator's service half imports without Qt
+
+  ok  the ring window explains that it needs the gui extra
+  ok  a service built from the installed packages renders to the simulator
+
+  ok  led-controller-version-3[all] installs on top
+Using Python 3.12.10 environment at: build\lefx-release-qamjpw6d
+Resolved 27 packages in 155ms
+Prepared 1 package in 58ms
+Installed 7 packages in 6.91s
+ + led-controller-version-3-effect-creation==3.0.3
+ + pyside6==6.12.0
+ + pyside6-addons==6.12.0
+ + pyside6-essentials==6.12.0
+ + pyside6-pdf==6.12.0.140
+ + pyside6-webengine==6.12.0.140
+ + shiboken6==6.12.0
+
+  ok  the [all] extra pulled in led-controller-version-3-effect-creation
+  ok  every distribution reports its version
+  ok  they all carry one version (['3.0.3'])
+  ok  import lefx.effect_creation.studio
+
+  ok  the studio finds the installed outputs without a display
+
+  ok  console script lefx-pack is installed
+  ok  lefx-pack --help runs
+
+  ok  console script lefx-studio is installed
+  ok  lefx-studio --help runs
+
+
+all release checks passed
+check_release exit=0
+111 files written to C:\Users\marco\AppData\Local\Temp\claude\C--Users-marco-source-repos-respeaker-led-v3\fbd58bc8-77bd-4383-9db7-f2acd770c9a4\scratchpad\release-tree
+  LICENSE
+  config.example.yaml
+  scripts/check_release.py
+  packages/led-controller-version-3/pyproject.toml
+  packages/led-controller-version-3/README.md
+  packages/led-controller-version-3/src/lefx/device/respeaker/__init__.py
+  packages/led-controller-version-3/src/lefx/device/respeaker/cli.py
+  packages/led-controller-version-3/src/lefx/device/respeaker/contention.py
+  packages/led-controller-version-3/src/lefx/device/respeaker/provider.py
+  packages/led-controller-version-3/src/lefx/device/respeaker/registration.py
+  packages/led-controller-version-3/src/lefx/device/respeaker/sink.py
+  packages/led-controller-version-3/src/lefx/device/respeaker/transport.py
+  packages/led-controller-version-3/src/lefx/device/respeaker/xvf.py
+  packages/led-controller-version-3/src/lefx/engine/__init__.py
+  packages/led-controller-version-3/src/lefx/engine/composer.py
+  packages/led-controller-version-3/src/lefx/engine/config.py
+  packages/led-controller-version-3/src/lefx/engine/errors.py
+  packages/led-controller-version-3/src/lefx/engine/inputs.py
+  packages/led-controller-version-3/src/lefx/engine/invocation.py
+  packages/led-controller-version-3/src/lefx/engine/layers.py
+  packages/led-controller-version-3/src/lefx/engine/library.py
+  packages/led-controller-version-3/src/lefx/engine/packages/__init__.py
+  packages/led-controller-version-3/src/lefx/engine/packages/loader.py
+  packages/led-controller-version-3/src/lefx/engine/packages/manifest.py
+  packages/led-controller-version-3/src/lefx/engine/registry.py
+  packages/led-controller-version-3/src/lefx/engine/renderer.py
+  packages/led-controller-version-3/src/lefx/engine/runtime.py
+  packages/led-controller-version-3/src/lefx/engine/store.py
+  packages/led-controller-version-3/src/lefx/interfaces/__init__.py
+  packages/led-controller-version-3/src/lefx/interfaces/api.py
+  packages/led-controller-version-3/src/lefx/interfaces/cli.py
+  packages/led-controller-version-3/src/lefx/interfaces/client.py
+  packages/led-controller-version-3/src/lefx/interfaces/config.py
+  packages/led-controller-version-3/src/lefx/interfaces/contract.py
+  packages/led-controller-version-3/src/lefx/interfaces/discovery.py
+  packages/led-controller-version-3/src/lefx/interfaces/hosting.py
+  packages/led-controller-version-3/src/lefx/interfaces/paths.py
+  packages/led-controller-version-3/src/lefx/interfaces/presentation.py
+  packages/led-controller-version-3/src/lefx/interfaces/service.py
+  packages/led-controller-version-3/src/lefx/sdk/__init__.py
+  packages/led-controller-version-3/src/lefx/sdk/calibration.py
+  packages/led-controller-version-3/src/lefx/sdk/color.py
+  packages/led-controller-version-3/src/lefx/sdk/context.py
+  packages/led-controller-version-3/src/lefx/sdk/definitions.py
+  packages/led-controller-version-3/src/lefx/sdk/effects.py
+  packages/led-controller-version-3/src/lefx/sdk/errors.py
+  packages/led-controller-version-3/src/lefx/sdk/parameters.py
+  packages/led-controller-version-3/src/lefx/sdk/ports.py
+  packages/led-controller-version-3/src/lefx/sdk/validation.py
+  packages/led-controller-version-3/src/lefx/sdk/values.py
+  packages/led-controller-version-3/src/lefx/sets/core_set/__init__.py
+  packages/led-controller-version-3/src/lefx/sets/core_set/core-set.lefxset
+  packages/led-controller-version-3/src/lefx/sets/smartspeaker_set/__init__.py
+  packages/led-controller-version-3/src/lefx/sets/smartspeaker_set/smartspeaker-set.lefxset
+  packages/led-controller-version-3-device-simulated-respeaker/pyproject.toml
+  packages/led-controller-version-3-device-simulated-respeaker/README.md
+  packages/led-controller-version-3-device-simulated-respeaker/src/lefx/device/simulated_respeaker/__init__.py
+  packages/led-controller-version-3-device-simulated-respeaker/src/lefx/device/simulated_respeaker/__main__.py
+  packages/led-controller-version-3-device-simulated-respeaker/src/lefx/device/simulated_respeaker/app.py
+  packages/led-controller-version-3-device-simulated-respeaker/src/lefx/device/simulated_respeaker/client.py
+  packages/led-controller-version-3-device-simulated-respeaker/src/lefx/device/simulated_respeaker/link.py
+  packages/led-controller-version-3-device-simulated-respeaker/src/lefx/device/simulated_respeaker/protocol.py
+  packages/led-controller-version-3-device-simulated-respeaker/src/lefx/device/simulated_respeaker/provider.py
+  packages/led-controller-version-3-device-simulated-respeaker/src/lefx/device/simulated_respeaker/registration.py
+  packages/led-controller-version-3-device-simulated-respeaker/src/lefx/device/simulated_respeaker/ring.py
+  packages/led-controller-version-3-device-simulated-respeaker/src/lefx/device/simulated_respeaker/sink.py
+  packages/led-controller-version-3-device-simulated-respeaker/src/lefx/device/simulated_respeaker/window.py
+  packages/led-controller-version-3-effect-creation/pyproject.toml
+  packages/led-controller-version-3-effect-creation/README.md
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/__init__.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/build.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/cli.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/imports.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/scaffold.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/source.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/__init__.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/app.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/authoring.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/blueprint.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/calibrate.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/calibration_page.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/catalogue.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/lab/__init__.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/lab/clock.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/lab/examples.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/lab/inspector.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/lab/output.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/lab/page.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/lab/timeline.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/lab/tree.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/parameters.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/preset_dialog.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/project.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/ring.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/session.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/source_editor.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/studio/window.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/validate.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/visual/__init__.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/visual/blocks.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/visual/compiler.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/visual/editor.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/visual/kernel.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/visual/model.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/visual/persistence.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/visual/preview.py
+  packages/led-controller-version-3-effect-creation/src/lefx/effect_creation/visual/steps.py
+  .github/workflows/release.yml
+  README.md
+  .gitignore
+  pyproject.toml
+sync exit=0
+[led-controller-version-3] Building source distribution...
+[led-controller-version-3-device-simulated-respeaker] Building source distribution...
+[led-controller-version-3-effect-creation] Building source distribution...
+[led-controller-version-3-device-simulated-respeaker] Building wheel from source distribution...
+[led-controller-version-3-effect-creation] Building wheel from source distribution...
+[led-controller-version-3] Building wheel from source distribution...
+Successfully built dist\led_controller_version_3-3.0.3.tar.gz
+Successfully built dist\led_controller_version_3-3.0.3-py3-none-any.whl
+Successfully built dist\led_controller_version_3_device_simulated_respeaker-3.0.3.tar.gz
+Successfully built dist\led_controller_version_3_device_simulated_respeaker-3.0.3-py3-none-any.whl
+Successfully built dist\led_controller_version_3_effect_creation-3.0.3.tar.gz
+Successfully built dist\led_controller_version_3_effect_creation-3.0.3-py3-none-any.whl
+build exit=0
+led_controller_version_3-3.0.3-py3-none-any.whl
+led_controller_version_3-3.0.3.tar.gz
+led_controller_version_3_device_simulated_respeaker-3.0.3-py3-none-any.whl
+led_controller_version_3_device_simulated_respeaker-3.0.3.tar.gz
+led_controller_version_3_effect_creation-3.0.3-py3-none-any.whl
+led_controller_version_3_effect_creation-3.0.3.tar.gz
+# ===================================== Teil B ==========================================
+2026-10-23 12:17:32,874 INFO lefx.effect_creation.studio: project: C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01
+2026-10-23 12:17:33,191 INFO lefx.interfaces.service: output available (null)
+2026-10-23 12:17:33,191 INFO lefx.interfaces.service: service started sink=null led_count=12 fps=30.0 effects=36
+2026-10-23 12:17:33,191 INFO lefx.effect_creation.studio.session: studio output is now null
+2026-10-23 12:17:33,216 INFO lefx.interfaces.service: service stopped
+frozen build : False
+Wurzel       : ok C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01
+Quellen      : ok C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\effects
+Gebaut (core_set): ok C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\sets\core_set
+Gebaut (smartspeaker_set): ok C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\packages\led-controller-version-3\src\lefx\sets\smartspeaker_set
+Kalibrierung : -- C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\doa_calibration.json
+outputs      : null, respeaker, simulator
+catalogue    : 36 Definitionen, 71 Presets
+rendering    : alle Definitionen gerendert
+
+Dieser Build ist vollständig.

@@ -1,0 +1,45 @@
+# Evidenz – Regressionstests R01 gegen den KORRIGIERTEN Stand
+#
+# Commit:   2106ed54e229e47aa4e2ebc672569dfd88837331 (lokal, Branch claude/lefx-studio-lab-prompt-0f58f5;
+#           keine uncommitteten Änderungen unter packages/ oder tests/)
+# Befehl:   uv run pytest <16 Knoten-IDs, siehe 2026-10-23_TESTAUSWAHL_R01.txt> -p no:cacheprovider --tb=short -v
+# Ergebnis: 17 passed (Exit-Code 0). 16 Knoten-IDs ergeben 17 Testfälle, weil
+#           test_the_written_package_renders_what_the_preview_shows mit 12 und 24 LEDs parametrisiert ist.
+# Gerät:    Fake-Senke (RecordingSink) bzw. reine Compiler-/Dateiprüfungen; keine echte Hardware.
+# Vergleich: Vorher-Lauf am unveränderten Stand 2bc9896 → 2026-10-23_REGRESSIONSTESTS_VORHER_R01.txt (15 failed, 2 passed).
+#
+# Vollständige, unveränderte pytest-Ausgabe folgt.
+# ---------------------------------------------------------------------------------------
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\.venv\Scripts\python.exe
+rootdir: C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01
+configfile: pyproject.toml
+plugins: anyio-4.14.2
+collecting ... collected 17 items
+
+tests/studio/test_lab_output.py::test_a_reload_while_the_preview_is_paused_keeps_the_device_fed PASSED [  5%]
+tests/studio/test_lab_output.py::test_after_a_reload_the_global_output_settings_still_work PASSED [ 11%]
+tests/studio/test_lab_output.py::test_switching_the_output_while_paused_feeds_the_new_device PASSED [ 17%]
+tests/studio/test_lab_output.py::test_stopping_after_a_reload_really_clears_the_device PASSED [ 23%]
+tests/studio/test_lab_output.py::test_a_feed_that_cannot_come_back_is_ended_and_said_so PASSED [ 29%]
+tests/studio/test_lab_output.py::test_a_global_clear_ends_the_lab_output_instead_of_pretending PASSED [ 35%]
+tests/studio/test_lab_output.py::test_after_a_global_clear_sending_resumes_only_when_asked PASSED [ 41%]
+tests/studio/test_lab_output.py::test_a_global_clear_is_reported_through_the_ended_callback PASSED [ 47%]
+tests/authoring/test_visual_core.py::test_a_successful_export_reports_the_check_it_passed PASSED [ 52%]
+tests/authoring/test_visual_core.py::test_an_export_whose_frames_disagree_is_never_written PASSED [ 58%]
+tests/authoring/test_visual_core.py::test_a_refused_export_leaves_the_existing_file_exactly_as_it_was PASSED [ 64%]
+tests/authoring/test_visual_core.py::test_a_package_the_loader_refuses_is_not_written_either PASSED [ 70%]
+tests/authoring/test_visual_core.py::test_the_written_package_renders_what_the_preview_shows[12] PASSED [ 76%]
+tests/authoring/test_visual_core.py::test_the_written_package_renders_what_the_preview_shows[24] PASSED [ 82%]
+tests/studio/test_lab_page.py::test_reloading_the_catalogue_keeps_a_paused_lab_on_the_device PASSED [ 88%]
+tests/studio/test_lab_page.py::test_clearing_everything_ends_the_lab_send_and_says_so PASSED [ 94%]
+tests/studio/test_lab_page.py::test_a_failed_export_check_keeps_the_previous_package PASSED [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\_pytest\config\__init__.py:1474
+  C:\Users\marco\source\repos\respeaker-led-v3-lab001-r01\.venv\Lib\site-packages\_pytest\config\__init__.py:1474: PytestConfigWarning: Unknown config option: cache_dir
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 17 passed, 1 warning in 4.77s ========================

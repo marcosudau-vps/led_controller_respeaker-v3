@@ -41,7 +41,7 @@ während es läuft?*
 ## Der Vergleich
 
 | | State | Controlled Overlay | Timed Overlay | Event |
-|---|---|---|---|---|
+| --- | --- | --- | --- |---|
 | **Kommando** | `set state` | `set overlay --channel` | `set overlay` | `emit event` |
 | **Layer** | primary / background | controlled_overlay | timed_overlay | event |
 | **Beginnt** | wenn gesetzt | wenn gesetzt | wenn gesetzt | wenn dran |

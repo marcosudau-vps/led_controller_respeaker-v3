@@ -28,6 +28,8 @@ from .project import Project
 logger = logging.getLogger("lefx.effect_creation.studio.session")
 
 FrameListener = Callable[[tuple[int, ...]], None]
+RebuildListener = Callable[[str], None]
+"""Called with ``"before"`` and ``"after"`` around a reload or a reopen."""
 
 NULL_OUTPUT = "null"
 STUDIO_CHANNEL = "studio"
@@ -161,6 +163,35 @@ class StudioSession:
         self.output_name = NULL_OUTPUT
         self.device_options: dict[str, Any] = {}
         self._listener: FrameListener | None = None
+        self._rebuild_listeners: list[RebuildListener] = []
+
+    # -- rebuilds -----------------------------------------------------------
+
+    def watch_rebuilds(self, listener: RebuildListener) -> Callable[[], None]:
+        """Be told before and after the registry or the whole service is replaced.
+
+        Something that put a definition of its own into the registry — the
+        Lab's live feed — loses it on every reload and every reopen, while the
+        engine's render thread keeps running. Learning about it on the next
+        frame is too late when no next frame comes: a paused preview sends
+        none. ``"before"`` is the moment to take such a state off its layer,
+        ``"after"`` the moment to put it back. ``"after"`` is sent even when the
+        rebuild failed. Returns the function that stops the watching.
+        """
+        self._rebuild_listeners.append(listener)
+
+        def unwatch() -> None:
+            if listener in self._rebuild_listeners:
+                self._rebuild_listeners.remove(listener)
+
+        return unwatch
+
+    def _tell(self, phase: str) -> None:
+        for listener in list(self._rebuild_listeners):
+            try:
+                listener(phase)
+            except Exception:
+                logger.exception("rebuild listener failed (%s)", phase)
 
     # -- the output ---------------------------------------------------------
 
@@ -185,6 +216,13 @@ class StudioSession:
         USB endpoint or a listening socket, and building the next one before
         letting go would have them contend for it.
         """
+        self._tell("before")
+        try:
+            return self._open(output, **device_options)
+        finally:
+            self._tell("after")
+
+    def _open(self, output: str, **device_options: Any) -> ControllerService:
         self.close()
 
         sink: FrameSink
@@ -245,7 +283,11 @@ class StudioSession:
     def reload_sources(self) -> dict[str, Any]:
         if self.service is None:
             raise RuntimeError("no output is open")
-        return self.service.reload_sources()
+        self._tell("before")
+        try:
+            return self.service.reload_sources()
+        finally:
+            self._tell("after")
 
     def status(self) -> dict[str, Any]:
         return {} if self.service is None else self.service.status()
@@ -300,6 +342,7 @@ __all__ = [
     "STUDIO_CHANNEL",
     "FrameListener",
     "Project",
+    "RebuildListener",
     "StudioSession",
     "TappedSink",
     "available_outputs",

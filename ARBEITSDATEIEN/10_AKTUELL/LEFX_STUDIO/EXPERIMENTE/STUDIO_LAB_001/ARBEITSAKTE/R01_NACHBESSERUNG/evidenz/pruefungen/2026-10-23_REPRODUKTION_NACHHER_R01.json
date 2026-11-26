@@ -1,0 +1,79 @@
+{
+  "commit": "2106ed54e229e47aa4e2ebc672569dfd88837331",
+  "uncommitted_changes_under_packages": false,
+  "python": "3.12.10",
+  "device": "fake-respeaker (RecordingSink) — keine echte Hardware",
+  "LAB-001-R01-F01": {
+    "scenario": "Lab sendet, Vorschau pausiert, Katalog → Quellen neu laden, danach kein neuer Frame",
+    "preview_playing": false,
+    "render_loop_failures_after_reload": 0,
+    "device_last_frame_equals_lab_frame": true,
+    "device_last_frame": [
+      16733491,
+      0,
+      0,
+      0,
+      0,
+      0,
+      3381759,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "lab_frame": [
+      16733491,
+      0,
+      0,
+      0,
+      0,
+      0,
+      3381759,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "lab_output_active": true,
+    "send_box_checked": true,
+    "status_text": "Sendet an „fake-respeaker“ (Gerät). Player-Wiedergabe ist beendet.",
+    "message_text": "Beispiel geladen: Zwei Punkte rotieren gemeinsam",
+    "primary_state_effect": "studio_lab_live",
+    "service_last_error": null
+  },
+  "LAB-001-R01-F02": {
+    "scenario": "Lab sendet, Ausgabe → Alles löschen",
+    "device_last_frame_is_black": true,
+    "lab_output_active": false,
+    "send_box_checked": false,
+    "status_text": "Nur Softwarevorschau · Ausgabe „fake-respeaker“: bereit",
+    "message_text": "Ausgabe → Alles löschen hat das Senden des Labs beendet. Zum Fortsetzen „An Ausgabe senden“ erneut aktivieren.",
+    "primary_state_effect": null,
+    "service_last_error": null,
+    "after_resume": {
+      "device_last_frame_equals_lab_frame": true,
+      "lab_output_active": true,
+      "send_box_checked": true,
+      "status_text": "Sendet an „fake-respeaker“ (Gerät). Player-Wiedergabe ist beendet.",
+      "message_text": "Ausgabe → Alles löschen hat das Senden des Labs beendet. Zum Fortsetzen „An Ausgabe senden“ erneut aktivieren.",
+      "primary_state_effect": "studio_lab_live",
+      "service_last_error": null
+    }
+  },
+  "LAB-001-R01-F03": {
+    "scenario": "gültiges Paket liegt am Ziel; neuer Export mit fehlschlagender Abschlussprüfung",
+    "first_export_check": {
+      "effect_id": "gegenlaeufige_segmente",
+      "compared": 8,
+      "mismatches": []
+    },
+    "failing_export_returned": null,
+    "target_sha256_before": "4dc5034d6c4755cb77637e14a3359b5dcde9d04e03bd2deb544a37326ac80ed0",
+    "target_sha256_after": "4dc5034d6c4755cb77637e14a3359b5dcde9d04e03bd2deb544a37326ac80ed0",
+    "target_unchanged": true,
+    "leftover_files_in_target_dir": [],
+    "message_text": "Export abgebrochen: 1 von 8 Zeitpunkten des Pakets weichen von der Vorschau ab. Die Zieldatei wurde nicht verändert."
+  }
+}
