@@ -15,7 +15,7 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
-from release_assets import DISTRIBUTIONS
+from release_contract import CURRENT, canonical_name, workspace_projects
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PACKAGES_ROOT = REPO_ROOT / "packages"
@@ -57,7 +57,8 @@ def step(text: str) -> None:
 
 def pyprojects() -> list[Path]:
     """The workspace root first, then every package. All of them get the version."""
-    return [REPO_ROOT / "pyproject.toml", *sorted(PACKAGES_ROOT.glob("*/pyproject.toml"))]
+    return [REPO_ROOT / "pyproject.toml",
+            *(PACKAGES_ROOT / project.directory / "pyproject.toml" for project in workspace_projects(REPO_ROOT))]
 
 
 def current_version() -> str:
@@ -78,17 +79,19 @@ def write_version(version: str) -> list[Path]:
     produce wheels that cannot be installed together, and every one of them
     would build.
     """
-    internal = {path.parent.name for path in PACKAGES_ROOT.glob("*/pyproject.toml")}
-    # Longest name first, so that "led-controller-version-3" does not shadow
-    # "led-controller-version-3-effect-creation" in the alternation.
-    ordered = sorted(map(re.escape, internal), key=len, reverse=True)
-    pin = re.compile(r'"(' + "|".join(ordered) + r')(\[[^\]]*\])?==\d+\.\d+\.\d+"')
+    internal = {project.name for project in CURRENT}
+    pin = re.compile(r'"([A-Za-z0-9._-]+)(\[[^\]]*\])?==\d+\.\d+\.\d+"')
+
+    def update_pin(match: re.Match) -> str:
+        if canonical_name(match[1]) in internal:
+            return f'"{match[1]}{match[2] or ""}=={version}"'
+        return match[0]
 
     touched = []
     for path in pyprojects():
         text = path.read_text(encoding="utf-8")
         updated = VERSION_LINE.sub(f'version = "{version}"', text, count=1)
-        updated = pin.sub(lambda match: f'"{match[1]}{match[2] or ""}=={version}"', updated)
+        updated = pin.sub(update_pin, updated)
         if updated != text:
             path.write_text(updated, encoding="utf-8")
             touched.append(path)
@@ -121,7 +124,8 @@ def check_tag_is_free(version: str) -> None:
     for remote in ("origin", RELEASE_REPOSITORY):
         if run(["git", "ls-remote", "--tags", remote, f"refs/tags/{tag}"]).strip():
             raise Abort(f"tag {tag} already exists on {remote}")
-    for distribution in DISTRIBUTIONS:
+    for project in CURRENT:
+        distribution = project.name
         try:
             with urlopen(f"https://pypi.org/pypi/{distribution}/{version}/json", timeout=15):
                 raise Abort(f"{distribution} {version} already exists on PyPI")

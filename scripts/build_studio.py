@@ -21,6 +21,9 @@ imported, and it cannot see inside a ``.lefx`` that does not exist yet. So the
 whole whitelist is named as a hidden import; otherwise a catalogue that loads
 in the checkout fails in the executable, one effect at a time.
 
+The Studio visual compiler also uses inspect.getsource() to generate preview
+and export code. The build hook keeps its rendering kernel's Python source.
+
     uv run --group build python scripts/build_studio.py
     uv run --group build python scripts/build_studio.py --onedir
 
@@ -40,6 +43,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 BUILD_ROOT = REPO_ROOT / "build"
 DIST_DIR = BUILD_ROOT / "dist"
 WORK_DIR = BUILD_ROOT / "pyinstaller"
+HOOKS_DIR = Path(__file__).resolve().with_name("pyinstaller_hooks")
 
 NAME = "lefx-studio"
 
@@ -157,6 +161,9 @@ def check_recipe() -> list[str]:
         if name not in hidden:
             problems.append(f"effects may import {name}, but it is not a hidden import")
 
+    if not (HOOKS_DIR / "hook-lefx.effect_creation.visual.kernel.py").is_file():
+        problems.append("visual kernel source hook is missing")
+
     if not entry_point_distributions():
         problems.append(
             "no device package is installed, so the executable would offer no output"
@@ -193,6 +200,7 @@ def build(*, onefile: bool, windowed: bool, clean: bool) -> Path:
         "--distpath", str(DIST_DIR),
         "--workpath", str(WORK_DIR / "work"),
         "--specpath", str(WORK_DIR),
+        "--additional-hooks-dir", str(HOOKS_DIR),
         "--onefile" if onefile else "--onedir",
         # Console by default: the studio logs which project it opened and why a
         # device is unavailable, and hiding that on a tool for debugging effects

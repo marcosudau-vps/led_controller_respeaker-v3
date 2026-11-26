@@ -20,9 +20,12 @@ actually reach for.
 
 from __future__ import annotations
 
+import sys
 import tomllib
 
 import pytest
+
+from scripts.release_contract import canonical_name
 
 from .scan import (
     PACKAGES_ROOT,
@@ -51,6 +54,7 @@ MAY_IMPORT: dict[str, frozenset[str]] = {
     # picks its output from the same entry points the service reads, so
     # installing it does not decide which hardware you have.
     "lefx.effect_creation": frozenset({"lefx.sdk", "lefx.engine", "lefx.interfaces"}),
+    "lefx.configurator_widget": frozenset({"lefx.sdk", "lefx.engine", "lefx.interfaces"}),
     "lefx.device.respeaker": frozenset({"lefx.sdk"}),
     "lefx.device.simulated_respeaker": frozenset({"lefx.sdk"}),
     # A catalogue is data. It ships one archive and a function that says where
@@ -60,12 +64,13 @@ MAY_IMPORT: dict[str, frozenset[str]] = {
     "lefx.sets.smartspeaker_set": frozenset(),
 }
 
-# Which distribution may depend on which. Three, and the direction is the one
+# Which distribution may depend on which. The direction is the one
 # the layers have: the optional packages sit on the runtime, never the reverse.
 DISTRIBUTION_MAY_DEPEND: dict[str, frozenset[str]] = {
     "led-controller-version-3": frozenset(),
     "led-controller-version-3-effect-creation": frozenset({"led-controller-version-3"}),
     "led-controller-version-3-device-simulated-respeaker": frozenset({"led-controller-version-3"}),
+    "lefx-configurator-widget": frozenset({"led-controller-version-3"}),
 }
 
 CREATION_ROOT = PACKAGES_ROOT / "led-controller-version-3-effect-creation/src/lefx/effect_creation"
@@ -143,7 +148,7 @@ def test_the_matrix_covers_every_layer_in_the_workspace():
 
 
 def test_the_matrix_covers_every_distribution_in_the_workspace():
-    assert set(distributions()) == set(DISTRIBUTION_MAY_DEPEND)
+    assert {canonical_name(name) for name in distributions()} == set(DISTRIBUTION_MAY_DEPEND)
 
 
 @pytest.mark.parametrize("layer", ALL_LAYERS)
@@ -208,11 +213,11 @@ def test_the_engine_carries_no_offline_state():
 
 
 def test_every_layer_is_in_the_distribution_it_belongs_to():
-    """Three packages, and which layer lives in which is not incidental.
+    """Check which layers are shipped together.
 
     The runtime layers and both catalogues ship together because nothing ever
     installs a subset of them — no extra selects between the schema, the
-    engine, the control surface and the hardware. The two optional ones are
+    engine, the control surface and the hardware. The optional packages are
     separate because something does select them: an installation without
     effect creation must not have effect creation.
     """
@@ -224,12 +229,13 @@ def test_every_layer_is_in_the_distribution_it_belongs_to():
         "lefx.sets.core_set": "led-controller-version-3",
         "lefx.sets.smartspeaker_set": "led-controller-version-3",
         "lefx.effect_creation": "led-controller-version-3-effect-creation",
+        "lefx.configurator_widget": "lefx_configurator_widget",
         "lefx.device.simulated_respeaker": "led-controller-version-3-device-simulated-respeaker",
     }
     assert {layer: distribution_of(layer) for layer in ALL_LAYERS} == expected
 
 
-@pytest.mark.parametrize("distribution", sorted(DISTRIBUTION_MAY_DEPEND))
+@pytest.mark.parametrize("distribution", distributions())
 def test_the_declared_dependencies_agree_with_what_the_layers_reach(distribution):
     """The pyproject and the imports are two statements of one fact.
 
@@ -239,22 +245,34 @@ def test_the_declared_dependencies_agree_with_what_the_layers_reach(distribution
     """
     text = (PACKAGES_ROOT / distribution / "pyproject.toml").read_bytes()
     declared = tomllib.loads(text.decode("utf-8"))["project"]["dependencies"]
-    internal = {
-        requirement.split("==")[0].split("[")[0].strip()
-        for requirement in declared
-        if requirement.split("==")[0].split("[")[0].strip() in DISTRIBUTION_MAY_DEPEND
-    }
+    names = {canonical_name(req.split("==")[0].split("[")[0].strip()) for req in declared}
+    internal = names & DISTRIBUTION_MAY_DEPEND.keys()
 
     reached = {
-        distribution_of(target)
+        canonical_name(distribution_of(target))
         for layer in ALL_LAYERS
         if distribution_of(layer) == distribution
         for target in MAY_IMPORT[layer]
         if distribution_of(target) != distribution
     }
 
-    assert internal <= DISTRIBUTION_MAY_DEPEND[distribution]
+    assert internal <= DISTRIBUTION_MAY_DEPEND[canonical_name(distribution)]
     assert internal == reached
+
+
+@pytest.mark.parametrize("layer,forbidden", [
+    ("lefx.configurator_widget", "lefx.device.respeaker"),
+    ("lefx.configurator_widget", "lefx.effect_creation"),
+    ("lefx.sdk", "lefx.configurator_widget"),
+    ("lefx.device.simulated_respeaker", "lefx.configurator_widget"),
+])
+def test_import_checker_detects_forbidden_configurator_edges(tmp_path, monkeypatch, layer, forbidden):
+    source = tmp_path / "bad_import.py"
+    source.write_text(f"import {forbidden}\n", encoding="utf-8")
+    module = sys.modules[__name__]
+    monkeypatch.setattr(module, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(module, "layer_files", lambda _: [source])
+    assert violations(layer) == [f"bad_import.py imports {forbidden} ({forbidden})"]
 
 
 # -- Qt stays on the window side --------------------------------------------

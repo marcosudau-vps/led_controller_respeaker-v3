@@ -70,5 +70,5 @@ jobs:
           echo "- Development commit: $COMMIT" >> "$GITHUB_STEP_SUMMARY"
           echo "- Mirror commit: $MIRROR" >> "$GITHUB_STEP_SUMMARY"
           echo "- Original release run: $ORIGINAL_RUN" >> "$GITHUB_STEP_SUMMARY"
-          echo "- All seven GitHub assets and six PyPI files match the original CI; fresh installation and CLI checks passed." >> "$GITHUB_STEP_SUMMARY"
+          echo "- GitHub assets and PyPI files match the original CI for this release contract; fresh installation and CLI checks passed." >> "$GITHUB_STEP_SUMMARY"
           echo "- No builds, tags, uploads or version changes." >> "$GITHUB_STEP_SUMMARY"

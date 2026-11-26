@@ -17,7 +17,7 @@ nebenbei mit ab.
 
 | | Seite | Inhalt |
 |---|---|---|
-| — | [index.md](index.md) | Das System auf einen Blick: acht Schichten in drei Distributionen, ihre Rollen, die Pfade eines Frames und einer Richtung. **Fertig.** |
+| — | [index.md](index.md) | Das System auf einen Blick: neun Schichten in vier Distributionen, ihre Rollen, die Pfade eines Frames und einer Richtung. **Fertig.** |
 
 ---
 

@@ -15,7 +15,9 @@ import pytest
 SCRIPTS = Path(__file__).resolve().parents[2] / "scripts"
 SHA = "a" * 40
 BASE = "b" * 40
-VERSION = "3.0.4"
+VERSION = "3.0.5"
+
+from scripts.release_contract import HISTORIC_COMMIT, HISTORIC_VERSION
 
 
 @pytest.fixture
@@ -24,12 +26,14 @@ def modules(monkeypatch):
     return importlib.import_module("release_bundle"), importlib.import_module("server_release")
 
 
-def make_bundle(tmp_path, bundle):
+def make_bundle(tmp_path, bundle, version=VERSION, commit=SHA):
     dist = tmp_path / "dist"
     dist.mkdir()
-    for project in bundle.PROJECTS:
-        prefix = project.replace("-", "_") + "-" + VERSION
-        metadata = f"Name: {project}\nVersion: {VERSION}\n".encode()
+    projects = bundle.release_projects(version, commit)
+    for project in projects:
+        prefix = f"{project.stem}-{version}"
+        # The Configurator's metadata spelling differs from its index name.
+        metadata = f"Name: {project.directory}\nVersion: {version}\n".encode()
         with zipfile.ZipFile(dist / (prefix + "-py3-none-any.whl"), "w") as archive:
             archive.writestr(prefix + ".dist-info/METADATA", metadata)
         with tarfile.open(dist / (prefix + ".tar.gz"), "w:gz") as archive:
@@ -38,33 +42,40 @@ def make_bundle(tmp_path, bundle):
             archive.addfile(item, io.BytesIO(metadata))
     tree = tmp_path / "tree.tar.gz"
     with tarfile.open(tree, "w:gz") as archive:
-        for name, data in [
-            ("pyproject.toml", f'[project]\nversion = "{VERSION}"\n'.encode()),
-            (".github/workflows/release.yml", b"name: Release\n"),
-        ]:
+        files = {
+            "pyproject.toml": f'[project]\nversion = "{version}"\n'.encode(),
+            ".github/workflows/release.yml": b"name: Release\n",
+            **{f"packages/{p.directory}/pyproject.toml": f'[project]\nname = "{p.directory}"\n'.encode()
+               for p in projects},
+            **{f"scripts/{name}.py": b"# release script\n"
+               for name in ("check_release", "release_bundle", "release_contract")},
+        }
+        for name, data in files.items():
             item = tarfile.TarInfo(name)
             item.size = len(data)
             archive.addfile(item, io.BytesIO(data))
     (dist / ".gitignore").write_text("*\n", encoding="utf-8")
     folder = tmp_path / "bundle"
-    bundle.stage(dist, tree, folder, VERSION, SHA)
+    bundle.stage(dist, tree, folder, version, commit)
     return folder
 
 
-def test_sealed_bundle_roundtrip(tmp_path, modules):
+@pytest.mark.parametrize("version,commit,count", [(VERSION, SHA, 8), (HISTORIC_VERSION, HISTORIC_COMMIT, 6)])
+def test_sealed_bundle_roundtrip(tmp_path, modules, version, commit, count):
     bundle, _ = modules
-    folder = make_bundle(tmp_path, bundle)
-    manifest, files = bundle.verify(folder, VERSION, SHA)
-    assert len(files) == 6
-    assert {p.name for p in files} == bundle.expected(VERSION)
+    folder = make_bundle(tmp_path, bundle, version, commit)
+    manifest, files = bundle.verify(folder, version, commit)
+    assert len(files) == count
+    assert {p.name for p in files} == bundle.expected(version, commit)
     target = tmp_path / "mirror-tree"
-    bundle.unpack_tree(folder, target, VERSION, SHA)
+    bundle.unpack_tree(folder, target, version, commit)
     assert json.loads((target / "release-manifest.json").read_text()) == manifest
     assert (target / ".github/workflows/release.yml").is_file()
     assert not list(target.glob("*.whl"))
 
 
-@pytest.mark.parametrize("defect", ["commit", "version", "wheel", "sdist", "tree", "missing", "extra"])
+@pytest.mark.parametrize("defect", ["commit", "version", "wheel", "sdist", "tree", "missing", "extra",
+                                    "metadata", "missing-configurator"])
 def test_sealed_bundle_rejects_mismatch(tmp_path, modules, defect):
     bundle, _ = modules
     folder = make_bundle(tmp_path, bundle)
@@ -72,32 +83,42 @@ def test_sealed_bundle_rejects_mismatch(tmp_path, modules, defect):
     if defect == "commit":
         commit = BASE
     elif defect == "version":
-        version = "3.0.5"
+        version = "3.0.6"
     elif defect == "missing":
         next(folder.glob("*.whl")).unlink()
     elif defect == "extra":
         (folder / "extra.whl").touch()
+    elif defect == "missing-configurator":
+        (folder / f"lefx_configurator_widget-{VERSION}.tar.gz").unlink()
+    elif defect == "metadata":
+        path = folder / f"lefx_configurator_widget-{VERSION}-py3-none-any.whl"
+        with zipfile.ZipFile(path, "w") as archive:
+            archive.writestr("wrong.dist-info/METADATA", f"Name: wrong\nVersion: {VERSION}\n")
+        manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
+        manifest["files"][path.name] = bundle.file_record(path)
+        (folder / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
     else:
         path = (folder / "tree.tar.gz" if defect == "tree" else
-                next(folder.glob("*.whl" if defect == "wheel" else "*3.0.4.tar.gz")))
+                next(folder.glob("*.whl" if defect == "wheel" else f"*{VERSION}.tar.gz")))
         path.write_bytes(path.read_bytes() + b"bad")
     with pytest.raises(ValueError):
         bundle.verify(folder, version, commit)
 
 
-def test_pypi_download_uses_the_pre_tag_bytes(tmp_path, modules, monkeypatch):
+@pytest.mark.parametrize("version,commit,count", [(VERSION, SHA, 8), (HISTORIC_VERSION, HISTORIC_COMMIT, 6)])
+def test_pypi_download_uses_the_pre_tag_bytes(tmp_path, modules, monkeypatch, version, commit, count):
     bundle, _ = modules
-    folder = make_bundle(tmp_path, bundle)
+    folder = make_bundle(tmp_path, bundle, version, commit)
     calls = []
     def fetch(url, **kwargs):
         calls.append(url)
         return (folder / url.rsplit("/", 1)[-1]).open("rb")
     monkeypatch.setattr(bundle.urllib.request, "urlopen", fetch)
     output = tmp_path / "download"
-    bundle.fetch(folder / "manifest.json", output, VERSION)
-    assert len(calls) == 6
-    assert all(f"/releases/download/v{VERSION}/" in url for url in calls)
-    assert {p.name for p in output.iterdir()} == bundle.expected(VERSION)
+    bundle.fetch(folder / "manifest.json", output, version, commit)
+    assert len(calls) == count
+    assert all(f"/releases/download/v{version}/" in url for url in calls)
+    assert {p.name for p in output.iterdir()} == bundle.expected(version, commit)
 
 
 @pytest.mark.parametrize("current,tags,expected", [
@@ -187,16 +208,81 @@ def test_pypi_wrong_hash_is_not_success(tmp_path, modules, monkeypatch):
             if name.startswith(project.replace("-", "_") + "-")
         ]}
     monkeypatch.setattr(server, "pypi_record", record)
-    assert server.verify_pypi(manifest)
+    assert server.verify_pypi(manifest, VERSION, SHA)
     def damaged(project, version):
         data = record(project, version)
         data["urls"][0]["digests"]["sha256"] = "0" * 64
         return data
     monkeypatch.setattr(server, "pypi_record", damaged)
     with pytest.raises(RuntimeError, match="differs"):
-        server.verify_pypi(manifest)
+        server.verify_pypi(manifest, VERSION, SHA)
     monkeypatch.setattr(server, "pypi_record", lambda *args: None)
-    assert not server.verify_pypi(manifest)
+    assert not server.verify_pypi(manifest, VERSION, SHA)
+
+
+def test_historical_bundle_refuses_a_fourth_project_or_wrong_commit(tmp_path, modules):
+    bundle, _ = modules
+    folder = make_bundle(tmp_path, bundle, HISTORIC_VERSION, HISTORIC_COMMIT)
+    path = folder / "manifest.json"
+    with pytest.raises(ValueError, match="No release contract"):
+        bundle.load_manifest(path, HISTORIC_VERSION, SHA)
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["files"]["lefx_configurator_widget-3.0.4.tar.gz"] = manifest["tree"]
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="Wrong set"):
+        bundle.load_manifest(path, HISTORIC_VERSION, HISTORIC_COMMIT)
+
+
+@pytest.mark.parametrize("version,commit", [(VERSION, SHA), (HISTORIC_VERSION, HISTORIC_COMMIT)])
+def test_wait_and_previous_gate_use_the_exact_contract(tmp_path, modules, monkeypatch, version, commit):
+    bundle, server = modules
+    folder = make_bundle(tmp_path, bundle, version, commit)
+    manifest, _ = bundle.verify(folder, version, commit)
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    folder.rename(artifacts / "release-pypi")
+    tag, mirror = f"v{version}", "f6bd3823170820b123a061d2609c8008bfae708a"
+    monkeypatch.setattr(server, "remote_tag", lambda repo, name: (
+        (commit if repo == "origin" else mirror) if name == tag else None
+    ))
+    monkeypatch.setattr(server, "public_runs", lambda *_: [
+        {"status": "completed", "conclusion": "success", "html_url": "https://example.invalid"}
+    ])
+    monkeypatch.setattr(server, "published_mirror_manifest", lambda _: manifest)
+    monkeypatch.setattr(server, "git", lambda *args: commit if args[0] == "rev-parse"
+                        else "Release run: 45854688359")
+    monkeypatch.setattr(server, "gh", lambda *args: json.dumps({
+        "status": "completed", "conclusion": "success", "headSha": commit
+    }))
+    names = set(manifest["files"]) | server.expected_names("release-studio", version)
+    monkeypatch.setattr(server, "release_record", lambda _: {
+        "draft": False, "assets": [{"name": name} for name in names]
+    })
+
+    def pypi(project, release):
+        assert release == version
+        distribution = next(d for d in bundle.release_projects(version, commit) if d.name == project)
+        return {"urls": [
+            {"filename": name, "size": manifest["files"][name]["size"], "yanked": False,
+             "digests": {"sha256": manifest["files"][name]["sha256"]}}
+            for name in (distribution.wheel(version), distribution.sdist(version))
+        ]}
+
+    monkeypatch.setattr(server, "pypi_record", pypi)
+    args = argparse.Namespace(version=version, commit=commit, mirror_commit=mirror, artifacts=artifacts)
+    server.require_previous_complete(version)
+    server.wait(args)
+    monkeypatch.setattr(server, "published_mirror_manifest", lambda _: {**manifest, "commit": BASE})
+    with pytest.raises(RuntimeError, match="Mirrored manifest differs"):
+        server.wait(args)
+    assert not server.remote_tag("origin", "v9.0.0")
+    monkeypatch.setattr(server, "pypi_record", lambda name, ver: {"urls": [
+        *pypi(name, ver)["urls"], {"filename": "unexpected.tar.gz", "yanked": False}
+    ]})
+    with pytest.raises(RuntimeError, match="Unexpected files"):
+        server.verify_pypi(manifest, version, commit)
+    with pytest.raises(RuntimeError, match="incorrect PyPI files"):
+        server.require_previous_complete(version)
 
 
 def test_existing_tag_resume_never_retags(tmp_path, modules, monkeypatch):

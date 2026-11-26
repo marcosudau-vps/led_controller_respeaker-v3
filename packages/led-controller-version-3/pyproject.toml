@@ -50,9 +50,11 @@ dependencies = [
 # selected at runtime by included_lefxset, because choosing which effects to
 # load is a configuration question, not an installation question.
 [project.optional-dependencies]
+configurator = ["lefx_configurator_widget==3.0.4"]
 simulated-respeaker = ["led-controller-version-3-device-simulated-respeaker[gui]==3.0.4"]
 effect-creation = ["led-controller-version-3-effect-creation==3.0.4"]
 all = [
+    "lefx_configurator_widget==3.0.4",
     "led-controller-version-3-device-simulated-respeaker[gui]==3.0.4",
     "led-controller-version-3-effect-creation==3.0.4",
 ]

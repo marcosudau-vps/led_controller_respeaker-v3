@@ -97,17 +97,17 @@ nicht, und es gibt keine Codezeile, die man dafür vergessen könnte.
 
 ---
 
-## Die acht Schichten in drei Distributionen
+## Neun Schichten in vier Distributionen
 
-Was gebaut wird, sind drei Wheels. Was die Regeln beschreiben, sind acht
-Schichten. Beides gehört zusammen, aber es ist nicht dasselbe: ein eigenes
-Projekt bekommt nur, was auch wirklich optional ist.
+Der gemeinsame Release baut vier Wheels. Die Architekturregeln gelten für neun
+Schichten. Jedes optionale Projekt lässt sich getrennt installieren.
 
 | PyPI-Projekt | Installiert durch |
 |---|---|
 | `led-controller-version-3` | Standard |
 | `led-controller-version-3-device-simulated-respeaker` | `[simulated-respeaker]` |
 | `led-controller-version-3-effect-creation` | `[effect-creation]` |
+| `lefx-configurator-widget` | `[configurator]` oder direkt |
 
 | Schicht | Rolle | Darf importieren | Liegt in |
 | --- | --- | --- | --- |
@@ -118,7 +118,8 @@ Projekt bekommt nur, was auch wirklich optional ist.
 | **lefx.sets.core_set** | Der Referenzkatalog als gebautes `.lefxset`. | — | `led-controller-version-3` |
 | **lefx.sets.smartspeaker_set** | Der Sprachassistenz-Katalog. | — | `led-controller-version-3` |
 | **lefx.device.simulated_respeaker** | Das Software-Double: lokaler Transport, Ringfenster, simulierte DoA. | sdk | `led-controller-version-3-device-simulated-respeaker` |
-| **lefx.effect_creation** | Alles zum Erstellen von Effekten: Gerüst, Prüfung, Bauen (`lefx-pack`) und die Desktop-Werkstatt (`lefx-studio`). | sdk, engine, interfaces | `led-controller-version-3-effect-creation` |
+| **lefx.effect_creation** | Gerüst, Prüfung, Bauen (`lefx-pack`) und die Desktop-Werkstatt (`lefx-studio`). | sdk, engine, interfaces | `led-controller-version-3-effect-creation` |
+| **lefx.configurator_widget** | Einbettbarer Editor für Effektparameter und LED-Zuordnungen mit isolierter Vorschau. | sdk, engine, interfaces | `lefx_configurator_widget` |
 
 Die vier Laufzeitschichten und beide Kataloge liegen in einem Wheel, weil nie
 eine Teilmenge davon installiert wird — kein Extra wählt zwischen ihnen, und
@@ -132,6 +133,7 @@ lefx.sdk                         → (nichts)
 lefx.engine                      → lefx.sdk
 lefx.interfaces                  → lefx.sdk, lefx.engine
 lefx.effect_creation             → lefx.sdk, lefx.engine, lefx.interfaces
+lefx.configurator_widget         → lefx.sdk, lefx.engine, lefx.interfaces
 lefx.device.respeaker            → lefx.sdk
 lefx.device.simulated_respeaker  → lefx.sdk
 lefx.sets.core_set               → (nichts)
@@ -353,7 +355,8 @@ respeaker-led-v3/
 │   │                                    lefx.device.respeaker · lefx.sets.*
 │   ├── led-controller-version-3-device-simulated-respeaker/
 │   │                                    lefx.device.simulated_respeaker
-│   └── led-controller-version-3-effect-creation/     lefx.effect_creation (+ .studio)
+│   ├── led-controller-version-3-effect-creation/     lefx.effect_creation (+ .studio)
+│   └── lefx_configurator_widget/                    lefx.configurator_widget
 ├── effects/
 │   ├── core-set/                Quellen der kuratierten Referenzdefinitionen
 │   └── smartspeaker-set/        Quellen des portierten Produktivsatzes

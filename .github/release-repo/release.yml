@@ -31,8 +31,12 @@ jobs:
     if: github.repository == 'marcosudau-vps/led-ctrl-v3' && startsWith(github.ref, 'refs/tags/v')
     outputs:
       version: ${{ steps.version.outputs.version }}
+      matrix: ${{ steps.contract.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:
@@ -54,10 +58,16 @@ jobs:
             exit 1
           fi
 
-      - name: Download the exact pre-tag tested PyPI files
+      - name: Bind source commit, download files and select publisher matrix
+        id: contract
         env:
           VERSION: ${{ steps.version.outputs.version }}
-        run: python scripts/release_bundle.py fetch release-manifest.json dist --version "$VERSION"
+        run: |
+          test "$(git rev-parse "${GITHUB_REF}^{commit}")" = "$(git rev-parse HEAD)"
+          commit=$(git for-each-ref --format='%(contents)' "$GITHUB_REF" | sed -n 's/^Development commit: //p')
+          matrix=$(python scripts/release_contract.py --version "$VERSION" --commit "$commit")
+          python scripts/release_bundle.py fetch release-manifest.json dist --version "$VERSION" --commit "$commit"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -74,17 +84,14 @@ jobs:
     # One environment per project, and each project's trusted publisher on PyPI
     # names its own. That is not tidiness: PyPI refuses a second *pending*
     # publisher with the same owner, repository, workflow and environment, so
-    # three projects registered ahead of their first upload need three
-    # configurations, and the environment is the only field free to differ.
+    # projects registered ahead of their first upload need distinct environments.
     #
     # It buys something too. An approval rule can now be put on one project
     # without stopping the others, and a publisher is scoped to the one job
     # that may use it rather than to every job in the workflow.
     environment: ${{ matrix.environment }}
     # One job per project, each minting its own short-lived token from its own
-    # trusted publisher. A single upload of all three would depend on how PyPI
-    # scopes a minted token across projects; three uploads do not depend on it
-    # at all, and a failure names the project it belongs to.
+    # trusted publisher. Each upload is scoped to its project.
     strategy:
       fail-fast: false
       # One at a time. Parallel uploads are parallel *new projects* the first
@@ -93,32 +100,16 @@ jobs:
       # Serialised they are far enough apart to get through, and a release
       # takes a couple of minutes longer, which is not a cost.
       max-parallel: 1
-      matrix:
-        # The distribution is in wheel-filename form, so the glob below is
-        # exact: a wheel is named {name}-{version}-..., and
-        # led_controller_version_3-*.whl therefore matches the runtime alone and
-        # never led_controller_version_3_effect_creation-*.whl.
-        #
-        # The environment must match the publisher registered for that project.
-        # Getting these two out of step is the one mistake here that produces a
-        # confusing failure — PyPI answers a mismatched claim with a 403 that
-        # says nothing about environments.
-        include:
-          - distribution: led_controller_version_3
-            environment: pypi
-          - distribution: led_controller_version_3_effect_creation
-            environment: pypi-effect-creation
-          - distribution: led_controller_version_3_device_simulated_respeaker
-            environment: pypi-simulator
+      matrix: ${{ fromJSON(needs.build.outputs.matrix) }}
     permissions:
       # What trusted publishing needs, and the only reason this job has any
       # permissions at all. GitHub mints a short-lived OIDC token, PyPI checks
       # it against the publisher registered for that project, and hands back an
       # upload token good for minutes. Nothing is stored anywhere.
       #
-      # For this to resolve, each of the three projects must carry a publisher
+      # For this to resolve, each project must carry a publisher
       # naming owner marcosudau-vps, repository led-ctrl-v3, workflow
-      # release.yml and the environment from the matrix above. A project that
+      # release.yml and the environment from the release contract. A project that
       # does not exist yet takes a *pending* publisher on the account that
       # should own it; a project that already exists takes one under its own
       # publishing settings, which only an owner of that project can add.
@@ -146,6 +137,6 @@ jobs:
           # already has, so without this, re-running after a partial failure
           # fails again on everything that did work — and the only way forward
           # would be a version nobody needed. With it, the run can simply be
-          # repeated until all three are up. It cannot mask a mistake: the
+          # repeated until all projects are up. It cannot mask a mistake: the
           # version is new on every release, so there is nothing to skip.
           skip-existing: true

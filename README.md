@@ -22,8 +22,14 @@ Effekten nichts zu tun — das ist ein eigenes Paket.
 ```bash
 pip install "led-controller-version-3[simulated-respeaker]"   # Software-Geräteersatz mit Ringfenster
 pip install "led-controller-version-3[effect-creation]"       # lefx-pack und lefx-studio
-pip install "led-controller-version-3[all]"                   # beides
+pip install "led-controller-version-3[configurator]"          # LED-Zuordnungen und TestLab
+pip install "led-controller-version-3[all]"                   # alle drei Extras
 ```
+
+Das Configurator-Extra ist für den ersten gemeinsamen Release nach 3.0.4 vorgesehen.
+Bis zur Veröffentlichung lässt sich das Widget aus dem Workspace oder aus lokal gebauten
+Wheels starten. Der Programmeinstieg heißt `lefx-configurator-widget`.
+Die [Paketdokumentation](packages/lefx_configurator_widget/README.md) beschreibt Einbettung und TestLab.
 
 Beide Effektkataloge sind in der Standardinstallation enthalten; welche geladen
 werden, entscheidet `included_lefxset`.
@@ -38,27 +44,26 @@ Pakete.
 
 ## Pakete
 
-Drei Distributionen, eine Versionsnummer, gemeinsam veröffentlicht.
+Vier Distributionen teilen eine Versionsnummer und werden gemeinsam veröffentlicht.
 
 | PyPI-Projekt | Enthält | Installiert durch |
 |---|---|---|
 | `led-controller-version-3` | `lefx.sdk`, `lefx.engine`, `lefx.interfaces`, `lefx.device.respeaker`, `lefx.sets.core_set`, `lefx.sets.smartspeaker_set` | Standard |
 | `led-controller-version-3-device-simulated-respeaker` | `lefx.device.simulated_respeaker` | `[simulated-respeaker]` |
 | `led-controller-version-3-effect-creation` | `lefx.effect_creation` (+ `.studio`) | `[effect-creation]` |
+| `lefx-configurator-widget` | `lefx.configurator_widget` | `[configurator]` oder direkt |
 
 Nur Optionales bekommt ein eigenes Projekt. Schema, Engine,
 Steuerungsoberfläche und Hardware werden immer zusammen installiert — kein
 Extra wählt je zwischen ihnen —, und welche Effektkataloge geladen werden, ist
 eine Laufzeitfrage (`included_lefxset`), keine Installationsfrage.
 
-Die PyPI-Namen tragen das Präfix `led-controller-version-3-`; die Importpfade heißen
-`lefx.*`. `led-controller-version-3` ist der Arbeitsname dieses Stands, die `lefx-*`-Namen
-bleiben auf PyPI frei.
+Die Importpfade liegen unter `lefx.*`. Der Distributionsname `lefx_configurator_widget`
+wird auf dem Python Package Index zu `lefx-configurator-widget` normalisiert.
 
 ## Schichten und Abhängigkeitsrichtung
 
-Dass drei Wheels entstehen, ändert nichts an den Schichten. Die Regeln gelten
-zwischen **Modulen**, nicht zwischen Paketen, und
+Die Abhängigkeitsregeln gelten zwischen **Modulen**.
 [`tests/architecture/test_architecture.py`](tests/architecture/test_architecture.py)
 prüft sie über die Verzeichnisse unter `src/lefx`:
 
@@ -67,6 +72,7 @@ lefx.sdk                         → (nichts)
 lefx.engine                      → lefx.sdk
 lefx.interfaces                  → lefx.sdk, lefx.engine
 lefx.effect_creation             → lefx.sdk, lefx.engine, lefx.interfaces
+lefx.configurator_widget         → lefx.sdk, lefx.engine, lefx.interfaces
 lefx.device.respeaker            → lefx.sdk
 lefx.device.simulated_respeaker  → lefx.sdk
 lefx.sets.*                      → (nichts)
@@ -100,7 +106,7 @@ lefx config      # welcher Wert gilt, und woher er kommt
 ## Entwicklung
 
 ```bash
-uv sync
+uv sync --locked
 ```
 
 ```bash
@@ -108,8 +114,11 @@ uv run python scripts/build_effects.py
 ```
 
 ```bash
-uv run pytest -m "not hardware"
+uv run --locked pytest -m "not hardware"
 ```
+
+Die Root-Suite schließt den Configurator und die sieben Kopier- und Isolationstests ein.
+Nach dem Katalogbau startet `uv run --locked lefx-configurator-widget` das TestLab.
 
 Die Effektkataloge sind gebaute Ausgabe und liegen unter
 `packages/led-controller-version-3/src/lefx/sets/<name>/` — derselbe Ort im Checkout wie in

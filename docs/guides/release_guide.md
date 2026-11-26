@@ -14,7 +14,8 @@ respeaker-led-v3/
 ├── packages/
 │   ├── led-controller-version-3/             Hauptpaket (SDK, Engine, Interfaces, Device & Kataloge)
 │   ├── led-controller-version-3-effect-creation/  Authoring & Build-Tools (`lefx-pack`)
-│   └── led-controller-version-3-device-simulated-respeaker/ Qt/PySide6 GUI-Simulator
+│   ├── led-controller-version-3-device-simulated-respeaker/ Qt/PySide6 GUI-Simulator
+│   └── lefx_configurator_widget/                   Einbettbarer LED-Configurator
 ├── effects/
 │   ├── core-set/               Quellcode & Quellen für das core-set
 │   └── smartspeaker-set/       Quellcode & Quellen für das smartspeaker-set
@@ -70,6 +71,9 @@ Die Tests prüfen:
 ---
 
 ## 📦 4. Release-Validierung (`check_release.py`)
+
+Das [Release-Handbuch](../release_guide.md) beschreibt die verbindliche
+Server-Pipeline, die Release-Verträge und Trusted Publishing.
 
 Vor der Veröffentlichung stellt `check_release.py` sicher, dass alle gebauten Wheels vollständig sind und die `.lefxset`-Archive enthalten:
 

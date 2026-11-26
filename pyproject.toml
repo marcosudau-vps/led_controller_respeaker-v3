@@ -7,6 +7,7 @@ dependencies = [
     "led-controller-version-3",
     "led-controller-version-3-effect-creation",
     "led-controller-version-3-device-simulated-respeaker",
+    "lefx_configurator_widget",
 ]
 
 # The root is a workspace container, not a distributable. Nothing here is ever
@@ -20,7 +21,7 @@ members = ["packages/*"]
 # Workspace members resolve to each other from the checkout rather than from an
 # index, so a change in one is visible to the others without a reinstall.
 #
-# Three distributions, not nine. The four layers of the runtime — schema,
+# The four layers of the runtime — schema,
 # engine, control surface, hardware — and both catalogues ship together in
 # led-controller-version-3, because no extra ever selects between them and nothing installs
 # a subset. Only what is genuinely optional has a project of its own.
@@ -28,6 +29,7 @@ members = ["packages/*"]
 led-controller-version-3 = { workspace = true }
 led-controller-version-3-effect-creation = { workspace = true }
 led-controller-version-3-device-simulated-respeaker = { workspace = true }
+lefx-configurator-widget = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -45,7 +47,7 @@ build = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "packages/lefx_configurator_widget/tests"]
 python_files = ["test_*.py"]
 cache_dir = "tests/.cache/pytest_cache"
 # Keep scratch files inside the checkout. The system temp directory is not

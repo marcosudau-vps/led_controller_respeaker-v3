@@ -202,6 +202,19 @@ def test_the_freeze_recipe_is_complete():
     assert build_studio().check_recipe() == []
 
 
+def test_the_freeze_recipe_includes_the_visual_compiler_source_hook():
+    import runpy
+    from lefx.effect_creation.visual import compiler
+    from lefx.effect_creation.visual.blocks import BLOCKS
+
+    build = build_studio()
+    modules = {item.__module__ for item in compiler.COMMON_FUNCTIONS}
+    modules.update(block.evaluate.__module__ for block in BLOCKS.values())
+    for name in modules:
+        source_hook = build.HOOKS_DIR / f"hook-{name}.py"
+        assert runpy.run_path(str(source_hook))["module_collection_mode"] == "pyz+py"
+
+
 def test_every_entry_point_distribution_travels_with_the_bundle():
     module = build_studio()
     registered = set(module.entry_point_distributions())

@@ -9,6 +9,8 @@ from unittest.mock import Mock
 
 import pytest
 
+from scripts.release_contract import HISTORIC_COMMIT, HISTORIC_MIRROR, HISTORIC_RUN
+
 SCRIPTS = Path(__file__).resolve().parents[2] / "scripts"
 SHA = "a" * 40
 MIRROR = "b" * 40
@@ -20,7 +22,8 @@ def modules(monkeypatch):
     return importlib.import_module("verify_published_release"), importlib.import_module("server_release")
 
 
-def test_clean_install_retries_without_cache_or_foreign_index(modules, monkeypatch):
+@pytest.mark.parametrize("version,commit", [("3.0.4", HISTORIC_COMMIT), ("3.0.5", SHA)])
+def test_clean_install_retries_without_cache_or_foreign_index(modules, monkeypatch, version, commit):
     verify, _ = modules
     monkeypatch.setenv("UV_INDEX_URL", "https://wrong.invalid")
     monkeypatch.setenv("PIP_EXTRA_INDEX_URL", "https://wrong.invalid")
@@ -35,15 +38,18 @@ def test_clean_install_retries_without_cache_or_foreign_index(modules, monkeypat
         if "pip" in command:
             assert "--no-cache" in command and "--no-config" in command
             assert "https://pypi.org/simple" in command
-            assert "led-controller-version-3[all]==3.0.4" in command
+            assert f"led-controller-version-3[all]=={version}" in command
             if len([c for c in calls if "pip" in c]) == 1:
                 raise subprocess.CalledProcessError(1, command)
     monkeypatch.setattr(verify.subprocess, "run", run)
     monkeypatch.setattr(verify.time, "sleep", Mock())
-    verify.install_published("3.0.4")
+    verify.install_published(version, commit)
     installs = [c for c in calls if "pip" in c]
     assert len(installs) == 2 and installs[0] != installs[1]
-    assert sum(c[-1] == "--help" for c in calls) == 2
+    assert sum(c[-1] == "--help" for c in calls) == 5
+    assert any(c[-1] == "--smoke" and "lefx-configurator-widget" in c[0] for c in calls) == (version == "3.0.5")
+    check = next(c[-1] for c in calls if "-c" in c)
+    assert ("lefx-configurator-widget" in check) == (version == "3.0.5")
 
 
 def test_permanent_install_failure_is_not_success(modules, monkeypatch):
@@ -54,7 +60,7 @@ def test_permanent_install_failure_is_not_success(modules, monkeypatch):
     monkeypatch.setattr(verify.subprocess, "run", run)
     monkeypatch.setattr(verify.time, "sleep", Mock())
     with pytest.raises(subprocess.CalledProcessError):
-        verify.install_published("3.0.4")
+        verify.install_published("3.0.4", HISTORIC_COMMIT)
 
 
 @pytest.mark.parametrize("conclusion,job_name,ancestor,expected", [
@@ -80,12 +86,12 @@ def test_recovery_proof_bound_to_exact_release(modules, monkeypatch, conclusion,
 
 def test_resolve_refuses_failed_prerequisites(modules, monkeypatch):
     verify, server = modules
-    monkeypatch.setattr(server, "remote_tag", lambda remote, tag: SHA if remote == "origin" else MIRROR)
-    monkeypatch.setattr(server, "git", lambda *a: "Release run: 123")
+    monkeypatch.setattr(server, "remote_tag", lambda remote, tag: HISTORIC_COMMIT if remote == "origin" else HISTORIC_MIRROR)
+    monkeypatch.setattr(server, "git", lambda *a: HISTORIC_COMMIT if a[0] == "rev-parse" else f"Release run: {HISTORIC_RUN}")
     def gh(*args):
         if args[0] == "api":
             return json.dumps({"path": ".github/workflows/patch-release.yml",
-                               "event": "workflow_dispatch", "head_branch": "main", "status": "completed"})
+                               "event": "workflow_dispatch", "head_branch": "main", "status": "completed", "id": int(HISTORIC_RUN), "head_sha": HISTORIC_COMMIT})
         return json.dumps({"jobs": [{"name": "Verify all artifacts, tag, publish and mirror", "conclusion": "failure"}]})
     monkeypatch.setattr(verify, "gh", gh)
     with pytest.raises(RuntimeError, match="prerequisite"):

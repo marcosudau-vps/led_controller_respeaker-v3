@@ -6,9 +6,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from release_assets import sha256
-
-REPOSITORY = "marcosudau-vps/led_controller_respeaker-v3"
+from release_bundle import sha256
+from release_contract import DEV_REPO as REPOSITORY
 
 
 def gh(*args: str) -> str:
@@ -29,7 +28,8 @@ def verify_uploaded(record: dict, assets: list[Path]) -> None:
     """Check remote bytes, not just filenames. Existing public releases are immutable here."""
     expected = {p.name: p for p in assets}
     remote = {a["name"]: a for a in record["assets"]}
-    if set(remote) != set(expected):
+    if (set(remote) != set(expected) or len(remote) != len(record["assets"])
+            or len(expected) != len(assets)):
         raise RuntimeError("GitHub Release asset names differ from the checked CI assets")
     with tempfile.TemporaryDirectory(prefix="lefx-upload-check-") as temp:
         for name, local in expected.items():

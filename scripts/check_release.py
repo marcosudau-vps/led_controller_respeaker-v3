@@ -1,22 +1,8 @@
 """Build every distribution and prove the built artefacts actually install.
 
-An editable workspace hides packaging mistakes rather than causing them: every
-module is importable because the source tree is on the path, whatever the wheel
-would have contained. A missing package directory, an entry point that names a
-module that is not shipped, a runtime dependency declared only in the dev group
-— none of it shows until something installs the artefact instead of the
-checkout. So this builds every distribution, installs them into an empty
-environment and asks the questions that only that environment can answer:
-
-* do they all import,
-* are the console scripts there and do they run,
-* do the entry points resolve, so the service finds both devices,
-* and does the simulator's service half work with no Qt installed at all.
-
-That last one is the reason the ring window is an extra, and it is why the
-studio — which brings Qt with it — is installed only afterwards, on top of the
-environment that has already answered the question. Installing it first would
-prove the opposite of what is wanted.
+Install a fresh environment for each supported combination. Constraints
+bind every internal distribution to the exact local wheel while the resolver
+still has to follow its declared dependencies and extras.
 
     uv run python scripts/check_release.py
     uv run python scripts/check_release.py --keep
@@ -26,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -33,36 +20,23 @@ import tempfile
 import tomllib
 from pathlib import Path
 
+from release_bundle import validate_distribution
+from release_contract import (
+    CONFIGURATOR, CORE, CURRENT, SIMULATOR, STUDIO, artifact_filenames, workspace_projects,
+)
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DIST_DIR = REPO_ROOT / "build/dist-packages"
 
-# What a default installation is, plus the simulator. Named as a person would
-# type them, so that the extras are exercised rather than bypassed: if an extra
-# names the wrong package, this installs the wrong thing and every check below
-# runs against it.
-#
-# No Qt in the result, which is what proves the simulator's service half needs
-# none. Effect creation is deliberately absent: it is an optional distribution,
-# it brings Qt with it, and it is installed afterwards into the same
-# environment — both the real upgrade path and the proof that a runtime
-# installation works without any of the tooling that made the effects it plays.
-RUNTIME_REQUESTS = (
-    "led-controller-version-3",
-    # Not the [simulated-respeaker] extra, which pulls the gui extra with it:
-    # the distribution alone is what proves the service half needs no Qt.
-    "led-controller-version-3-device-simulated-respeaker",
+# Each request exercises the declared dependency graph in its own venv.
+INSTALL_CASES = (
+    ("core-only", CORE.name, (CORE,)),
+    ("simulator-headless", SIMULATOR.name, (CORE, SIMULATOR)),
+    *((project.extra, f"{CORE.name}[{project.extra}]", (CORE, project))
+      for project in CURRENT if project.extra),
+    ("configurator-direct", CONFIGURATOR.name, (CORE, CONFIGURATOR)),
+    ("all", f"{CORE.name}[all]", CURRENT),
 )
-
-# Every distribution the workspace publishes, which is what uv build produces.
-# Three: the runtime with both catalogues in it, and the two optional packages.
-DISTRIBUTIONS = (
-    "led-controller-version-3",
-    "led-controller-version-3-device-simulated-respeaker",
-)
-
-GUI_DISTRIBUTION = "led-controller-version-3-effect-creation"
-
-ALL_DISTRIBUTIONS = (*DISTRIBUTIONS, GUI_DISTRIBUTION)
 
 
 def effect_set_wheels() -> dict[str, list[str]]:
@@ -121,8 +95,20 @@ class CheckFailed(RuntimeError):
     pass
 
 
-def run(command: list[str], **kwargs) -> subprocess.CompletedProcess:
-    return subprocess.run(command, capture_output=True, text=True, **kwargs)
+def run(command: list[str], *, timeout=90, **kwargs) -> subprocess.CompletedProcess:
+    env = {key: value for key, value in os.environ.items()
+           if key not in {"PYTHONPATH", "PYTHONHOME", "INCLUDED_LEFXSET"}
+           and not key.startswith(("UV_", "PIP_", "LEFX_"))}
+    env["QT_QPA_PLATFORM"] = "offscreen"
+    env["PYTHONUTF8"] = "1"
+    with tempfile.TemporaryDirectory(prefix="lefx-smoke-config-") as directory:
+        config = Path(directory) / "config.yaml"
+        config.write_text("{}\n", encoding="utf-8")
+        env["LEFX_CONFIG"] = str(config)
+        env["LEFX_STATE_ROOT"] = directory
+        env.update(kwargs.pop("env", {}))
+        return subprocess.run(command, capture_output=True, text=True, encoding="utf-8",
+                              env=env, timeout=timeout, **kwargs)
 
 
 def require(condition: bool, message: str) -> None:
@@ -136,33 +122,28 @@ def build_distributions() -> list[Path]:
         # A stale wheel of the same version would be installed in preference to
         # nothing, and the run would be checking the last build, not this one.
         shutil.rmtree(DIST_DIR)
-    print(f"building {len(ALL_DISTRIBUTIONS)} distributions into {DIST_DIR.relative_to(REPO_ROOT)}")
-    result = run(["uv", "build", "--all-packages", "--out-dir", str(DIST_DIR)], cwd=REPO_ROOT)
+    projects = workspace_projects(REPO_ROOT)
+    print(f"building {len(projects)} distributions into {DIST_DIR.relative_to(REPO_ROOT)}")
+    result = run(["uv", "build", "--all-packages", "--out-dir", str(DIST_DIR)], cwd=REPO_ROOT, timeout=300)
     if result.returncode != 0:
         raise CheckFailed(f"uv build failed:\n{result.stdout}\n{result.stderr}")
 
-    wheels = sorted(DIST_DIR.glob("*.whl"))
-    sdists = sorted(DIST_DIR.glob("*.tar.gz"))
-    require(
-        len(wheels) == len(ALL_DISTRIBUTIONS) and len(sdists) == len(ALL_DISTRIBUTIONS),
-        f"built a wheel and an sdist for each of the {len(ALL_DISTRIBUTIONS)} distributions",
-    )
-    return wheels
+    files = {path.name: path for path in DIST_DIR.iterdir() if path.name != ".gitignore"}
+    require(set(files) == artifact_filenames(workspace_version(), projects),
+            f"built exactly one wheel and one sdist for each of the {len(projects)} distributions")
+    for path in files.values():
+        validate_distribution(path, workspace_version(), projects)
+    return [path for path in files.values() if path.suffix == ".whl"]
 
 
 def make_environment(root: Path) -> Path:
-    result = run(["uv", "venv", str(root)], cwd=REPO_ROOT)
+    result = run(["uv", "--no-config", "venv", "--python", "3.12", str(root)], cwd=root.parent)
     if result.returncode != 0:
         raise CheckFailed(f"could not create the test environment:\n{result.stderr}")
     python = root / ("Scripts/python.exe" if sys.platform.startswith("win") else "bin/python")
     if not python.exists():
         raise CheckFailed(f"no interpreter at {python}")
 
-    # --find-links points at what was just built; third-party dependencies still
-    # come from the index, because the point here is our packaging, not theirs.
-    result = install(python, *RUNTIME_REQUESTS)
-    if result.returncode != 0:
-        raise CheckFailed(f"installing the built artefacts failed:\n{result.stderr}")
     return python
 
 
@@ -171,25 +152,17 @@ def workspace_version() -> str:
 
 
 def install(python: Path, *requests: str) -> subprocess.CompletedProcess:
-    """Install from what was just built, and from nothing else.
-
-    --refresh-package for every distribution of ours is not a precaution, it is
-    a correction: a local wheel is cached by name and version, our version does
-    not change between builds during development, and without this the check
-    installs whatever it installed last time. It did — a wheel four commits old
-    passed every step here while the freshly built one sat unopened in
-    build/dist-packages.
-    """
-    refresh = [item for name in ALL_DISTRIBUTIONS for item in ("--refresh-package", name)]
+    version = workspace_version()
+    constraints = python.parent.parent / "local-wheels.txt"
+    constraints.write_text("".join(
+        f"{project.name} @ {(DIST_DIR / project.wheel(version)).as_uri()}\n" for project in CURRENT
+    ), encoding="utf-8")
+    refresh = [argument for project in CURRENT for argument in ("--refresh-package", project.name)]
     return run(
-        [
-            "uv", "pip", "install",
-            "--python", str(python),
-            "--find-links", str(DIST_DIR),
-            *refresh,
-            *(f"{request}=={workspace_version()}" for request in requests),
-        ],
-        cwd=REPO_ROOT,
+        ["uv", "--no-config", "pip", "install", "--python", str(python),
+         "--default-index", "https://pypi.org/simple", "--constraint", str(constraints),
+         *refresh, *(f"{request}=={version}" for request in requests)],
+        cwd=python.parent.parent, timeout=300,
     )
 
 
@@ -198,8 +171,10 @@ def script(python: Path, name: str) -> Path:
     return python.parent / f"{name}{suffix}"
 
 
-def check_imports(python: Path) -> None:
-    for name in IMPORT_NAMES:
+def check_imports(python: Path, projects) -> None:
+    names = [name for name in IMPORT_NAMES
+             if name != "lefx.device.simulated_respeaker" or SIMULATOR in projects]
+    for name in names:
         result = run([str(python), "-c", f"import {name}"])
         detail = "" if result.returncode == 0 else f"\n{result.stderr}"
         require(result.returncode == 0, f"import {name}{detail}")
@@ -225,18 +200,22 @@ def check_the_catalogue_wheels_carry_a_catalogue(wheels: list[Path]) -> None:
             )
 
 
-def check_versions(python: Path, distributions=DISTRIBUTIONS) -> None:
+def check_versions(python: Path, projects) -> None:
+    version = workspace_version()
+    expected = {project.name: (DIST_DIR / project.wheel(version)).as_uri() for project in projects}
     code = (
-        "import json;from importlib.metadata import version;"
-        f"print(json.dumps({{name: version(name) for name in {list(distributions)!r}}}))"
+        "import json; from importlib.metadata import distributions; "
+        f"names={tuple(project.name for project in CURRENT)!r}; "
+        "import re; "
+        "print(json.dumps({name: [d.version, json.loads(d.read_text('direct_url.json') or '{}').get('url')] "
+        "for d in distributions() if (name := re.sub(r'[-_.]+','-', d.name).lower()) in names}))"
     )
-    result = run([str(python), "-c", code])
-    require(result.returncode == 0, "every distribution reports its version")
-    versions = json.loads(result.stdout)
-    require(
-        set(versions.values()) == {workspace_version()},
-        f"they all carry one version ({sorted(set(versions.values()))})",
-    )
+    result = run([str(python), "-I", "-c", code])
+    require(result.returncode == 0, f"installed distributions report their origin\n{result.stderr}")
+    actual = json.loads(result.stdout)
+    require(set(actual) == set(expected), f"installed only the requested LEFX distributions ({sorted(actual)})")
+    for project, url in expected.items():
+        require(actual[project] == [version, url], f"{project} {version} installed from its local wheel")
 
 
 def check_simulator_without_qt(python: Path) -> None:
@@ -255,18 +234,21 @@ def check_simulator_without_qt(python: Path) -> None:
     )
 
 
-def check_console_scripts(python: Path) -> None:
+def check_console_scripts(python: Path, *, simulator: bool, studio: bool) -> None:
     """The commands a runtime installation has. lefx-pack is not among them.
 
     It arrives with effect creation, and that it is *missing* here is the
     check: a default installation that could still build packages would mean
     the tooling had leaked into the runtime set.
     """
-    for name in ("lefx", "lefx-respeaker", "lefx-simulator"):
+    entries = ("lefx", "lefx-respeaker", *(("lefx-simulator",) if simulator else ()))
+    for name in entries:
         require(script(python, name).exists(), f"console script {name} is installed")
-    for name in ("lefx", "lefx-respeaker"):
+    for name in entries:
         result = run([str(script(python, name)), "--help"])
         require(result.returncode == 0, f"{name} --help runs")
+    if studio:
+        return
     require(
         not script(python, "lefx-pack").exists(),
         "lefx-pack is absent until effect creation is installed",
@@ -275,7 +257,7 @@ def check_console_scripts(python: Path) -> None:
     require(absent.returncode != 0, "lefx.effect_creation is not importable either")
 
 
-def check_entry_points(python: Path) -> None:
+def check_entry_points(python: Path, simulator: bool) -> None:
     """The devices have to be findable from metadata alone, with nothing imported."""
     result = run([str(script(python, "lefx")), "sinks"])
     require(result.returncode == 0, f"lefx sinks runs\n{result.stderr}")
@@ -283,11 +265,11 @@ def check_entry_points(python: Path) -> None:
 
     sinks = {item["name"] for item in catalogue["sinks"]}
     providers = {item["name"] for item in catalogue["input_providers"]}
-    require(EXPECTED_SINKS <= sinks, f"both frame sinks are discovered ({sorted(sinks)})")
-    require(
-        EXPECTED_PROVIDERS <= providers,
-        f"both DoA providers are discovered ({sorted(providers)})",
-    )
+    required_sinks = EXPECTED_SINKS if simulator else {"respeaker"}
+    required_providers = EXPECTED_PROVIDERS if simulator else {"respeaker.doa"}
+    require(required_sinks <= sinks and ("simulator" in sinks) == simulator,
+            f"expected frame sinks are discovered ({sorted(sinks)})")
+    require(required_providers == providers, f"expected DoA providers are discovered ({sorted(providers)})")
     require(
         {item["capability"] for item in catalogue["input_providers"]} == {"doa"},
         "every installed provider offers the bare capability the engine asks for",
@@ -320,7 +302,7 @@ def check_the_catalogue_loads(python: Path) -> None:
     code = (
         "import json\n"
         "from lefx.interfaces import ControllerService\n"
-        "service = ControllerService(led_count=12)\n"
+        "service = ControllerService(led_count=12, state_file='background.json', autostart_providers=False)\n"
         "try:\n"
         "    sources = {e['source_id']: e for e in service.library.sources()}\n"
         "    broken = {n: e['error'] for n, e in sources.items() if e['error']}\n"
@@ -350,10 +332,8 @@ def check_the_selection_narrows_the_catalogue(python: Path) -> None:
     Checked from a real environment rather than a unit test because what it
     selects on is entry point metadata, which only an installation has.
     """
-    import os as _os
-
     code = "from lefx.interfaces import discovery\nprint(sorted(discovery.installed_effect_sets()))\n"
-    result = run([str(python), "-c", code], env={**_os.environ, "INCLUDED_LEFXSET": "[core]"})
+    result = run([str(python), "-c", code], env={"INCLUDED_LEFXSET": "[core]"})
     require(
         result.returncode == 0 and result.stdout.strip() == "['core-set']",
         f"INCLUDED_LEFXSET=[core] leaves only the core set: "
@@ -366,7 +346,7 @@ def check_the_service_starts(python: Path) -> None:
     code = (
         "from lefx.interfaces import ControllerService\n"
         "service = ControllerService(sink='simulator', led_count=12, search_paths=[],\n"
-        "                           sink_options={'port': 0})\n"
+        "                           sink_options={'port': 0}, state_file='background.json')\n"
         "try:\n"
         "    assert service.sink_name == 'simulator', service.sink_name\n"
         "    assert set(service.providers) == {'doa'}, sorted(service.providers)\n"
@@ -377,79 +357,90 @@ def check_the_service_starts(python: Path) -> None:
         "finally:\n"
         "    service.stop()\n"
     )
-    result = run([str(python), "-c", code])
+    with tempfile.TemporaryDirectory(prefix="lefx-simulator-") as directory:
+        result = run([str(python), "-I", "-c", code], cwd=directory)
     require(
         result.returncode == 0 and "ok" in result.stdout,
         f"a service built from the installed packages renders to the simulator\n{result.stderr}",
     )
 
 
-def check_effect_creation_installs_on_top(python: Path) -> None:
-    """The optional tooling, added to an environment that already works.
+def check_effect_creation(python: Path, *, simulator: bool) -> None:
+    code = ("import lefx.effect_creation.studio as studio; "
+            "print(sorted(studio.available_outputs()))")
+    result = run([str(python), "-I", "-c", code])
+    require(result.returncode == 0 and ("simulator" in result.stdout) == simulator,
+            f"Studio finds the installed outputs without a display\n{result.stderr}")
+    for entry in ("lefx-pack", "lefx-studio"):
+        result = run([str(script(python, entry)), "--help"])
+        require(result.returncode == 0, f"{entry} --help runs\n{result.stderr}")
 
-    Deliberately last and deliberately into the same environment: this is the
-    order a person adds an extra in, and it is the order that shows effect
-    creation brings its own Qt rather than needing one to have been there.
 
-    Asked for as ``led-controller-version-3[all]`` rather than by distribution name, so that
-    the extra is what is exercised. An extra that named the wrong package would
-    otherwise be invisible here and visible only to whoever typed it.
-    """
-    result = install(python, "led-controller-version-3[all]")
-    require(result.returncode == 0, f"led-controller-version-3[all] installs on top\n{result.stderr}")
+def check_configurator(python: Path) -> None:
+    code = """
+from lefx.configurator_widget import LefxCatalogueAdapter, PreviewRequest, PreviewSession
+with LefxCatalogueAdapter.installed() as catalogue:
+    assert {source["source_id"] for source in catalogue.sources()} == {"core-set", "smartspeaker-set"}
+    assert any(entry.preset is not None for entry in catalogue.entries())
+    session = PreviewSession(catalogue.registry)
+    try:
+        session.start(PreviewRequest("core-set::solid_fill", config={"color": "#123456", "brightness": 1}), 0)
+        assert session.frame(0).leds == (0x123456,) * 12
+    finally:
+        session.close()
+"""
+    with tempfile.TemporaryDirectory(prefix="lefx-preview-") as directory:
+        result = run([str(python), "-I", "-c", code], cwd=directory)
+        require(result.returncode == 0, f"Configurator loads both sets and renders an isolated frame\n{result.stderr}")
+        result = run([str(script(python, "lefx-configurator-widget")), "--smoke"], cwd=directory, timeout=60)
+        require(result.returncode == 0, f"Configurator GUI entry point opens and closes\n{result.stderr}")
 
-    installed = run(
-        [str(python), "-c", "import json;from importlib.metadata import version;"
-         f"print(json.dumps(version({GUI_DISTRIBUTION!r})))"]
-    )
-    require(installed.returncode == 0, f"the [all] extra pulled in {GUI_DISTRIBUTION}")
 
-    check_versions(python, ALL_DISTRIBUTIONS)
-
-    imports = run([str(python), "-c", "import lefx.effect_creation.studio; print(lefx.effect_creation.studio.STUDIO_VERSION)"])
-    require(imports.returncode == 0, f"import lefx.effect_creation.studio\n{imports.stderr}")
-
-    headless = run(
-        [str(python), "-c", "import lefx.effect_creation.studio; print(sorted(lefx.effect_creation.studio.available_outputs()))"]
-    )
-    require(
-        headless.returncode == 0 and "simulator" in headless.stdout,
-        f"the studio finds the installed outputs without a display\n{headless.stderr}",
-    )
-
-    for name in ("lefx-pack", "lefx-studio"):
-        require(script(python, name).exists(), f"console script {name} is installed")
-        helped = run([str(script(python, name)), "--help"])
-        require(helped.returncode == 0, f"{name} --help runs\n{helped.stderr}")
+def check_install_case(root: Path, label: str, request: str, projects) -> None:
+    print(f"installing {label}: {request}", flush=True)
+    python = make_environment(root / label)
+    result = install(python, request)
+    require(result.returncode == 0, f"{request} installs\n{result.stderr}")
+    result = run(["uv", "--no-config", "pip", "check", "--python", str(python)])
+    require(result.returncode == 0, f"{label} has a consistent installed dependency graph\n{result.stderr}")
+    check_versions(python, projects)
+    check_imports(python, projects)
+    qt = run([str(python), "-I", "-c", "from PySide6.QtWidgets import QApplication"])
+    has_qt = label not in {"core-only", "simulator-headless"}
+    require((qt.returncode == 0) == has_qt, f"{label} Qt availability is {has_qt}")
+    simulator = SIMULATOR in projects
+    if label in {"core-only", "simulator-headless", "all"}:
+        check_entry_points(python, simulator)
+        check_the_catalogue_loads(python)
+    if label == "core-only":
+        check_the_selection_narrows_the_catalogue(python)
+    studio = STUDIO in projects
+    check_console_scripts(python, simulator=simulator, studio=studio)
+    if label == "simulator-headless":
+        check_simulator_without_qt(python)
+        check_the_service_starts(python)
+    if studio:
+        check_effect_creation(python, simulator=simulator)
+    if CONFIGURATOR in projects:
+        check_configurator(python)
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument(
-        "--keep", action="store_true", help="Leave the throwaway environment in place"
-    )
+    parser.add_argument("--keep", action="store_true", help="Leave the throwaway environments in place")
     args = parser.parse_args(argv)
 
     try:
         wheels = build_distributions()
         check_the_catalogue_wheels_carry_a_catalogue(wheels)
         root = Path(tempfile.mkdtemp(prefix="lefx-release-", dir=REPO_ROOT / "build"))
-        print(f"installing into {root.relative_to(REPO_ROOT)}")
         try:
-            python = make_environment(root)
-            check_versions(python)
-            check_imports(python)
-            check_console_scripts(python)
-            check_entry_points(python)
-            check_the_catalogue_loads(python)
-            check_the_selection_narrows_the_catalogue(python)
-            check_simulator_without_qt(python)
-            check_the_service_starts(python)
-            check_effect_creation_installs_on_top(python)
+            for label, request, projects in INSTALL_CASES:
+                check_install_case(root, label, request, projects)
         finally:
             if not args.keep:
                 shutil.rmtree(root, ignore_errors=True)
-    except CheckFailed as exc:
+    except (CheckFailed, ValueError, subprocess.TimeoutExpired) as exc:
         print(f"\nFAILED: {exc}", file=sys.stderr)
         return 1
 

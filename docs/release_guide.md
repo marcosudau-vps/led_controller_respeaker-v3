@@ -35,9 +35,9 @@ Der nächste normale Start ist blockiert, falls eine bereits getaggte Version
 noch nicht vollständig veröffentlicht wurde. Bei neuen serverseitigen Releases
 muss der verknüpfte vorherige Workflow erfolgreich beendet sein oder eine
 erfolgreiche, exakt daran gebundene Wiederherstellungsverifikation vorliegen; das GitHub
-Release öffentlich sein und alle drei Projekte müssen die erwarteten Dateien
-auf PyPI besitzen. Historische Releases ohne GitHub Release werden anhand der
-beiden Tags und der drei PyPI-Projekte geprüft. Releases sind serialisiert.
+Release öffentlich sein und alle zum Releasevertrag gehörenden Projekte müssen
+auf PyPI exakt die erwarteten Dateien besitzen. Das bereits veröffentlichte v3.0.4 wird anhand der
+ursprünglichen Tags, dem Original-Run und drei PyPI-Projekten geprüft. Releases sind serialisiert.
 
 ## Verbindlicher Ablauf
 
@@ -47,13 +47,13 @@ beiden Tags und der drei PyPI-Projekte geprüft. Releases sind serialisiert.
 | 2 | Versionsbump, Pins und Lockfile, Kandidatencommit auf temporärem Branch |
 | 3 | Reusable CI am exakten Kandidaten-SHA: Linux-Tests, Paketgrenzen, Kataloge, Paketbau und Installationsprüfung |
 | 4 | Windows-Runner: hardwarefreie Testsuite, portabler Studio-Onefile-Build, Frozen-Self-Check und automatischer GUI-Start |
-| 5 | PyPI-Release-Baum materialisieren, daraus drei Wheels und drei sdists bauen und installieren; exakt diese geprüften Dateien und den Baum als versiegeltes Bundle sichern |
+| 5 | PyPI-Release-Baum materialisieren, daraus vier Wheels und vier Sdists bauen und installieren; exakt diese geprüften Dateien und den Baum als versiegeltes Bundle sichern |
 | 6 | Bundle und Windows-EXE herunterladen; SHA-256, Größe, Version und Commit prüfen; Schreibzugriff auf Release-Repo mit SSH-Deploy-Key und Dry-Run prüfen |
 | 7 | Main nochmals auf unveränderten Ausgangsstand prüfen, freie Version erneut prüfen; main und annotierten Versionstag gemeinsam per atomarem Git-Push aktualisieren |
-| 8 | Öffentliches GitHub Release: Draft erstellen, drei Wheels, drei sdists und versionierte Studio-EXE hochladen, Remote-Digests verifizieren, veröffentlichen |
+| 8 | Öffentliches GitHub Release: Draft erstellen, vier Wheels, vier Sdists und versionierte Studio-EXE hochladen, Remote-Digests verifizieren, veröffentlichen |
 | 9 | Exakt geprüften Release-Baum samt Manifest per SSH in das PyPI-Repository übertragen, dort main und Tag atomar pushen |
-| 10 | Release-Repo lädt ausschließlich die sechs vorher geprüften Distributionsdateien aus dem öffentlichen Entwicklungs-GitHub-Release herunter, prüft Manifest und lädt sie per Trusted Publishing auf PyPI |
-| 11 | Entwicklungsworkflow wartet auf erfolgreichen Workflow am exakten Release-Repo-Tag, prüft die sechs PyPI-Dateidigestwerte, installiert die neue Version in frischer Umgebung und erstellt die Abschlusszusammenfassung |
+| 10 | Release-Repo lädt ausschließlich die acht vorher geprüften Distributionsdateien aus dem öffentlichen Entwicklungs-GitHub-Release herunter, prüft Manifest und lädt sie per Trusted Publishing auf PyPI |
+| 11 | Entwicklungsworkflow wartet auf erfolgreichen Workflow am exakten Release-Repo-Tag, prüft Größe und SHA-256 aller acht PyPI-Dateien, installiert die neue Version in frischer Umgebung und erstellt die Abschlusszusammenfassung |
 
 Es gibt keine erneute Kompilierung nach dem Tag. Der normale Release
 verwendet keinen lokalen PC und kein --skip-ci. Ein automatisierter
@@ -68,12 +68,22 @@ portabel, Windows x64, PyInstaller Onefile; das vorhandene Studio-Projektmodell
 
 ## Download-Artefakte
 
-Beispiel für 3.0.4:
+Das veröffentlichte 3.0.4 enthält sieben Assets:
 - lefx-studio-3.0.4-windows-x64.exe
 - led_controller_version_3-3.0.4-py3-none-any.whl
 - led_controller_version_3_effect_creation-3.0.4-py3-none-any.whl
 - led_controller_version_3_device_simulated_respeaker-3.0.4-py3-none-any.whl
 - die drei zugehörigen .tar.gz Source-Distributionen
+
+Ab dem ersten gemeinsamen Release mit Configurator kommen
+`lefx_configurator_widget-<version>-py3-none-any.whl` und
+`lefx_configurator_widget-<version>.tar.gz` hinzu. Daraus ergeben sich neun
+öffentliche GitHub-Assets. Die Studio-EXE bleibt das einzige Windows-Executable-Asset.
+
+`scripts/release_contract.py` definiert die vier Distributionen, die Dateinamen
+und die Publisher-Environments. Der Mirror erhält dieselbe Datei und liest die
+Veröffentlichungsmatrix daraus. Seine Tag-Annotation bindet den
+Entwicklungscommit an das versiegelte Manifest.
 
 Die sdists sind bewusst ebenfalls öffentliche Release-Assets, damit das
 PyPI-Repo dieselben vorab geprüften Bytes statt eines erneuten Builds
@@ -90,10 +100,13 @@ wiederholt Installationsfehler bis zu viermal in frischen Umgebungen.
 Wenn der historische Abschlussjob selbst fehlerhaft ist, auf main den
 Workflow **Verify Published Release** mit der bereits veröffentlichten
 Version starten (z.B. 3.0.4). Er prüft beide Tags, die erfolgreichen
-ursprünglichen Prüf-/Publish-Jobs, die sieben ursprünglichen CI-Dateien gegen
-GitHub, das gespiegelte Manifest, PyPI-Workflow und sechs Hashes, und
-installiert frisch inklusive beider CLI-Startprüfungen. Keine neuen
-Builds, Tags, Uploads oder Versionsbump. Ein erfolgreicher Recovery-Job
+ursprünglichen Prüf-/Publish-Jobs, die exakten Dateien aus dem Original-CI-Lauf
+gegen GitHub, das gespiegelte Manifest, den PyPI-Workflow und die Dateihashes.
+Danach installiert er frisch und prüft die Einstiegspunkte für den jeweiligen
+Releasevertrag. Die neue Distribution wird dabei zusätzlich über
+`lefx-configurator-widget --smoke` gestartet. Für v3.0.4 gilt die fest gebundene
+Identität aus Entwicklungs- und Mirror-Commit sowie Original-Run 45854688359.
+Der Recovery-Workflow hat reine Leserechte. Ein erfolgreicher Recovery-Job
 für exakt Version, Commit und ursprünglichen Run gilt für die nächste
 Patch-Freigabe als Abschlussnachweis. Die Original-Artefakte müssen
 noch verfügbar sein.
@@ -137,23 +150,46 @@ contents: write sowie actions: read des eingebauten GITHUB_TOKEN.
 Eventuelle Branch-/Tag-Rulesets müssen diese autorisierte Bot-Aktion
 erlauben; keine Schutzregel automatisch abschalten.
 
-PyPI Trusted Publisher (unverändert): Owner marcosudau-vps, Repository
-led-ctrl-v3, Workflow release.yml. Separate Environments:
+Die Trusted Publisher verwenden Owner `marcosudau-vps`, Repository
+`led-ctrl-v3` und Workflow-Datei `release.yml`.
 
 | Projekt | Environment |
 |---|---|
 | led-controller-version-3 | pypi |
 | led-controller-version-3-effect-creation | pypi-effect-creation |
 | led-controller-version-3-device-simulated-respeaker | pypi-simulator |
+| lefx-configurator-widget | pypi-configurator |
 
-Je Projekt eigener Publisher, id-token: write nur im Publish-Job,
-max-parallel: 1. Keine dauerhaften PyPI-Token. Die bestehenden Publisher
-nicht ändern. Ein zusätzlicher Configurator benötigt spätere, gesonderte
-Release-Integration (Workspace, Versionen/Pins, Paketprüfungen, Bundle,
-Workflow-Matrix, Publisher und Extras); nicht Teil dieses Releases.
+Der Publish-Job verwendet `id-token: write` und `max-parallel: 1`. Die
+Kontoinhaber richten den neuen Eintrag einmalig vor der ersten Freigabe ein.
+
+1. Im GitHub-Repository `marcosudau-vps/led-ctrl-v3` unter **Settings → Environments**
+   das Environment `pypi-configurator` anlegen und die für Release-Tags vorgesehenen
+   Freigabe- und Tagregeln anwenden.
+2. Auf PyPI als berechtigter Kontoinhaber unter **Your account → Publishing**
+   einen neuen ausstehenden GitHub-Trusted-Publisher anlegen. Ist das Projekt
+   bereits im eigenen Besitz, die Publishing-Seite des Projekts verwenden.
+   [Neues PyPI-Projekt per Trusted Publishing](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/)
+3. Projektname `lefx-configurator-widget`, Owner `marcosudau-vps`, Repository
+   `led-ctrl-v3`, Workflow-Datei `release.yml`, Environment `pypi-configurator`
+   eintragen und die Zuordnung speichern. Der erste erfolgreich autorisierte
+   Upload aktiviert den ausstehenden Publisher.
+4. Die bestehenden drei Einträge beibehalten. Der Mirror braucht für das neue
+   Projekt dieselben OIDC-Rechte wie für die bisherigen Projekte. Die Pipeline
+   verwendet keinen dauerhaften Upload-Token.
+
+Der Entwicklungsstand bleibt gemeinsam auf 3.0.4. Ein lokaler Patch-Kandidat
+dient der Generalprobe. Über die tatsächliche Versionsnummer und die mögliche
+Minor-Einstufung der neuen optionalen Distribution entscheidet die
+Releasefreigabe. Der bestehende Workflow unterstützt automatische Patch-Releases.
 
 ## Reguläre Entwicklung
 
-Branch/PR wie bisher; CI verwendet dieselben read-only Prüfjobs. Nur Patch
-Release auf main erzeugt einen neuen Release. Kein Tag bei gewöhnlichen
-Pushes oder PRs.
+Branch und PR verwenden dieselben lesenden CI-Prüfjobs. Ein Release entsteht
+über den separat gestarteten Patch-Workflow auf main.
+
+Die Paketprüfung baut die vier Distributionen und installiert sie in getrennten
+Umgebungen. Sie prüft Kern-only, Simulator ohne Qt, jedes Extra einzeln, direkte
+Configurator-Installation und `[all]`. Bei jeder Installation prüft sie Version
+und Herkunft der lokalen Wheels. Die vollständige Root-Testsuite erfasst auch den
+Configurator; der Windows-Gate behält beide Studio-Selfchecks bei.

@@ -14,6 +14,8 @@ SCRIPTS = Path(__file__).resolve().parents[2] / "scripts"
 SHA = "a" * 40
 VERSION = "3.0.4"
 
+from scripts.release_contract import CURRENT, HISTORIC, HISTORIC_COMMIT
+
 
 @pytest.fixture
 def modules(monkeypatch):
@@ -23,11 +25,11 @@ def modules(monkeypatch):
     ))
 
 
-def create_assets(tmp_path, assets):
+def create_assets(tmp_path, assets, commit=SHA, projects=CURRENT):
     wheels = tmp_path / "wheels"
     wheels.mkdir()
-    for name in assets.DISTRIBUTIONS:
-        normalized = name.replace("-", "_")
+    for project in projects:
+        name, normalized = project.directory, project.stem
         with zipfile.ZipFile(wheels / f"{normalized}-{VERSION}-py3-none-any.whl", "w") as archive:
             archive.writestr(
                 f"{normalized}-{VERSION}.dist-info/METADATA",
@@ -36,16 +38,17 @@ def create_assets(tmp_path, assets):
     exe = tmp_path / "studio.exe"
     exe.write_bytes(b"MZ" + b"\x00" * 2048)
     directory = tmp_path / "download"
-    assets.stage("release-wheels", wheels, directory / "release-wheels", VERSION, SHA)
-    assets.stage("release-studio", exe, directory / "release-studio", VERSION, SHA)
+    assets.stage("release-wheels", wheels, directory / "release-wheels", VERSION, commit)
+    assets.stage("release-studio", exe, directory / "release-studio", VERSION, commit)
     return directory
 
 
-def test_all_four_assets_verified(tmp_path, modules):
+@pytest.mark.parametrize("commit,projects", [(SHA, CURRENT), (HISTORIC_COMMIT, HISTORIC)])
+def test_exact_wheels_and_studio_asset_group_verified(tmp_path, modules, commit, projects):
     assets, _, _ = modules
-    directory = create_assets(tmp_path, assets)
-    assert {p.name for p in assets.verify(directory, VERSION, SHA)} == (
-        assets.wheel_names(VERSION) | {assets.studio_name(VERSION)}
+    directory = create_assets(tmp_path, assets, commit, projects)
+    assert {p.name for p in assets.verify(directory, VERSION, commit)} == (
+        assets.wheel_names(VERSION, projects) | {assets.studio_name(VERSION)}
     )
 
 
