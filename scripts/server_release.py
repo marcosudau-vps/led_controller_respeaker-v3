@@ -67,9 +67,35 @@ def select_patch(current: str, tags: list[str]) -> tuple[str | None, str]:
     return last, version
 
 
+def verified_recovery(tag: str, commit: str, original_run: str) -> bool:
+    """Accept only a successful main recovery job bound to the exact tag and run."""
+    runs = json.loads(gh(
+        "run", "list", "--repo", DEV, "--workflow", "verify-release.yml",
+        "--branch", "main", "--event", "workflow_dispatch", "--status", "success",
+        "--limit", "100", "--json", "databaseId,headSha,status,conclusion",
+    ))
+    expected = f"Verify published {tag} at {commit} (run {original_run})"
+    for run in runs:
+        if run["status"] != "completed" or run["conclusion"] != "success":
+            continue
+        head = run["headSha"]
+        if not re.fullmatch(r"[0-9a-f]{40}", head):
+            continue
+        if subprocess.run(["git", "merge-base", "--is-ancestor", head, "origin/main"],
+                          cwd=ROOT, check=False).returncode:
+            continue
+        jobs = json.loads(gh("run", "view", str(run["databaseId"]), "--repo", DEV,
+                             "--json", "jobs"))["jobs"]
+        if any(job["name"] == expected and job["conclusion"] == "success" for job in jobs):
+            print(f"Previous release {tag} verified by recovery run {run['databaseId']}")
+            return True
+    return False
+
+
 def require_previous_complete(current: str) -> None:
     tag = f"v{current}"
-    if not remote_tag("origin", tag):
+    commit = remote_tag("origin", tag)
+    if not commit:
         return
     if not remote_tag(MIRROR, tag):
         raise RuntimeError(f"Previous release {tag} has not been mirrored")
@@ -84,7 +110,8 @@ def require_previous_complete(current: str) -> None:
     if match:
         run = json.loads(gh("run", "view", match[1], "--repo", DEV, "--json", "status,conclusion"))
         if run != {"status": "completed", "conclusion": "success"}:
-            raise RuntimeError(f"Previous release run {match[1]} not successful; rerun failed jobs, do not bump")
+            if run["status"] != "completed" or not verified_recovery(tag, commit, match[1]):
+                raise RuntimeError(f"Previous release run {match[1]} not verified; rerun failed jobs or Verify Published Release, do not bump")
         record = release_record(tag)
         if not record or record["draft"]:
             raise RuntimeError(f"Previous GitHub Release {tag} is not public")

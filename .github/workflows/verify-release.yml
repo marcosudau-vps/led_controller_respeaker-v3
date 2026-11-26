@@ -1,0 +1,74 @@
+name: Verify Published Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Already published version (for example 3.0.4)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: lefx-patch-release
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    if: github.repository == 'marcosudau-vps/led_controller_respeaker-v3' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ inputs.version }}
+    outputs:
+      commit: ${{ steps.identity.outputs.commit }}
+      mirror: ${{ steps.identity.outputs.mirror }}
+      run_id: ${{ steps.identity.outputs.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Resolve existing tags and successful release prerequisites
+        id: identity
+        run: python scripts/verify_published_release.py resolve --version "$VERSION"
+
+  verify:
+    name: Verify published v${{ inputs.version }} at ${{ needs.resolve.outputs.commit }} (run ${{ needs.resolve.outputs.run_id }})
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ inputs.version }}
+      COMMIT: ${{ needs.resolve.outputs.commit }}
+      MIRROR: ${{ needs.resolve.outputs.mirror }}
+      ORIGINAL_RUN: ${{ needs.resolve.outputs.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: false
+      - name: Verify original CI files, published digests and fresh installation
+        run: python scripts/verify_published_release.py recover --version "$VERSION" --commit "$COMMIT" --mirror "$MIRROR" --run-id "$ORIGINAL_RUN"
+      - name: Record recovered verification
+        run: |
+          echo "## Verified published LEFX $VERSION" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Development commit: $COMMIT" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Mirror commit: $MIRROR" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Original release run: $ORIGINAL_RUN" >> "$GITHUB_STEP_SUMMARY"
+          echo "- All seven GitHub assets and six PyPI files match the original CI; fresh installation and CLI checks passed." >> "$GITHUB_STEP_SUMMARY"
+          echo "- No builds, tags, uploads or version changes." >> "$GITHUB_STEP_SUMMARY"

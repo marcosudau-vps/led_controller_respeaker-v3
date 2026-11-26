@@ -93,7 +93,7 @@ jobs:
     name: Confirm PyPI workflow and all published file digests
     needs: [prepare, publish]
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 55
     permissions:
       contents: read
     env:
@@ -116,14 +116,10 @@ jobs:
       - name: Confirm the exact mirrored tag and six PyPI file hashes
         run: python scripts/server_release.py wait --version "$VERSION" --commit "$COMMIT" --mirror-commit "$MIRROR_COMMIT" --artifacts checked
       - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: false
       - name: Fresh installation from PyPI, not the checkout
-        run: |
-          cd "$RUNNER_TEMP"
-          uv venv --python 3.12 lefx-published
-          uv pip install --python lefx-published/bin/python "led-controller-version-3[all]==$VERSION"
-          lefx-published/bin/python -c 'import importlib.metadata as m, os; names=("led-controller-version-3","led-controller-version-3-effect-creation","led-controller-version-3-device-simulated-respeaker"); assert all(m.version(n)==os.environ["VERSION"] for n in names); print({n:m.version(n) for n in names})'
-          lefx-published/bin/lefx --help
-          lefx-published/bin/lefx-studio --help
+        run: python scripts/verify_published_release.py install --version "$VERSION"
       - name: Release summary
         run: |
           echo "## LEFX $VERSION published" >> "$GITHUB_STEP_SUMMARY"
