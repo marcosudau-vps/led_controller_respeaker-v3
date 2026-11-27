@@ -118,6 +118,11 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: false
+      - name: Install the Qt runtime libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libgl1 libxkbcommon0 libdbus-1-3 libfontconfig1 libxcb-cursor0
       - name: Fresh installation from PyPI, not the checkout
         run: python scripts/verify_published_release.py install --version "$VERSION" --commit "$COMMIT"
       - name: Release summary
