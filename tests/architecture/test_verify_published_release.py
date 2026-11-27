@@ -96,3 +96,49 @@ def test_resolve_refuses_failed_prerequisites(modules, monkeypatch):
     monkeypatch.setattr(verify, "gh", gh)
     with pytest.raises(RuntimeError, match="prerequisite"):
         verify.resolve("3.0.4")
+
+
+@pytest.mark.parametrize("defect,error", [
+    (None, None),
+    ("identity", "identity"),
+    ("manifest", "manifest digest"),
+    ("tag", "Annotated v3.0.5 tag"),
+    ("dry-run", "successful publication"),
+    ("commit", "successful publication"),
+    ("publisher", "publisher job did not succeed"),
+])
+def test_mirror_recovery_requires_original_release_and_successful_publish(
+    modules, monkeypatch, tmp_path, defect, error,
+):
+    verify, server = modules
+    identity = verify.RECOVERY_305
+    if defect == "identity":
+        identity = (*identity[:-1], "999")
+    tag_objects = dict(verify.RECOVERY_TAG_OBJECTS)
+    ref = "refs/tags/v3.0.5"
+    monkeypatch.setattr(verify.bundle, "sha256", lambda _: "wrong" if defect == "manifest" else verify.RECOVERY_MANIFEST_SHA)
+    monkeypatch.setattr(server, "git", lambda *args: (
+        f"{tag_objects[args[2]]}\t{ref}" if defect != "tag" else ""
+    ))
+    run = {
+        "id": 123, "path": ".github/workflows/release.yml", "event": "workflow_dispatch",
+        "head_branch": "main", "head_sha": verify.RECOVERY_WORKFLOW_COMMIT,
+        "display_title": "Recovery v3.0.5 (publish)", "status": "completed", "conclusion": "success",
+    }
+    if defect == "dry-run":
+        run["display_title"] = "Recovery v3.0.5 (verify only)"
+    if defect == "commit":
+        run["head_sha"] = SHA
+    jobs = [{"name": "Verify the exact pre-tag distributions", "conclusion": "success"}]
+    for project in verify.release_projects(*verify.RECOVERY_305[:2]):
+        jobs.append({"name": f"{project.stem} to PyPI", "conclusion": "success"})
+    if defect == "publisher":
+        jobs[-1]["conclusion"] = "skipped"
+    responses = {"actions/runs/123": run, "actions/runs/123/jobs?per_page=100": {"jobs": jobs}}
+    monkeypatch.setattr(server, "public_mirror_api", responses.__getitem__)
+    manifest = tmp_path / "manifest.json"
+    if error:
+        with pytest.raises(RuntimeError, match=error):
+            verify.mirror_recovery_proof(identity, manifest, "123")
+    else:
+        assert verify.mirror_recovery_proof(identity, manifest, "123") == run

@@ -16,6 +16,20 @@ from publish_github_release import gh, release_record, verify_uploaded
 from release_contract import CONFIGURATOR, CORE, release_projects, require_release_identity, version_key
 
 
+# The v3.0.5 tag contains the original, failing workflow. Only the reviewed
+# recovery definition on Mirror main can substitute for its tag-triggered run.
+RECOVERY_305 = (
+    "3.0.5", "6bfca277079d5e957811405ef5cbff25f9c71ad8",
+    "f1f6931628f39cb2031c85d1664b1d1e7b785755", "45918385311",
+)
+RECOVERY_WORKFLOW_COMMIT = "ea79b074abe30df42255884dce529fe94a4c28fb"
+RECOVERY_MANIFEST_SHA = "f1e0bc5f76ebde618f71377c69793ee9892f9c28695dbb9bf07caab7bedf0e86"
+RECOVERY_TAG_OBJECTS = (
+    ("origin", "576a86e98caa302ffde5ad28c8f1663a9626a473"),
+    (server.MIRROR, "5e4008dd64efbce209c54505d11c3597ecfce697"),
+)
+
+
 def clean_index_env() -> dict[str, str]:
     return {k: v for k, v in os.environ.items()
             if not k.startswith(("UV_", "PIP_", "LEFX_"))
@@ -105,7 +119,36 @@ def resolve(version: str) -> tuple[str, str, str]:
     return commit, mirror, run_id
 
 
-def recover(version: str, commit: str, mirror: str, run_id: str) -> None:
+def mirror_recovery_proof(identity: tuple[str, str, str, str], manifest: Path, publication: str) -> dict:
+    if identity != RECOVERY_305 or not re.fullmatch(r"[1-9][0-9]*", publication):
+        raise RuntimeError("Unexpected v3.0.5 Mirror recovery identity")
+    if bundle.sha256(manifest) != RECOVERY_MANIFEST_SHA:
+        raise RuntimeError("Original v3.0.5 manifest digest differs")
+    ref = "refs/tags/v3.0.5"
+    for remote, tag_object in RECOVERY_TAG_OBJECTS:
+        if server.git("ls-remote", "--refs", remote, ref) != f"{tag_object}\t{ref}":
+            raise RuntimeError(f"Annotated v3.0.5 tag differs on {remote}")
+
+    api_path = f"actions/runs/{publication}"
+    run = server.public_mirror_api(api_path)
+    expected = {
+        "id": int(publication), "path": ".github/workflows/release.yml",
+        "event": "workflow_dispatch", "head_branch": "main",
+        "head_sha": RECOVERY_WORKFLOW_COMMIT, "display_title": "Recovery v3.0.5 (publish)",
+        "status": "completed", "conclusion": "success",
+    }
+    if any(run.get(key) != value for key, value in expected.items()):
+        raise RuntimeError("Mirror run is not a successful publication by the reviewed v3.0.5 recovery")
+    jobs = server.public_mirror_api(f"{api_path}/jobs?per_page=100")["jobs"]
+    version, commit, _, _ = identity
+    required = {"Verify the exact pre-tag distributions"}
+    required.update(f"{project.stem} to PyPI" for project in release_projects(version, commit))
+    if not required <= {job["name"] for job in jobs if job["conclusion"] == "success"}:
+        raise RuntimeError("Mirror recovery verification or publisher job did not succeed")
+    return run
+
+
+def recover(version: str, commit: str, mirror: str, run_id: str, mirror_recovery_run: str = "") -> None:
     if resolve(version) != (commit, mirror, run_id):
         raise RuntimeError("Release identity changed")
     with tempfile.TemporaryDirectory(prefix="lefx-recovery-") as directory:
@@ -119,8 +162,14 @@ def recover(version: str, commit: str, mirror: str, run_id: str) -> None:
         if not record or record["draft"]:
             raise RuntimeError("GitHub Release is not public")
         verify_uploaded(record, assets)
-        server.wait(argparse.Namespace(artifacts=root, version=version, commit=commit,
-                                      mirror_commit=mirror))
+        args = argparse.Namespace(artifacts=root, version=version, commit=commit, mirror_commit=mirror)
+        if mirror_recovery_run:
+            proof = mirror_recovery_proof(
+                (version, commit, mirror, run_id), root / "release-pypi" / "manifest.json", mirror_recovery_run,
+            )
+            server.wait(args, recovery_run=proof)
+        else:
+            server.wait(args)
         install_published(version, commit)
     print(f"Recovered verification for v{version}, commit {commit}, original run {run_id}")
 
@@ -136,6 +185,7 @@ def main() -> None:
         if name == "recover":
             for key in ("commit", "mirror", "run-id"):
                 p.add_argument("--" + key, required=True)
+            p.add_argument("--mirror-recovery-run", default="")
     args = parser.parse_args()
     if args.action == "install":
         version_key(args.version)
@@ -146,7 +196,7 @@ def main() -> None:
         commit, mirror, run_id = resolve(args.version)
         server.output(commit=commit, mirror=mirror, run_id=run_id)
     else:
-        recover(args.version, args.commit, args.mirror, args.run_id)
+        recover(args.version, args.commit, args.mirror, args.run_id, args.mirror_recovery_run)
 
 
 if __name__ == "__main__":

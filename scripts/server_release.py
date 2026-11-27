@@ -286,22 +286,27 @@ def finalize(args: argparse.Namespace) -> None:
     print(f"Published GitHub assets and mirrored {tag}; waiting for PyPI is the next job")
 
 
-def public_runs(tag: str, commit: str) -> list[dict]:
-    url = (f"https://api.github.com/repos/{PYPI_REPO}/actions/workflows/release.yml/runs"
-           f"?event=push&head_sha={commit}&per_page=20")
+def public_mirror_api(path: str) -> dict:
+    url = f"https://api.github.com/repos/{PYPI_REPO}/{path}"
     request = Request(url, headers={"Accept": "application/vnd.github+json", "User-Agent": "LEFX-release-verifier"})
     token = os.environ.get("GH_TOKEN")
     if token:
         request.add_header("Authorization", f"Bearer {token}")
     try:
         with urlopen(request, timeout=20) as response:
-            runs = json.load(response)["workflow_runs"]
+            return json.load(response)
     except HTTPError as exc:
         if not token or exc.code not in (401, 403, 404):
             raise
         request.remove_header("Authorization")
         with urlopen(request, timeout=20) as response:
-            runs = json.load(response)["workflow_runs"]
+            return json.load(response)
+
+
+def public_runs(tag: str, commit: str) -> list[dict]:
+    runs = public_mirror_api(
+        f"actions/workflows/release.yml/runs?event=push&head_sha={commit}&per_page=20"
+    )["workflow_runs"]
     return [r for r in runs if r["head_sha"] == commit and r["head_branch"] in (tag, f"refs/tags/{tag}")]
 
 
@@ -330,7 +335,7 @@ def published_mirror_manifest(commit: str) -> dict:
                          "-H", "Accept: application/vnd.github.raw+json"))
 
 
-def wait(args: argparse.Namespace) -> None:
+def wait(args: argparse.Namespace, *, recovery_run: dict | None = None) -> None:
     manifest = bundle.load_manifest(args.artifacts / "release-pypi" / "manifest.json", args.version, args.commit)
     tag = f"v{args.version}"
     if remote_tag("origin", tag) != args.commit:
@@ -344,7 +349,7 @@ def wait(args: argparse.Namespace) -> None:
     deadline = time.monotonic() + 30 * 60
     while time.monotonic() < deadline:
         try:
-            runs = public_runs(tag, mirror_commit)
+            runs = [recovery_run] if recovery_run is not None else public_runs(tag, mirror_commit)
             if runs:
                 run = runs[0]
                 print(f"PyPI workflow {run['status']} {run['html_url']}", flush=True)

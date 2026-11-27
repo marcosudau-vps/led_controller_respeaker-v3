@@ -63,8 +63,11 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          test "$(git rev-parse "${GITHUB_REF}^{commit}")" = "$(git rev-parse HEAD)"
-          commit=$(git for-each-ref --format='%(contents)' "$GITHUB_REF" | sed -n 's/^Development commit: //p')
+          # checkout may point the local tag ref directly at the peeled commit.
+          git fetch --no-tags --refmap= origin "$GITHUB_REF"
+          tag_object=$(git rev-parse --verify 'FETCH_HEAD^{tag}')
+          test "$(git rev-parse "${tag_object}^{commit}")" = "$(git rev-parse HEAD)"
+          commit=$(git cat-file tag "$tag_object" | sed -n 's/^Development commit: //p')
           matrix=$(python scripts/release_contract.py --version "$VERSION" --commit "$commit")
           python scripts/release_bundle.py fetch release-manifest.json dist --version "$VERSION" --commit "$commit"
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"

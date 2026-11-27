@@ -7,6 +7,9 @@ on:
         description: Already published version (for example 3.0.4)
         required: true
         type: string
+      mirror_recovery_run:
+        description: Successful Mirror publication run ID for the v3.0.5 recovery
+        type: string
 
 permissions:
   contents: read
@@ -51,6 +54,7 @@ jobs:
       COMMIT: ${{ needs.resolve.outputs.commit }}
       MIRROR: ${{ needs.resolve.outputs.mirror }}
       ORIGINAL_RUN: ${{ needs.resolve.outputs.run_id }}
+      MIRROR_RECOVERY_RUN: ${{ inputs.mirror_recovery_run }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -63,12 +67,17 @@ jobs:
         with:
           enable-cache: false
       - name: Verify original CI files, published digests and fresh installation
-        run: python scripts/verify_published_release.py recover --version "$VERSION" --commit "$COMMIT" --mirror "$MIRROR" --run-id "$ORIGINAL_RUN"
+        run: |
+          python scripts/verify_published_release.py recover --version "$VERSION" --commit "$COMMIT" \
+            --mirror "$MIRROR" --run-id "$ORIGINAL_RUN" --mirror-recovery-run "$MIRROR_RECOVERY_RUN"
       - name: Record recovered verification
         run: |
           echo "## Verified published LEFX $VERSION" >> "$GITHUB_STEP_SUMMARY"
           echo "- Development commit: $COMMIT" >> "$GITHUB_STEP_SUMMARY"
           echo "- Mirror commit: $MIRROR" >> "$GITHUB_STEP_SUMMARY"
           echo "- Original release run: $ORIGINAL_RUN" >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$MIRROR_RECOVERY_RUN" ]; then
+            echo "- Mirror recovery run: $MIRROR_RECOVERY_RUN" >> "$GITHUB_STEP_SUMMARY"
+          fi
           echo "- GitHub assets and PyPI files match the original CI for this release contract; fresh installation and CLI checks passed." >> "$GITHUB_STEP_SUMMARY"
           echo "- No builds, tags, uploads or version changes." >> "$GITHUB_STEP_SUMMARY"
