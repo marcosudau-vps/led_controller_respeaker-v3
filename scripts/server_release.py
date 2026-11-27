@@ -16,10 +16,10 @@ import release as legacy
 import release_bundle as bundle
 from release_assets import expected_names, validate_binary
 from publish_github_release import gh, release_record, publish_assets
+from release_contract import DEV_REPO as DEV, MIRROR_REPO as PYPI_REPO
+from release_contract import release_projects, require_release_identity
 
 ROOT = Path(__file__).resolve().parents[1]
-DEV = "marcosudau-vps/led_controller_respeaker-v3"
-PYPI_REPO = "marcosudau-vps/led-ctrl-v3"
 MIRROR = f"https://github.com/{PYPI_REPO}.git"
 
 
@@ -96,25 +96,39 @@ def require_previous_complete(current: str) -> None:
     tag = f"v{current}"
     commit = remote_tag("origin", tag)
     if not commit:
-        return
-    if not remote_tag(MIRROR, tag):
+        raise RuntimeError(f"Previous release tag {tag} is missing from origin")
+    projects = release_projects(current, commit)
+    mirror = remote_tag(MIRROR, tag)
+    if not mirror:
         raise RuntimeError(f"Previous release {tag} has not been mirrored")
-    for project in bundle.PROJECTS:
-        record = pypi_record(project, current)
-        names = {item["filename"] for item in (record or {}).get("urls", []) if not item["yanked"]}
-        needed = {name for name in bundle.expected(current) if name.startswith(project.replace("-", "_") + "-")}
-        if not needed <= names:
-            raise RuntimeError(f"Previous release {tag} is incomplete on PyPI: {project}")
+    require_release_identity(current, commit, mirror=mirror)
+    for project in projects:
+        record = pypi_record(project.name, current)
+        files = (record or {}).get("urls", [])
+        names = {item["filename"] for item in files}
+        if (len(files) != 2 or names != {project.wheel(current), project.sdist(current)}
+                or any(item["yanked"] for item in files)):
+            raise RuntimeError(f"Previous release {tag} has incorrect PyPI files: {project.name}")
+    if git("rev-parse", f"{tag}^{{commit}}") != commit:
+        raise RuntimeError(f"Previous release tag {tag} differs locally")
     annotation = git("for-each-ref", "--format=%(contents)", f"refs/tags/{tag}")
     match = re.search(r"^Release run: (\d+)$", annotation, flags=re.MULTILINE)
     if match:
-        run = json.loads(gh("run", "view", match[1], "--repo", DEV, "--json", "status,conclusion"))
-        if run != {"status": "completed", "conclusion": "success"}:
+        require_release_identity(current, commit, run_id=match[1])
+        run = json.loads(gh("run", "view", match[1], "--repo", DEV, "--json", "status,conclusion,headSha"))
+        if run["headSha"] != git("rev-parse", f"{commit}^"):
+            raise RuntimeError(f"Previous release run {match[1]} belongs to a different main commit")
+        if (run["status"], run["conclusion"]) != ("completed", "success"):
             if run["status"] != "completed" or not verified_recovery(tag, commit, match[1]):
                 raise RuntimeError(f"Previous release run {match[1]} not verified; rerun failed jobs or Verify Published Release, do not bump")
         record = release_record(tag)
         if not record or record["draft"]:
             raise RuntimeError(f"Previous GitHub Release {tag} is not public")
+        names = bundle.expected(current, commit) | expected_names("release-studio", current)
+        if {asset["name"] for asset in record["assets"]} != names or len(record["assets"]) != len(names):
+            raise RuntimeError(f"Incorrect GitHub assets for previous release {tag}")
+    else:
+        raise RuntimeError(f"Previous release {tag} has no original release run")
 
 
 def prepare(run_id: str) -> None:
@@ -168,6 +182,7 @@ def prepare(run_id: str) -> None:
 
 def verify_studio(directory: Path, version: str, commit: str) -> Path:
     manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
+    release_projects(version, commit)
     names = expected_names("release-studio", version)
     if (manifest["group"], manifest["version"], manifest["commit"]) != ("release-studio", version, commit):
         raise ValueError("Studio manifest source mismatch")
@@ -290,14 +305,16 @@ def public_runs(tag: str, commit: str) -> list[dict]:
     return [r for r in runs if r["head_sha"] == commit and r["head_branch"] in (tag, f"refs/tags/{tag}")]
 
 
-def verify_pypi(manifest: dict) -> bool:
-    version = manifest["version"]
-    for project in bundle.PROJECTS:
-        record = pypi_record(project, version)
+def verify_pypi(manifest: dict, version: str, commit: str) -> bool:
+    bundle.validate_manifest(manifest, version, commit)
+    for project in release_projects(version, commit):
+        record = pypi_record(project.name, version)
         if record is None:
             return False
         actual = {item["filename"]: item for item in record["urls"]}
-        names = {name for name in manifest["files"] if name.startswith(project.replace("-", "_") + "-")}
+        names = {project.wheel(version), project.sdist(version)}
+        if actual.keys() - names or len(actual) != len(record["urls"]):
+            raise RuntimeError(f"Unexpected files on PyPI for {project.name}: {sorted(actual)}")
         if not names <= actual.keys():
             return False
         for name in names:
@@ -308,12 +325,22 @@ def verify_pypi(manifest: dict) -> bool:
     return True
 
 
+def published_mirror_manifest(commit: str) -> dict:
+    return json.loads(gh("api", f"repos/{PYPI_REPO}/contents/release-manifest.json?ref={commit}",
+                         "-H", "Accept: application/vnd.github.raw+json"))
+
+
 def wait(args: argparse.Namespace) -> None:
     manifest = bundle.load_manifest(args.artifacts / "release-pypi" / "manifest.json", args.version, args.commit)
     tag = f"v{args.version}"
+    if remote_tag("origin", tag) != args.commit:
+        raise RuntimeError("Development tag missing or changed")
     mirror_commit = remote_tag(MIRROR, tag)
     if not mirror_commit or mirror_commit != args.mirror_commit:
         raise RuntimeError("Release-repository tag missing or changed")
+    require_release_identity(args.version, args.commit, mirror=mirror_commit)
+    if published_mirror_manifest(mirror_commit) != manifest:
+        raise RuntimeError("Mirrored manifest differs from original CI")
     deadline = time.monotonic() + 30 * 60
     while time.monotonic() < deadline:
         try:
@@ -324,8 +351,8 @@ def wait(args: argparse.Namespace) -> None:
                 if run["status"] == "completed":
                     if run["conclusion"] != "success":
                         raise RuntimeError(f"PyPI workflow failed: {run['html_url']}; rerun its failed jobs")
-                    if verify_pypi(manifest):
-                        print(f"All six PyPI files match the verified pre-tag artifacts for {tag}")
+                    if verify_pypi(manifest, args.version, args.commit):
+                        print(f"All {len(manifest['files'])} PyPI files match the verified pre-tag artifacts for {tag}")
                         return
         except (URLError, TimeoutError) as exc:
             print(f"Temporary verification error: {exc}", flush=True)

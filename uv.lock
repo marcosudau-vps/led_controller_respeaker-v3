@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = "==3.12.*"
 
 [manifest]
@@ -7,6 +7,7 @@ members = [
     "led-controller-version-3",
     "led-controller-version-3-device-simulated-respeaker",
     "led-controller-version-3-effect-creation",
+    "lefx-config-widget",
     "respeaker-led-v3-workspace",
 ]
 
@@ -178,6 +179,10 @@ dependencies = [
 all = [
     { name = "led-controller-version-3-device-simulated-respeaker", extra = ["gui"] },
     { name = "led-controller-version-3-effect-creation" },
+    { name = "lefx-config-widget" },
+]
+configurator = [
+    { name = "lefx-config-widget" },
 ]
 effect-creation = [
     { name = "led-controller-version-3-effect-creation" },
@@ -193,6 +198,8 @@ requires-dist = [
     { name = "led-controller-version-3-device-simulated-respeaker", extras = ["gui"], marker = "extra == 'simulated-respeaker'", editable = "packages/led-controller-version-3-device-simulated-respeaker" },
     { name = "led-controller-version-3-effect-creation", marker = "extra == 'all'", editable = "packages/led-controller-version-3-effect-creation" },
     { name = "led-controller-version-3-effect-creation", marker = "extra == 'effect-creation'", editable = "packages/led-controller-version-3-effect-creation" },
+    { name = "lefx-config-widget", marker = "extra == 'all'", editable = "packages/lefx_config_widget" },
+    { name = "lefx-config-widget", marker = "extra == 'configurator'", editable = "packages/lefx_config_widget" },
     { name = "libusb-package", specifier = ">=1.0.26.3,<1.1" },
     { name = "pydantic", specifier = ">=2.12.5,<2.13" },
     { name = "pyusb", specifier = ">=1.3.1,<2" },
@@ -200,7 +207,7 @@ requires-dist = [
     { name = "tzdata", marker = "sys_platform == 'win32'", specifier = ">=2025.2" },
     { name = "uvicorn", specifier = ">=0.44.0,<0.45" },
 ]
-provides-extras = ["simulated-respeaker", "effect-creation", "all"]
+provides-extras = ["configurator", "simulated-respeaker", "effect-creation", "all"]
 
 [[package]]
 name = "led-controller-version-3-device-simulated-respeaker"
@@ -237,6 +244,21 @@ requires-dist = [
     { name = "led-controller-version-3", editable = "packages/led-controller-version-3" },
     { name = "pyside6", specifier = ">=6.0.0" },
     { name = "pyyaml", specifier = ">=6.0.2,<7" },
+]
+
+[[package]]
+name = "lefx-config-widget"
+version = "3.0.4"
+source = { editable = "packages/lefx_config_widget" }
+dependencies = [
+    { name = "led-controller-version-3" },
+    { name = "pyside6-essentials" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "led-controller-version-3", editable = "packages/led-controller-version-3" },
+    { name = "pyside6-essentials", specifier = ">=6.8,<7" },
 ]
 
 [[package]]
@@ -497,6 +519,7 @@ dependencies = [
     { name = "led-controller-version-3" },
     { name = "led-controller-version-3-device-simulated-respeaker" },
     { name = "led-controller-version-3-effect-creation" },
+    { name = "lefx-config-widget" },
 ]
 
 [package.dev-dependencies]
@@ -514,6 +537,7 @@ requires-dist = [
     { name = "led-controller-version-3", editable = "packages/led-controller-version-3" },
     { name = "led-controller-version-3-device-simulated-respeaker", editable = "packages/led-controller-version-3-device-simulated-respeaker" },
     { name = "led-controller-version-3-effect-creation", editable = "packages/led-controller-version-3-effect-creation" },
+    { name = "lefx-config-widget", editable = "packages/lefx_config_widget" },
 ]
 
 [package.metadata.requires-dev]

@@ -18,11 +18,9 @@ import zipfile
 from email.parser import BytesParser
 from pathlib import Path
 
-DEV_REPO = "marcosudau-vps/led_controller_respeaker-v3"
-PROJECTS = (
-    "led-controller-version-3",
-    "led-controller-version-3-effect-creation",
-    "led-controller-version-3-device-simulated-respeaker",
+from release_contract import (
+    CURRENT, DEV_REPO, artifact_filenames, build_projects, canonical_name,
+    release_projects, workspace_projects,
 )
 
 
@@ -31,14 +29,8 @@ def sha256(path: Path) -> str:
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def expected(version: str) -> set[str]:
-    if not re.fullmatch(r"\d+\.\d+\.\d+", version):
-        raise ValueError(f"Invalid release version: {version}")
-    return {
-        f"{project.replace('-', '_')}-{version}{suffix}"
-        for project in PROJECTS
-        for suffix in ("-py3-none-any.whl", ".tar.gz")
-    }
+def expected(version: str, commit: str) -> set[str]:
+    return artifact_filenames(version, release_projects(version, commit))
 
 
 def file_record(path: Path) -> dict:
@@ -50,8 +42,8 @@ def verify_file(path: Path, record: dict) -> None:
         raise ValueError(f"Missing or damaged release file: {path.name}")
 
 
-def validate_distribution(path: Path, version: str) -> None:
-    if path.name not in expected(version):
+def validate_distribution(path: Path, version: str, projects=CURRENT) -> None:
+    if path.name not in artifact_filenames(version, projects):
         raise ValueError(f"Unexpected distribution: {path.name}")
     if path.suffix == ".whl":
         with zipfile.ZipFile(path) as archive:
@@ -68,25 +60,29 @@ def validate_distribution(path: Path, version: str) -> None:
             with archive.extractfile(members[0]) as stream:
                 data = stream.read()
     metadata = BytesParser().parsebytes(data)
-    if metadata["Version"] != version or not metadata["Name"]:
-        raise ValueError(f"Incorrect distribution version: {path.name}")
-    prefix = metadata["Name"].replace("-", "_") + "-" + version
+    if metadata.get_all("Version") != [version]:
+        kind = "Wheel" if path.suffix == ".whl" else "Sdist"
+        raise ValueError(f"{kind} version mismatch: {path.name}")
+    names = metadata.get_all("Name", [])
+    if len(names) != 1 or not re.fullmatch(r"[A-Za-z0-9]+(?:[-_.]+[A-Za-z0-9]+)*", names[0]):
+        raise ValueError(f"Invalid distribution name metadata: {path.name}")
+    prefix = canonical_name(names[0]).replace("-", "_") + "-" + version
     if path.name not in {prefix + "-py3-none-any.whl", prefix + ".tar.gz"}:
         raise ValueError(f"Incorrect distribution name: {path.name}")
 
 
 def stage(distributions: Path, tree: Path, destination: Path, version: str, commit: str) -> None:
-    if not re.fullmatch(r"[0-9a-f]{40}", commit):
-        raise ValueError("Full source commit required")
+    projects = build_projects(version, commit)
+    wanted = artifact_filenames(version, projects)
     # uv may create a .gitignore in the output directory. It is not a
     # distribution and must not enter the sealed bundle.
     files = sorted(path for path in distributions.iterdir() if path.name != ".gitignore")
     names = {path.name for path in files}
-    if names != expected(version):
-        raise ValueError(f"Distribution set mismatch: missing={sorted(expected(version)-names)}, extra={sorted(names-expected(version))}")
+    if names != wanted:
+        raise ValueError(f"Distribution set mismatch: missing={sorted(wanted - names)}, extra={sorted(names - wanted)}")
     destination.mkdir(parents=True, exist_ok=False)
     for path in files:
-        validate_distribution(path, version)
+        validate_distribution(path, version, projects)
         shutil.copyfile(path, destination / path.name)
     shutil.copyfile(tree, destination / "tree.tar.gz")
     manifest = {
@@ -98,29 +94,35 @@ def stage(distributions: Path, tree: Path, destination: Path, version: str, comm
     (destination / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
-def load_manifest(path: Path, version: str, commit: str | None = None) -> dict:
-    manifest = json.loads(path.read_text(encoding="utf-8"))
-    if (manifest["version"] != version or not re.fullmatch(r"[0-9a-f]{40}", manifest["commit"])
-            or (commit is not None and manifest["commit"] != commit)):
+def validate_manifest(manifest: dict, version: str, commit: str) -> None:
+    wanted = expected(version, commit)
+    if (manifest["version"], manifest["commit"]) != (version, commit):
         raise ValueError("Handoff version or source commit does not match")
-    if set(manifest["files"]) != expected(version):
+    if set(manifest["files"]) != wanted:
         raise ValueError("Wrong set of distribution files in handoff")
     for record in [*manifest["files"].values(), manifest["tree"]]:
-        if not isinstance(record["size"], int) or record["size"] <= 0 or not re.fullmatch(r"[0-9a-f]{64}", record["sha256"]):
+        if (set(record) != {"size", "sha256"} or type(record["size"]) is not int or record["size"] <= 0
+                or not isinstance(record["sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", record["sha256"])):
             raise ValueError("Invalid handoff file record")
+
+
+def load_manifest(path: Path, version: str, commit: str) -> dict:
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    validate_manifest(manifest, version, commit)
     return manifest
 
 
 def verify(bundle: Path, version: str, commit: str) -> tuple[dict, list[Path]]:
     manifest = load_manifest(bundle / "manifest.json", version, commit)
-    if {p.name for p in bundle.iterdir()} != expected(version) | {"tree.tar.gz", "manifest.json"}:
+    if {p.name for p in bundle.iterdir()} != expected(version, commit) | {"tree.tar.gz", "manifest.json"}:
         raise ValueError("Unexpected or missing bundle files")
     verify_file(bundle / "tree.tar.gz", manifest["tree"])
     files = []
+    projects = release_projects(version, commit)
     for name, record in sorted(manifest["files"].items()):
         path = bundle / name
         verify_file(path, record)
-        validate_distribution(path, version)
+        validate_distribution(path, version, projects)
         files.append(path)
     return manifest, files
 
@@ -136,11 +138,17 @@ def unpack_tree(bundle: Path, destination: Path, version: str, commit: str) -> N
     root_version = tomllib.loads((destination / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
     if root_version != version or not (destination / ".github/workflows/release.yml").is_file():
         raise ValueError("Incorrect release tree")
+    if release_projects(version, commit) == CURRENT:
+        workspace_projects(destination)
+        for name in ("check_release.py", "release_bundle.py", "release_contract.py"):
+            if not (destination / "scripts" / name).is_file():
+                raise ValueError(f"Missing release script in materialized tree: {name}")
     (destination / "release-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
-def fetch(manifest_path: Path, destination: Path, version: str) -> None:
-    manifest = load_manifest(manifest_path, version)
+def fetch(manifest_path: Path, destination: Path, version: str, commit: str) -> None:
+    manifest = load_manifest(manifest_path, version, commit)
+    projects = release_projects(version, commit)
     destination.mkdir(parents=True, exist_ok=False)
     for name, record in sorted(manifest["files"].items()):
         path = destination / name
@@ -148,7 +156,7 @@ def fetch(manifest_path: Path, destination: Path, version: str) -> None:
         with urllib.request.urlopen(url, timeout=60) as response, path.open("wb") as stream:
             shutil.copyfileobj(response, stream)
         verify_file(path, record)
-        validate_distribution(path, version)
+        validate_distribution(path, version, projects)
         print(f"Verified {name}")
 
 
@@ -165,11 +173,12 @@ def main() -> None:
     p.add_argument("manifest", type=Path)
     p.add_argument("destination", type=Path)
     p.add_argument("--version", required=True)
+    p.add_argument("--commit", required=True)
     args = parser.parse_args()
     if args.action == "stage":
         stage(args.distributions, args.tree, args.destination, args.version, args.commit)
     else:
-        fetch(args.manifest, args.destination, args.version)
+        fetch(args.manifest, args.destination, args.version, args.commit)
 
 
 if __name__ == "__main__":

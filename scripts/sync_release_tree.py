@@ -32,12 +32,11 @@ import sys
 import tomllib
 from pathlib import Path
 
+from release_contract import DEV_REPO, workspace_projects
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PACKAGES_ROOT = REPO_ROOT / "packages"
 TEMPLATE_ROOT = REPO_ROOT / ".github/release-repo"
-
-RELEASE_REPO = "marcosudau-vps/led-ctrl-v3"
-DEV_REPO = "marcosudau-vps/led_controller_respeaker-v3"
 
 # Copied verbatim, path for path.
 FILES = (
@@ -45,12 +44,10 @@ FILES = (
     "config.example.yaml",
     "scripts/check_release.py",
     "scripts/release_bundle.py",
+    "scripts/release_contract.py",
 )
 
-# Copied whole, minus the exclusions below.
-TREES = ("packages",)
-
-EXCLUDE_DIRS = {"__pycache__", ".pytest_cache", ".ruff_cache", "build", "dist"}
+EXCLUDE_DIRS = {"__pycache__", ".pytest_cache", ".ruff_cache", "build", "dist", ".venv"}
 EXCLUDE_SUFFIXES = {".pyc", ".pyo"}
 EXCLUDE_NAMES = {".DS_Store"}
 
@@ -95,12 +92,6 @@ class SyncFailed(RuntimeError):
 def workspace_version() -> str:
     text = (REPO_ROOT / "pyproject.toml").read_bytes().decode("utf-8")
     return tomllib.loads(text)["project"]["version"]
-
-
-def distributions() -> list[str]:
-    return sorted(
-        path.parent.name for path in PACKAGES_ROOT.glob("*/pyproject.toml")
-    )
 
 
 def catalogue_archives() -> list[Path]:
@@ -150,8 +141,9 @@ def copy_into(target: Path) -> list[Path]:
             raise SyncFailed(f"{relative} is on the list but is not in this repository")
         place(source, relative)
 
-    for tree in TREES:
-        root = REPO_ROOT / tree
+    projects = workspace_projects(REPO_ROOT)
+    for project in projects:
+        root = PACKAGES_ROOT / project.directory
         for source in sorted(root.rglob("*")):
             if not source.is_file():
                 continue
@@ -166,7 +158,7 @@ def copy_into(target: Path) -> list[Path]:
         place(source, relative)
 
     version = workspace_version()
-    sources = "\n".join(f'{name} = {{ workspace = true }}' for name in distributions())
+    sources = "\n".join(f'{name} = {{ workspace = true }}' for name in sorted(project.name for project in projects))
     root = target / "pyproject.toml"
     root.write_text(
         ROOT_PYPROJECT.format(version=version, sources=sources, dev_repo=DEV_REPO),
@@ -197,7 +189,7 @@ def main(argv: list[str] | None = None) -> int:
         target.mkdir(parents=True, exist_ok=True)
 
         written = copy_into(target)
-    except SyncFailed as exc:
+    except (SyncFailed, ValueError) as exc:
         print(f"\nFAILED: {exc}", file=sys.stderr)
         return 1
 

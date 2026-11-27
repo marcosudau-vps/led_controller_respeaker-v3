@@ -1,6 +1,6 @@
 """One version across the workspace, and the pins that keep it that way.
 
-Three distributions are released together as one system, so they carry one
+Four distributions are released together as one system, so they carry one
 version number. Nothing enforces that but this file: a package whose version
 drifted would still build, still install, and still resolve — and would quietly
 pair a new engine with an old SDK on somebody's machine.
@@ -19,11 +19,13 @@ from pathlib import Path
 
 import pytest
 
+from scripts.release_contract import CORE, canonical_name, workspace_projects
+
 from .scan import PACKAGES_ROOT, REPO_ROOT, distributions
 
 ALL_DISTRIBUTIONS = distributions()
 
-INTERNAL = set(ALL_DISTRIBUTIONS)
+INTERNAL = {canonical_name(name) for name in ALL_DISTRIBUTIONS}
 
 PIN = re.compile(r"^(?P<name>[A-Za-z0-9._-]+)\s*(?:\[[^\]]*\])?\s*(?P<spec>.*)$")
 
@@ -67,7 +69,7 @@ def test_every_internal_dependency_is_pinned_to_that_exact_version(distribution)
     for requirement in requirements(distribution):
         match = PIN.match(requirement.strip())
         assert match, requirement
-        name, spec = match["name"], match["spec"].strip()
+        name, spec = canonical_name(match["name"]), match["spec"].strip()
         if name not in INTERNAL:
             continue
         if spec != expected:
@@ -85,7 +87,7 @@ def test_every_optional_distribution_is_reachable_through_an_extra():
     """
     extras = manifest("led-controller-version-3")["project"]["optional-dependencies"]
     named = {
-        PIN.match(item.strip())["name"]
+        canonical_name(PIN.match(item.strip())["name"])
         for name, group in extras.items() if name != "all"
         for item in group
     }
@@ -93,8 +95,31 @@ def test_every_optional_distribution_is_reachable_through_an_extra():
 
     # And "all" really is all of them, so that one extra is enough to get
     # everything rather than most of it.
-    inside_all = {PIN.match(item.strip())["name"] for item in extras["all"]}
+    inside_all = {canonical_name(PIN.match(item.strip())["name"]) for item in extras["all"]}
     assert inside_all == named
+
+    declared = {project.extra: [f"{project.name}{project.dependency_extra}=={workspace_version()}"]
+                for project in workspace_projects(REPO_ROOT) if project.extra}
+    assert {key: [canonical_requirement(req) for req in values] for key, values in extras.items()
+            if key != "all"} == declared
+    assert sorted(map(canonical_requirement, extras["all"])) == sorted(
+        req for each in declared.values() for req in each
+    )
+
+
+def canonical_requirement(requirement: str) -> str:
+    match = PIN.match(requirement)
+    return canonical_name(match["name"]) + requirement[match.end("name"):]
+
+
+def test_release_manifest_agrees_with_development_workspace():
+    projects = workspace_projects(REPO_ROOT)
+    root = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert set(map(canonical_name, root["project"]["dependencies"])) == {p.name for p in projects}
+    assert {canonical_name(name) for name, source in root["tool"]["uv"]["sources"].items()
+            if source == {"workspace": True}} == {p.name for p in projects}
+    assert {p.name for p in projects} == INTERNAL
+    assert CORE.name in INTERNAL
 
 
 def test_the_runtime_distribution_declares_no_internal_dependency():
@@ -104,7 +129,7 @@ def test_the_runtime_distribution_declares_no_internal_dependency():
     already depend on this one — and pip would be entitled to complain.
     """
     declared = manifest("led-controller-version-3")["project"]["dependencies"]
-    internal = [item for item in declared if PIN.match(item.strip())["name"] in INTERNAL]
+    internal = [item for item in declared if canonical_name(PIN.match(item.strip())["name"]) in INTERNAL]
     assert internal == []
 
 

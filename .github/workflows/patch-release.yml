@@ -113,17 +113,17 @@ jobs:
         with:
           name: release-pypi
           path: checked/release-pypi
-      - name: Confirm the exact mirrored tag and six PyPI file hashes
+      - name: Confirm the exact mirrored tag and all PyPI file hashes
         run: python scripts/server_release.py wait --version "$VERSION" --commit "$COMMIT" --mirror-commit "$MIRROR_COMMIT" --artifacts checked
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: false
       - name: Fresh installation from PyPI, not the checkout
-        run: python scripts/verify_published_release.py install --version "$VERSION"
+        run: python scripts/verify_published_release.py install --version "$VERSION" --commit "$COMMIT"
       - name: Release summary
         run: |
           echo "## LEFX $VERSION published" >> "$GITHUB_STEP_SUMMARY"
           echo "- Development commit: $COMMIT" >> "$GITHUB_STEP_SUMMARY"
           echo "- PyPI repository commit: $MIRROR_COMMIT" >> "$GITHUB_STEP_SUMMARY"
           echo "- [GitHub Release](https://github.com/marcosudau-vps/led_controller_respeaker-v3/releases/tag/v$VERSION)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- All three PyPI projects published; wheel and sdist SHA-256 verified; fresh installation successful." >> "$GITHUB_STEP_SUMMARY"
+          echo "- All four PyPI projects published; wheel and sdist SHA-256 verified; fresh installation successful." >> "$GITHUB_STEP_SUMMARY"
