@@ -76,8 +76,8 @@ Das veröffentlichte 3.0.4 enthält sieben Assets:
 - die drei zugehörigen .tar.gz Source-Distributionen
 
 Ab dem ersten gemeinsamen Release mit Configurator kommen
-`lefx_configurator_widget-<version>-py3-none-any.whl` und
-`lefx_configurator_widget-<version>.tar.gz` hinzu. Daraus ergeben sich neun
+`lefx_config_widget-<version>-py3-none-any.whl` und
+`lefx_config_widget-<version>.tar.gz` hinzu. Daraus ergeben sich neun
 öffentliche GitHub-Assets. Die Studio-EXE bleibt das einzige Windows-Executable-Asset.
 
 `scripts/release_contract.py` definiert die vier Distributionen, die Dateinamen
@@ -104,7 +104,7 @@ ursprünglichen Prüf-/Publish-Jobs, die exakten Dateien aus dem Original-CI-Lau
 gegen GitHub, das gespiegelte Manifest, den PyPI-Workflow und die Dateihashes.
 Danach installiert er frisch und prüft die Einstiegspunkte für den jeweiligen
 Releasevertrag. Die neue Distribution wird dabei zusätzlich über
-`lefx-configurator-widget --smoke` gestartet. Für v3.0.4 gilt die fest gebundene
+`lefx-config-widget --smoke` gestartet. Für v3.0.4 gilt die fest gebundene
 Identität aus Entwicklungs- und Mirror-Commit sowie Original-Run 45854688359.
 Der Recovery-Workflow hat reine Leserechte. Ein erfolgreicher Recovery-Job
 für exakt Version, Commit und ursprünglichen Run gilt für die nächste
@@ -158,7 +158,7 @@ Die Trusted Publisher verwenden Owner `marcosudau-vps`, Repository
 | led-controller-version-3 | pypi |
 | led-controller-version-3-effect-creation | pypi-effect-creation |
 | led-controller-version-3-device-simulated-respeaker | pypi-simulator |
-| lefx-configurator-widget | pypi-configurator |
+| lefx-config-widget | pypi-configurator |
 
 Der Publish-Job verwendet `id-token: write` und `max-parallel: 1`. Die
 Kontoinhaber richten den neuen Eintrag einmalig vor der ersten Freigabe ein.
@@ -170,7 +170,7 @@ Kontoinhaber richten den neuen Eintrag einmalig vor der ersten Freigabe ein.
    einen neuen ausstehenden GitHub-Trusted-Publisher anlegen. Ist das Projekt
    bereits im eigenen Besitz, die Publishing-Seite des Projekts verwenden.
    [Neues PyPI-Projekt per Trusted Publishing](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/)
-3. Projektname `lefx-configurator-widget`, Owner `marcosudau-vps`, Repository
+3. Projektname `lefx-config-widget`, Owner `marcosudau-vps`, Repository
    `led-ctrl-v3`, Workflow-Datei `release.yml`, Environment `pypi-configurator`
    eintragen und die Zuordnung speichern. Der erste erfolgreich autorisierte
    Upload aktiviert den ausstehenden Publisher.

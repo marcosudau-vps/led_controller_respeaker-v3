@@ -47,9 +47,9 @@ def test_clean_install_retries_without_cache_or_foreign_index(modules, monkeypat
     installs = [c for c in calls if "pip" in c]
     assert len(installs) == 2 and installs[0] != installs[1]
     assert sum(c[-1] == "--help" for c in calls) == 5
-    assert any(c[-1] == "--smoke" and "lefx-configurator-widget" in c[0] for c in calls) == (version == "3.0.5")
+    assert any(c[-1] == "--smoke" and "lefx-config-widget" in c[0] for c in calls) == (version == "3.0.5")
     check = next(c[-1] for c in calls if "-c" in c)
-    assert ("lefx-configurator-widget" in check) == (version == "3.0.5")
+    assert ("lefx-config-widget" in check) == (version == "3.0.5")
 
 
 def test_permanent_install_failure_is_not_success(modules, monkeypatch):

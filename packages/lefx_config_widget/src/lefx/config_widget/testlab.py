@@ -462,7 +462,7 @@ def main(argv=None):
     parser.add_argument("--smoke", action="store_true", help="Open TestLab and exit after Qt paints it")
     options = parser.parse_args(argv)
     app = QApplication([])
-    app.setApplicationName("lefx_configurator_widget")
+    app.setApplicationName("lefx_config_widget")
     window = TestLab()
     window.show()
     if options.smoke:

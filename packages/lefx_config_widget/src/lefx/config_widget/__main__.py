@@ -1,4 +1,4 @@
-"""Start the local TestLab with python -m lefx.configurator_widget."""
+"""Start the local TestLab with python -m lefx.config_widget."""
 
 from .testlab import main
 

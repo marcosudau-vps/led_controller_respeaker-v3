@@ -10,7 +10,7 @@ Dort werden Änderungen, Issues und Pull Requests bearbeitet. [LEFX-Entwicklungs
 | `led-controller-version-3` | SDK, Engine, Schnittstellen, reSpeaker und beide Effektkataloge | Standard |
 | `led-controller-version-3-device-simulated-respeaker` | Software-Geräteersatz mit Ringfenster | `simulated-respeaker` |
 | `led-controller-version-3-effect-creation` | Effekte erstellen mit `lefx-pack` und `lefx-studio` | `effect-creation` |
-| `lefx-configurator-widget` | Effektparameter und LED-Aufrufe konfigurieren | `configurator` |
+| `lefx-config-widget` | Effektparameter und LED-Aufrufe konfigurieren | `configurator` |
 
 ```bash
 pip install led-controller-version-3

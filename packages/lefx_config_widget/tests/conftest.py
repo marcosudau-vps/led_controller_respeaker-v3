@@ -5,7 +5,7 @@ import pytest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtWidgets import QApplication
-from lefx.configurator_widget import LefxCatalogueAdapter
+from lefx.config_widget import LefxCatalogueAdapter
 
 
 @pytest.fixture(scope="session")

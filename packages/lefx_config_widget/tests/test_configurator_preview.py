@@ -5,8 +5,8 @@ from time import monotonic, sleep
 import pytest
 
 from lefx.sdk import parse_color, scale_color
-from lefx.configurator_widget import PreviewRequest, PreviewSession
-from lefx.configurator_widget.preview import PreviewWorker
+from lefx.config_widget import PreviewRequest, PreviewSession
+from lefx.config_widget.preview import PreviewWorker
 
 
 def test_real_static_gradient_and_animation(catalogue):

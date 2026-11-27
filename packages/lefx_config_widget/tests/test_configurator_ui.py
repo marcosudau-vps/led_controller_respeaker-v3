@@ -12,12 +12,12 @@ from PySide6.QtWidgets import (
 )
 
 from lefx.sdk import DefinitionKind, ParamDefinition, ParamType, StateSlot
-from lefx.configurator_widget import (
+from lefx.config_widget import (
     EffectCatalogueWidget, EffectEditor, EventSpec, HostCapabilities, LedCallEditor,
     LedFeedbackConfigurator, LedFeedbackDialog, LedVerb, ParameterForm,
 )
-from lefx.configurator_widget.testlab import STT_SAMPLE, TestLab as LabWindow
-from lefx.configurator_widget.widgets import AngleEditor, ColorListEditor, GradientEditor
+from lefx.config_widget.testlab import STT_SAMPLE, TestLab as LabWindow
+from lefx.config_widget.widgets import AngleEditor, ColorListEditor, GradientEditor
 
 
 def button(widget, text):

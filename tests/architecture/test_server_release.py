@@ -89,9 +89,9 @@ def test_sealed_bundle_rejects_mismatch(tmp_path, modules, defect):
     elif defect == "extra":
         (folder / "extra.whl").touch()
     elif defect == "missing-configurator":
-        (folder / f"lefx_configurator_widget-{VERSION}.tar.gz").unlink()
+        (folder / f"lefx_config_widget-{VERSION}.tar.gz").unlink()
     elif defect == "metadata":
-        path = folder / f"lefx_configurator_widget-{VERSION}-py3-none-any.whl"
+        path = folder / f"lefx_config_widget-{VERSION}-py3-none-any.whl"
         with zipfile.ZipFile(path, "w") as archive:
             archive.writestr("wrong.dist-info/METADATA", f"Name: wrong\nVersion: {VERSION}\n")
         manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
@@ -227,7 +227,7 @@ def test_historical_bundle_refuses_a_fourth_project_or_wrong_commit(tmp_path, mo
     with pytest.raises(ValueError, match="No release contract"):
         bundle.load_manifest(path, HISTORIC_VERSION, SHA)
     manifest = json.loads(path.read_text(encoding="utf-8"))
-    manifest["files"]["lefx_configurator_widget-3.0.4.tar.gz"] = manifest["tree"]
+    manifest["files"]["lefx_config_widget-3.0.4.tar.gz"] = manifest["tree"]
     path.write_text(json.dumps(manifest), encoding="utf-8")
     with pytest.raises(ValueError, match="Wrong set"):
         bundle.load_manifest(path, HISTORIC_VERSION, HISTORIC_COMMIT)

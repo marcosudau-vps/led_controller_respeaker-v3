@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QApplication, QLabel, QPushButton, QStackedWidget, QVBoxLayout, QWidget,
 )
 
-from lefx.configurator_widget import (
+from lefx.config_widget import (
     EventSpec, LedFeedbackConfigurator, LefxCatalogueAdapter, PreviewSession,
 )
 

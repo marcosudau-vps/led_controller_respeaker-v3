@@ -15,7 +15,7 @@ respeaker-led-v3/
 │   ├── led-controller-version-3/             Hauptpaket (SDK, Engine, Interfaces, Device & Kataloge)
 │   ├── led-controller-version-3-effect-creation/  Authoring & Build-Tools (`lefx-pack`)
 │   ├── led-controller-version-3-device-simulated-respeaker/ Qt/PySide6 GUI-Simulator
-│   └── lefx_configurator_widget/                   Einbettbarer LED-Configurator
+│   └── lefx_config_widget/                   Einbettbarer LED-Configurator
 ├── effects/
 │   ├── core-set/               Quellcode & Quellen für das core-set
 │   └── smartspeaker-set/       Quellcode & Quellen für das smartspeaker-set

@@ -3,7 +3,7 @@
 Der Client besitzt den Ereigniskatalog, den Feedback-Reducer und die Persistenz. Leite `EventSpec` aus den tatsächlich angebotenen V2-Ereignissen des Hosts ab. Die Zuordnung unterstützt `set_state`, `clear_state`, zeitgesteuertes `set_overlay`, `emit_event` und `set_output`. Gesteuerte Overlays gehören zur separaten Live-Steuerung des Hosts. Persistente Zustände und einmalige Impulse bleiben als unterschiedliche Aufrufarten erkennbar.
 
 ```python
-from lefx.configurator_widget import FeedbackDocument, HostCapabilities, LedFeedbackConfigurator
+from lefx.config_widget import FeedbackDocument, HostCapabilities, LedFeedbackConfigurator
 
 document = FeedbackDocument(config["feedback_mappings"])
 state = {"document": document}

@@ -4,11 +4,11 @@ from dataclasses import replace
 import pytest
 
 from lefx.sdk import DefinitionKind, StateSlot
-from lefx.configurator_widget import (
+from lefx.config_widget import (
     EventSpec, FeedbackDocument, HostCapabilities, LedVerb, LefxCatalogueAdapter,
     MemoryCatalogue, validate_call,
 )
-from lefx.configurator_widget.testlab import STT_SAMPLE
+from lefx.config_widget.testlab import STT_SAMPLE
 
 
 def test_real_catalogue_and_every_preset(catalogue):

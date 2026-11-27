@@ -7,7 +7,7 @@ import sys
 import pytest
 
 
-SOURCE = Path(__file__).resolve().parents[1] / "src/lefx/configurator_widget/widgets"
+SOURCE = Path(__file__).resolve().parents[1] / "src/lefx/config_widget/widgets"
 LOADER = """
 import importlib.abc
 import importlib.util

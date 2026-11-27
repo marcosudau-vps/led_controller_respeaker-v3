@@ -1,6 +1,6 @@
 # Autarke Qt-Widgets
 
-Die folgenden Dateien unter `src/lefx/configurator_widget/widgets/` lassen sich einzeln kopieren. Sie verwenden CPython und PySide6 Essentials. `widgets/__init__.py` dient dem Paketimport. Katalog-, Parameter-, Aufruf-, Mapping- und Vorschauadapter außerhalb dieses Ordners nutzen das LEFX-SDK.
+Die folgenden Dateien unter `src/lefx/config_widget/widgets/` lassen sich einzeln kopieren. Sie verwenden CPython und PySide6 Essentials. `widgets/__init__.py` dient dem Paketimport. Katalog-, Parameter-, Aufruf-, Mapping- und Vorschauadapter außerhalb dieses Ordners nutzen das LEFX-SDK.
 
 | Datei und Klasse | Wert und Optionen |
 | --- | --- |

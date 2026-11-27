@@ -60,7 +60,7 @@ def install_published(version: str, commit: str) -> None:
         subprocess.run([str(python), "-c", check], env=env, cwd=root, check=True, timeout=60)
         entries = [(entry, "--help") for entry in ("lefx", "lefx-respeaker", "lefx-pack", "lefx-studio", "lefx-simulator")]
         if CONFIGURATOR in projects:
-            entries.append(("lefx-configurator-widget", "--smoke"))
+            entries.append(("lefx-config-widget", "--smoke"))
         for entry, option in entries:
             executable = bin_dir / (entry + (".exe" if os.name == "nt" else ""))
             subprocess.run([str(executable), option], env=env, cwd=root, check=True, timeout=60)

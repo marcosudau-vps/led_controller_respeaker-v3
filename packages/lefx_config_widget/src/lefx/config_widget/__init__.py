@@ -1,4 +1,4 @@
-"""Public widgets and adapters for lefx_configurator_widget."""
+"""Public widgets and adapters for lefx_config_widget."""
 
 from .call_editor import LedCallEditor
 from .catalogue import CatalogueEntry, CatalogueProvider, LefxCatalogueAdapter, MemoryCatalogue

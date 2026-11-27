@@ -63,11 +63,11 @@ Die Vorschau rendert das ausgewählte Ziel einschließlich seiner Parameter und 
 Führe diese Befehle aus dem Repository-Stamm unter PowerShell aus:
 
 ```powershell
-uv build --out-dir work/dist ./packages/lefx_configurator_widget
+uv build --out-dir work/dist ./packages/lefx_config_widget
 uv venv --python 3.12 work/configurator-test
-uv pip install --python work/configurator-test/Scripts/python.exe (Get-ChildItem work/dist/lefx_configurator_widget-*.whl).FullName pytest
+uv pip install --python work/configurator-test/Scripts/python.exe (Get-ChildItem work/dist/lefx_config_widget-*.whl).FullName pytest
 $env:QT_QPA_PLATFORM = 'offscreen'
-work/configurator-test/Scripts/python.exe -m pytest -p no:cacheprovider --basetemp=work/test-temp packages/lefx_configurator_widget/tests
+work/configurator-test/Scripts/python.exe -m pytest -p no:cacheprovider --basetemp=work/test-temp packages/lefx_config_widget/tests
 ```
 
 Setze für die Kopiertests `LEFX_QT_ONLY_PYTHON` auf die Python-Executable einer zweiten Umgebung, die ausschließlich `PySide6-Essentials` und dessen Shiboken-Abhängigkeit enthält. Für die GUI-Prüfung unter Windows setze `QT_QPA_PLATFORM=windows`. Mit `LEFX_GUI_EVIDENCE` als vorhandenes Verzeichnis speichern die GUI-Tests ihre Bilder dort.

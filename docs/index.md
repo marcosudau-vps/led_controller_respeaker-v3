@@ -107,7 +107,7 @@ Schichten. Jedes optionale Projekt lässt sich getrennt installieren.
 | `led-controller-version-3` | Standard |
 | `led-controller-version-3-device-simulated-respeaker` | `[simulated-respeaker]` |
 | `led-controller-version-3-effect-creation` | `[effect-creation]` |
-| `lefx-configurator-widget` | `[configurator]` oder direkt |
+| `lefx-config-widget` | `[configurator]` oder direkt |
 
 | Schicht | Rolle | Darf importieren | Liegt in |
 | --- | --- | --- | --- |
@@ -119,7 +119,7 @@ Schichten. Jedes optionale Projekt lässt sich getrennt installieren.
 | **lefx.sets.smartspeaker_set** | Der Sprachassistenz-Katalog. | — | `led-controller-version-3` |
 | **lefx.device.simulated_respeaker** | Das Software-Double: lokaler Transport, Ringfenster, simulierte DoA. | sdk | `led-controller-version-3-device-simulated-respeaker` |
 | **lefx.effect_creation** | Gerüst, Prüfung, Bauen (`lefx-pack`) und die Desktop-Werkstatt (`lefx-studio`). | sdk, engine, interfaces | `led-controller-version-3-effect-creation` |
-| **lefx.configurator_widget** | Einbettbarer Editor für Effektparameter und LED-Zuordnungen mit isolierter Vorschau. | sdk, engine, interfaces | `lefx_configurator_widget` |
+| **lefx.config_widget** | Einbettbarer Editor für Effektparameter und LED-Zuordnungen mit isolierter Vorschau. | sdk, engine, interfaces | `lefx_config_widget` |
 
 Die vier Laufzeitschichten und beide Kataloge liegen in einem Wheel, weil nie
 eine Teilmenge davon installiert wird — kein Extra wählt zwischen ihnen, und
@@ -133,7 +133,7 @@ lefx.sdk                         → (nichts)
 lefx.engine                      → lefx.sdk
 lefx.interfaces                  → lefx.sdk, lefx.engine
 lefx.effect_creation             → lefx.sdk, lefx.engine, lefx.interfaces
-lefx.configurator_widget         → lefx.sdk, lefx.engine, lefx.interfaces
+lefx.config_widget         → lefx.sdk, lefx.engine, lefx.interfaces
 lefx.device.respeaker            → lefx.sdk
 lefx.device.simulated_respeaker  → lefx.sdk
 lefx.sets.core_set               → (nichts)
@@ -356,7 +356,7 @@ respeaker-led-v3/
 │   ├── led-controller-version-3-device-simulated-respeaker/
 │   │                                    lefx.device.simulated_respeaker
 │   ├── led-controller-version-3-effect-creation/     lefx.effect_creation (+ .studio)
-│   └── lefx_configurator_widget/                    lefx.configurator_widget
+│   └── lefx_config_widget/                    lefx.config_widget
 ├── effects/
 │   ├── core-set/                Quellen der kuratierten Referenzdefinitionen
 │   └── smartspeaker-set/        Quellen des portierten Produktivsatzes

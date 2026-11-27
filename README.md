@@ -28,8 +28,8 @@ pip install "led-controller-version-3[all]"                   # alle drei Extras
 
 Das Configurator-Extra ist für den ersten gemeinsamen Release nach 3.0.4 vorgesehen.
 Bis zur Veröffentlichung lässt sich das Widget aus dem Workspace oder aus lokal gebauten
-Wheels starten. Der Programmeinstieg heißt `lefx-configurator-widget`.
-Die [Paketdokumentation](packages/lefx_configurator_widget/README.md) beschreibt Einbettung und TestLab.
+Wheels starten. Der Programmeinstieg heißt `lefx-config-widget`.
+Die [Paketdokumentation](packages/lefx_config_widget/README.md) beschreibt Einbettung und TestLab.
 
 Beide Effektkataloge sind in der Standardinstallation enthalten; welche geladen
 werden, entscheidet `included_lefxset`.
@@ -51,15 +51,15 @@ Vier Distributionen teilen eine Versionsnummer und werden gemeinsam veröffentli
 | `led-controller-version-3` | `lefx.sdk`, `lefx.engine`, `lefx.interfaces`, `lefx.device.respeaker`, `lefx.sets.core_set`, `lefx.sets.smartspeaker_set` | Standard |
 | `led-controller-version-3-device-simulated-respeaker` | `lefx.device.simulated_respeaker` | `[simulated-respeaker]` |
 | `led-controller-version-3-effect-creation` | `lefx.effect_creation` (+ `.studio`) | `[effect-creation]` |
-| `lefx-configurator-widget` | `lefx.configurator_widget` | `[configurator]` oder direkt |
+| `lefx-config-widget` | `lefx.config_widget` | `[configurator]` oder direkt |
 
 Nur Optionales bekommt ein eigenes Projekt. Schema, Engine,
 Steuerungsoberfläche und Hardware werden immer zusammen installiert — kein
 Extra wählt je zwischen ihnen —, und welche Effektkataloge geladen werden, ist
 eine Laufzeitfrage (`included_lefxset`), keine Installationsfrage.
 
-Die Importpfade liegen unter `lefx.*`. Der Distributionsname `lefx_configurator_widget`
-wird auf dem Python Package Index zu `lefx-configurator-widget` normalisiert.
+Die Importpfade liegen unter `lefx.*`. Der Distributionsname lautet `lefx-config-widget`;
+Wheel- und Sdist-Dateinamen verwenden die Schreibweise `lefx_config_widget`.
 
 ## Schichten und Abhängigkeitsrichtung
 
@@ -72,7 +72,7 @@ lefx.sdk                         → (nichts)
 lefx.engine                      → lefx.sdk
 lefx.interfaces                  → lefx.sdk, lefx.engine
 lefx.effect_creation             → lefx.sdk, lefx.engine, lefx.interfaces
-lefx.configurator_widget         → lefx.sdk, lefx.engine, lefx.interfaces
+lefx.config_widget         → lefx.sdk, lefx.engine, lefx.interfaces
 lefx.device.respeaker            → lefx.sdk
 lefx.device.simulated_respeaker  → lefx.sdk
 lefx.sets.*                      → (nichts)
@@ -118,7 +118,7 @@ uv run --locked pytest -m "not hardware"
 ```
 
 Die Root-Suite schließt den Configurator und die sieben Kopier- und Isolationstests ein.
-Nach dem Katalogbau startet `uv run --locked lefx-configurator-widget` das TestLab.
+Nach dem Katalogbau startet `uv run --locked lefx-config-widget` das TestLab.
 
 Die Effektkataloge sind gebaute Ausgabe und liegen unter
 `packages/led-controller-version-3/src/lefx/sets/<name>/` — derselbe Ort im Checkout wie in

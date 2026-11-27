@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QApplication, QDialog, QDialogButtonBox, QLabel, QScrollArea, QVBoxLayout,
 )
 
-from lefx.configurator_widget import EffectEditor, LefxCatalogueAdapter
+from lefx.config_widget import EffectEditor, LefxCatalogueAdapter
 
 
 def main():

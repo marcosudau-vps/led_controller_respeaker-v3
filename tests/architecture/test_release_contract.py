@@ -56,7 +56,7 @@ def test_patch_bump_preserves_normalized_internal_pins(tmp_path, monkeypatch, re
     assert len(changed) == 5
     assert all(tomllib.loads(path.read_text(encoding="utf-8"))["project"]["version"] == target for path in changed)
     core = tomllib.loads((tmp_path / "packages" / CORE.directory / "pyproject.toml").read_text(encoding="utf-8"))["project"]
-    pin = f"lefx_configurator_widget=={target}"
+    pin = f"lefx-config-widget=={target}"
     assert core["optional-dependencies"]["configurator"] == [pin]
     assert pin in core["optional-dependencies"]["all"]
 
@@ -81,7 +81,7 @@ def test_configurator_version_collision_stops_candidate(release_tools, monkeypat
         raise HTTPError(url, 404, "Not found", None, None)
 
     monkeypatch.setattr(release, "urlopen", urlopen)
-    with pytest.raises(release.Abort, match="lefx-configurator-widget"):
+    with pytest.raises(release.Abort, match="lefx-config-widget"):
         release.check_tag_is_free("3.0.5")
     assert requested == [project.name for project in CURRENT]
 
@@ -96,7 +96,7 @@ def test_mirror_publisher_matrix_is_emitted_from_release_contract():
         assert json.loads(info) == {"include": [
             {"distribution": project.stem, "environment": project.environment} for project in projects
         ]}
-    assert canonical_name("lefx_configurator_widget") == canonical_name("LEFX.Configurator-Widget")
+    assert canonical_name("lefx_config_widget") == canonical_name("LEFX.Config-Widget")
 
 
 @pytest.mark.parametrize("version,commit,mirror,run_id", [

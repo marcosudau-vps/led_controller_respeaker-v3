@@ -1,4 +1,4 @@
-# lefx_configurator_widget
+# lefx-config-widget
 
 Qt-Editoren für vorhandene LEFX-Effekte, Presets und LED-Aufrufe zu frei definierten Anwendungsereignissen. Das Paket läuft mit Python 3.12, LEFX 3.0.4 und PySide6 Essentials. Die lokale Vorschau rendert über die LEFX-Engine in einen Speicher-Sink.
 
@@ -6,24 +6,24 @@ Qt-Editoren für vorhandene LEFX-Effekte, Presets und LED-Aufrufe zu frei defini
 
 Im Entwicklungs-Workspace installierst du alle lokalen Mitglieder mit `uv sync --locked`.
 Danach baust du die Kataloge mit `uv run --locked python scripts/build_effects.py` und
-startest das TestLab mit `uv run --locked lefx-configurator-widget`.
+startest das TestLab mit `uv run --locked lefx-config-widget`.
 
 Für eine separate Installation des Paketordners führe im Repository-Stamm unter PowerShell aus:
 
 ```powershell
 uv venv --python 3.12 work/configurator-venv
-uv pip install --python work/configurator-venv/Scripts/python.exe ./packages/lefx_configurator_widget
-work/configurator-venv/Scripts/python.exe -m lefx.configurator_widget
+uv pip install --python work/configurator-venv/Scripts/python.exe ./packages/lefx_config_widget
+work/configurator-venv/Scripts/python.exe -m lefx.config_widget
 ```
 
-Für ein bereits gebautes Wheel übergib dessen Pfad anstelle des Paketordners an `uv pip install`. Der Programmeinstieg unter Windows heißt `lefx-configurator-widget.exe` und liegt im `Scripts`-Verzeichnis der Umgebung. `python -m lefx.configurator_widget --smoke` öffnet und schließt das TestLab für einen kurzen Starttest.
+Für ein bereits gebautes Wheel übergib dessen Pfad anstelle des Paketordners an `uv pip install`. Der Programmeinstieg unter Windows heißt `lefx-config-widget.exe` und liegt im `Scripts`-Verzeichnis der Umgebung. `python -m lefx.config_widget --smoke` öffnet und schließt das TestLab für einen kurzen Starttest.
 
-Die Distribution heißt `lefx_configurator_widget`. Paketindizes normalisieren den Namen zu `lefx-configurator-widget`. Python importiert aus dem LEFX-Namespace `lefx.configurator_widget`. Der Workspace koppelt die Version exakt an den Kern. Ab der gemeinsamen Veröffentlichung kannst du das Paket über `pip install "led-controller-version-3[configurator]"` oder direkt über `pip install lefx-configurator-widget` installieren. `[all]` schließt den Configurator ebenfalls ein.
+Die Distribution heißt `lefx-config-widget`. Wheel- und Sdist-Dateinamen verwenden `lefx_config_widget`. Python importiert aus dem LEFX-Namespace `lefx.config_widget`. Der Workspace koppelt die Version exakt an den Kern. Ab der gemeinsamen Veröffentlichung kannst du das Paket über `pip install "led-controller-version-3[configurator]"` oder direkt über `pip install lefx-config-widget` installieren. `[all]` schließt den Configurator ebenfalls ein.
 
 ## Einbettung
 
 ```python
-from lefx.configurator_widget import EventSpec, LedFeedbackConfigurator, LefxCatalogueAdapter
+from lefx.config_widget import EventSpec, LedFeedbackConfigurator, LefxCatalogueAdapter
 
 catalogue = LefxCatalogueAdapter.installed()
 widget = LedFeedbackConfigurator(

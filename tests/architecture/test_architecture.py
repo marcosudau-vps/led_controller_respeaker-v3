@@ -54,7 +54,7 @@ MAY_IMPORT: dict[str, frozenset[str]] = {
     # picks its output from the same entry points the service reads, so
     # installing it does not decide which hardware you have.
     "lefx.effect_creation": frozenset({"lefx.sdk", "lefx.engine", "lefx.interfaces"}),
-    "lefx.configurator_widget": frozenset({"lefx.sdk", "lefx.engine", "lefx.interfaces"}),
+    "lefx.config_widget": frozenset({"lefx.sdk", "lefx.engine", "lefx.interfaces"}),
     "lefx.device.respeaker": frozenset({"lefx.sdk"}),
     "lefx.device.simulated_respeaker": frozenset({"lefx.sdk"}),
     # A catalogue is data. It ships one archive and a function that says where
@@ -70,7 +70,7 @@ DISTRIBUTION_MAY_DEPEND: dict[str, frozenset[str]] = {
     "led-controller-version-3": frozenset(),
     "led-controller-version-3-effect-creation": frozenset({"led-controller-version-3"}),
     "led-controller-version-3-device-simulated-respeaker": frozenset({"led-controller-version-3"}),
-    "lefx-configurator-widget": frozenset({"led-controller-version-3"}),
+    "lefx-config-widget": frozenset({"led-controller-version-3"}),
 }
 
 CREATION_ROOT = PACKAGES_ROOT / "led-controller-version-3-effect-creation/src/lefx/effect_creation"
@@ -229,7 +229,7 @@ def test_every_layer_is_in_the_distribution_it_belongs_to():
         "lefx.sets.core_set": "led-controller-version-3",
         "lefx.sets.smartspeaker_set": "led-controller-version-3",
         "lefx.effect_creation": "led-controller-version-3-effect-creation",
-        "lefx.configurator_widget": "lefx_configurator_widget",
+        "lefx.config_widget": "lefx_config_widget",
         "lefx.device.simulated_respeaker": "led-controller-version-3-device-simulated-respeaker",
     }
     assert {layer: distribution_of(layer) for layer in ALL_LAYERS} == expected
@@ -261,10 +261,10 @@ def test_the_declared_dependencies_agree_with_what_the_layers_reach(distribution
 
 
 @pytest.mark.parametrize("layer,forbidden", [
-    ("lefx.configurator_widget", "lefx.device.respeaker"),
-    ("lefx.configurator_widget", "lefx.effect_creation"),
-    ("lefx.sdk", "lefx.configurator_widget"),
-    ("lefx.device.simulated_respeaker", "lefx.configurator_widget"),
+    ("lefx.config_widget", "lefx.device.respeaker"),
+    ("lefx.config_widget", "lefx.effect_creation"),
+    ("lefx.sdk", "lefx.config_widget"),
+    ("lefx.device.simulated_respeaker", "lefx.config_widget"),
 ])
 def test_import_checker_detects_forbidden_configurator_edges(tmp_path, monkeypatch, layer, forbidden):
     source = tmp_path / "bad_import.py"

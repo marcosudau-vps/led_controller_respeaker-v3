@@ -44,7 +44,7 @@ STUDIO = Distribution("led-controller-version-3-effect-creation", "pypi-effect-c
 SIMULATOR = Distribution(
     "led-controller-version-3-device-simulated-respeaker", "pypi-simulator", "simulated-respeaker", "[gui]"
 )
-CONFIGURATOR = Distribution("lefx_configurator_widget", "pypi-configurator", "configurator")
+CONFIGURATOR = Distribution("lefx_config_widget", "pypi-configurator", "configurator")
 CURRENT = (CORE, STUDIO, SIMULATOR, CONFIGURATOR)
 
 # This released tag predates the integration. An ordinary CI build may still

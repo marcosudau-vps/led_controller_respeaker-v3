@@ -378,7 +378,7 @@ def check_effect_creation(python: Path, *, simulator: bool) -> None:
 
 def check_configurator(python: Path) -> None:
     code = """
-from lefx.configurator_widget import LefxCatalogueAdapter, PreviewRequest, PreviewSession
+from lefx.config_widget import LefxCatalogueAdapter, PreviewRequest, PreviewSession
 with LefxCatalogueAdapter.installed() as catalogue:
     assert {source["source_id"] for source in catalogue.sources()} == {"core-set", "smartspeaker-set"}
     assert any(entry.preset is not None for entry in catalogue.entries())
@@ -392,7 +392,7 @@ with LefxCatalogueAdapter.installed() as catalogue:
     with tempfile.TemporaryDirectory(prefix="lefx-preview-") as directory:
         result = run([str(python), "-I", "-c", code], cwd=directory)
         require(result.returncode == 0, f"Configurator loads both sets and renders an isolated frame\n{result.stderr}")
-        result = run([str(script(python, "lefx-configurator-widget")), "--smoke"], cwd=directory, timeout=60)
+        result = run([str(script(python, "lefx-config-widget")), "--smoke"], cwd=directory, timeout=60)
         require(result.returncode == 0, f"Configurator GUI entry point opens and closes\n{result.stderr}")
 
 

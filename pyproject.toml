@@ -7,7 +7,7 @@ dependencies = [
     "led-controller-version-3",
     "led-controller-version-3-effect-creation",
     "led-controller-version-3-device-simulated-respeaker",
-    "lefx_configurator_widget",
+    "lefx-config-widget",
 ]
 
 # The root is a workspace container, not a distributable. Nothing here is ever
@@ -29,7 +29,7 @@ members = ["packages/*"]
 led-controller-version-3 = { workspace = true }
 led-controller-version-3-effect-creation = { workspace = true }
 led-controller-version-3-device-simulated-respeaker = { workspace = true }
-lefx-configurator-widget = { workspace = true }
+lefx-config-widget = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -47,7 +47,7 @@ build = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "packages/lefx_configurator_widget/tests"]
+testpaths = ["tests", "packages/lefx_config_widget/tests"]
 python_files = ["test_*.py"]
 cache_dir = "tests/.cache/pytest_cache"
 # Keep scratch files inside the checkout. The system temp directory is not

@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
-name = "lefx_configurator_widget"
+name = "lefx-config-widget"
 version = "3.0.4"
 description = "Embeddable Qt effect and feedback mapping configurator for LEFX V3"
 readme = "README.md"
@@ -13,7 +13,7 @@ license-files = ["LICENSE"]
 dependencies = ["led-controller-version-3==3.0.4", "PySide6-Essentials>=6.8,<7"]
 
 [project.gui-scripts]
-lefx-configurator-widget = "lefx.configurator_widget.testlab:main"
+lefx-config-widget = "lefx.config_widget.testlab:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/lefx"]

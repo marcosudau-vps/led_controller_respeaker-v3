@@ -1,6 +1,6 @@
 # TestLab und Bedienung
 
-Starte das TestLab über `python -m lefx.configurator_widget` in der Umgebung, in der das Paket installiert ist.
+Starte das TestLab über `python -m lefx.config_widget` in der Umgebung, in der das Paket installiert ist.
 
 ## Effekte und Presets
 
